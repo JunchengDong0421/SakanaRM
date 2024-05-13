@@ -1,0 +1,13 @@
+<html lang="en">
+{% if username %}
+    <b>Hello, {{ username }}!</b>
+    <br>
+    <b>UID: {{ request.session.uid }}</b>
+    <a href={% url "accounts:logout-page" %}>Logout</a>
+{% else %}
+    <b>You are not logged in!</b>
+    <a href={% url "accounts:login-page" %}>Login</a>
+    <a href={% url "accounts:register-page" %}>Register</a>
+{% endif %}
+
+</html>
