@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Paper Detail - {{ paper.pid }}
+{% endblock %}
+
+{% block content %}
+    <h2>PID: {{ paper.pid }}</h2>
+    <h2>Title: {{ paper.title }}</h2>
+    <h2>Owner: {{ paper.owner }}</h2>
+    <h2>Tags:
+        {% for tag in paper.tags.all %}
+            <p style="color: grey"> #{{ tag.name }} &nbsp;&nbsp; </p>
+        {% endfor %}
+    </h2>
+    <br><br>
+    {% if paper.owner.uid != request.session.uid %}
+        <h2><em>You are not the owner! No actions available</em></h2>
+    {% else %}
+        <h2><em>Actions</em></h2>
+        <hr>
+
+        <h3>Add (merge) tags</h3>
+        <form id="add-tags-form" method="post" action="{% url 'core:add-tags' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <label>Enter tags:
+                <input id="tags" type="text" name="tags"/>
+                (separate with ;)
+            </label>
+            <input type="hidden" name="pid" value="{{ paper.pid }}">
+            <p id="confirm" style="color: green"></p>
+            <br>
+            <button type="submit">Add Tags</button>
+        </form>
+        <p id="err-msg" style="color: red"></p>
+        <hr>
+        <h3>More operations</h3>
+        <button>Replace</button>
+        <button>(Re-) process</button>
+        <hr>
+        <h3>Delete paper</h3>
+        <button>Delete</button>
+    {% endif %}
+
+    <script>
+        $(document).ready(() => {
+            $('#tags').on("change", () => {
+                const input = $('#tags').val();
+                if (input.length > 0) {
+                    const splitValues = input.split(';').map(value => value.trim());
+                    $("#confirm").text("Confirmation: " + splitValues.join(', '));
+                } else {
+                    $("#confirm").text("");
+                }
+
+            });
+            $('#add-tags-form').submit(e => {
+                e.preventDefault();
+                const form = $('#add-tags-form');
+                var formData = new FormData(form[0]);
+                $.ajax({
+                    url: form.attr('action'),
+                    type: form.attr('method'),
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: res => {
+                        if (res.status === 0) {
+                            location.reload();
+                        } else {
+                            $('#err-msg').text("Error: " + res.err_msg);
+                        }
+                    }
+                });
+            })
+        })
+    </script>
+{% endblock %}

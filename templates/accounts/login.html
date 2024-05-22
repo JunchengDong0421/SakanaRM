@@ -14,8 +14,9 @@
         </label>
 
         <button type="submit">Login</button>
+
         {% if err_msg %}
-        <p style="color: red" class="message"> Error: {{ err_msg }} </p>
+            <p style="color: red" class="message"> Error: {{ err_msg }} </p>
         {% endif %}
     </form>
 {% endblock %}

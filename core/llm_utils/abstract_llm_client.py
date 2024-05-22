@@ -1,5 +1,5 @@
 from abc import ABC
 
 
-class AbstractClient(ABC):
+class AbstractLLMClient(ABC):
     pass

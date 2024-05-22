@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <form method="post" action="{% url 'core:create-workflow' %}" enctype="multipart/form-data" id="upload-form">
+        {% csrf_token %}
+        <label>Select Paper:
+            <input id="paper" type="file" name="paper" accept="application/pdf" required />
+        </label>
+        <br><br>
+        <label>Title:
+            <input id="title" type="text" name="title" required/>
+        </label>
+        <br><br>
+        <label>Workflow name:
+            <input type="text" name="name" placeholder="Untitled Workflow" />
+        </label>
+        <br><br>
+        <label>Type:
+            <select name="type">
+                <option value="upload_process">upload and process</option>
+                <option value="upload">upload</option>
+            </select>
+        </label>
+        <br><br>
+        <label>Replace: <input type="checkbox" name="replace" value="true"></label>
+        <br><br>
+        <button type="submit">Start Workflow</button>
+    </form>
+
+    {% if err_msg %}
+        <p style="color: red"> Error: {{ err_msg }} </p>
+    {% endif %}
+
+    <script>
+        $(document).ready(() => {
+            $("#paper").on("change", () => {
+                const fileInput = $('#paper');
+                if (fileInput[0].files.length > 0) {
+                    const fullName = fileInput[0].files[0].name;
+                    const title = fullName.substring(0, fullName.lastIndexOf('.'));
+                    $('#title').val(title);
+                }
+            })
+        })
+    </script>
+
+{% endblock %}

@@ -1,13 +1,72 @@
-<html lang="en">
-{% if username %}
-    <b>Hello, {{ username }}!</b>
-    <br>
-    <b>UID: {{ request.session.uid }}</b>
-    <a href={% url "accounts:logout-page" %}>Logout</a>
-{% else %}
-    <b>You are not logged in!</b>
-    <a href={% url "accounts:login-page" %}>Login</a>
-    <a href={% url "accounts:register-page" %}>Register</a>
-{% endif %}
+{% extends "base.html" %}
+{% block style %}
+    <style>
+        table, th, td {
+            border: 1px solid black;
+        }
+    </style>
+{% endblock %}
+{% block content %}
+    {% if request.user.is_authenticated %}
+        <b>Hello, {{ request.user.get_username }}!</b>
+        <br>
+        <b>UID: {{ request.session.uid }}</b>
+        <a href="{% url 'accounts:logout-page' %}">Logout</a>
+        <br><br><br>
+{#        <a href="{% url 'core:upload-page-1' %}">Go to upload</a>#}
+        <a href="{% url 'core:upload-paper-page' %}">Upload new paper</a>
+        <br>
+        <a href="{% url 'core:process-paper-page' %}">Process existing paper</a>
+        <br>
+        <a href="{% url 'core:my-papers' request.session.uid %}">My papers</a>
 
-</html>
+        <br><br><br>
+        <h2>My Workflows</h2> ( <a href="{% url 'core:my-workflows' request.session.uid %}">View All</a> )
+        <hr>
+        {% if workflows %}
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Paper</th>
+                            <th>Work Type</th>
+                            <th>Stage</th>
+                            <th>Status</th>
+                            <th>Last Updated</th>
+                            <th>manage</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for wf in workflows %}
+                            <tr>
+                                <td>{{ wf.name }}</td>
+                                <td>{{ wf.paper.title }}</td>
+                                <td>{{ wf.work_type }}</td>
+                                <td>{{ wf.stage }}</td>
+                                <td>{{ wf.status }}</td>
+                                <td>{{ wf.last_updated }}</td>
+                                <td><a href="{% url 'core:workflow-detail' wf.wid %}">Go to Manage</a></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            No workflow history.
+        {% endif %}
+
+    {% else %}
+        <b>You are not logged in!</b>
+        <a href="{% url 'accounts:login-page' %}">Login</a>
+        <a href="{% url 'accounts:register-page' %}">Register</a>
+        <br><br><br>
+    {% endif %}
+    <br><br>
+
+
+    {% if err_msg %}
+        <p style="color: red"> Error: {{ err_msg }} </p>
+    {% endif %}
+
+{% endblock %}

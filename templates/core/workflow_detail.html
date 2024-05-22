@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Workflow Detail - {{ workflow.wid }}
+{% endblock %}
+
+{% block content %}
+    <h2>WID: {{ workflow.wid }}</h2>
+    <h2>Name: {{ workflow.name }}</h2>
+    <h2>Title: {{ workflow.paper.title }}</h2>
+    <h2>Type: {{ workflow.work_type }}</h2>
+    <h2>Stage: {{ workflow.stage }}</h2>
+    <h2>Status: {{ workflow.status }}</h2>
+    <br><br>
+    {% if workflow.starter.uid != request.session.uid %}
+        <h2><em>You are not the owner! No actions available</em></h2>
+    {% else %}
+        <h2><em>Actions</em></h2>
+        <hr>
+        {% if workflow.status == tags_ready %}
+            <h3>Select tags to add (merge)</h3>
+            {% if tags %}
+                {% for t in tags %}
+                    <label><input type="checkbox" class="checkbox" value="{{ t }}"> {{ t }} </label><br>
+                {% endfor %}
+                <button id="add-tags">Add (Complete workflow)</button>
+            {% endif %}
+            <p id="err-msg" style="color: red"></p>
+            <hr>
+        {% endif %}
+
+        {% if workflow.status in can_abort_status %}
+            <h3>Abort workflow</h3>
+            <button id="abort">Abort</button>
+            <p id="err-msg-1" style="color: red"></p>
+        {% else %}
+            <h3>Archive workflow</h3>
+            <button>Archive</button>
+        {% endif %}
+    {% endif %}
+
+    <script>
+        var pollURL = "{% url 'core:workflow-status' %}";
+        var addTagsURL = "{% url 'core:workflow-add-tags' %}";
+        var abortURL = "{% url 'core:abort-workflow' %}";
+
+        $(document).ready(() => {
+            // Add tags event
+            $('#add-tags').click(function() {
+                var selectedTags = "";
+                $('.checkbox:checked').each(function() {
+                    selectedTags += $(this).val();
+                    selectedTags += ";"
+                });
+                $.ajax({
+                    url: addTagsURL,
+                    type: 'POST',
+                    data: {
+                        "wid": '{{ workflow.wid }}',
+                        "tags": selectedTags,
+                        "csrfmiddlewaretoken": '{{ csrf_token }}'
+                    },
+                    success: res => {
+                        if (res.status === 0) {
+                            window.location.href = '{% url 'core:paper-detail' workflow.paper.pid %}';
+                        } else {
+                            $('#err-msg').text("Error: " + res.err_msg);
+                        }
+                    },
+                })
+            });
+
+            // Abort event
+            $("#abort").click(() => {
+                $.ajax({
+                    url: abortURL,
+                    type: 'POST',
+                    data: {
+                        "wid": '{{ workflow.wid }}',
+                        "csrfmiddlewaretoken": '{{ csrf_token }}'
+                    },
+                    success: res => {
+                        if (res.status === 0) {
+                            location.reload();
+                        } else {
+                            $('#err-msg-1').text("Error: " + res.err_msg);
+                        }
+                    }
+                })
+            })
+        })
+
+        // poll for workflow complete
+        {% if workflow.status == in_progress %}
+            const wid = {{ workflow.wid }};
+            var poll = () => {
+                $.ajax({
+                    url: pollURL,
+                    type: 'GET',
+                    data: {"wid": wid},
+                    success: res => {
+                        if (res.status !== 0) {
+                            alert(res.err_msg);
+                        } else if (res.is_done) {
+                            location.reload();
+                        }
+                    },
+                });
+            };
+            setInterval(poll, 1000 * 60); // poll every 60 seconds
+        {% endif %}
+    </script>
+
+{% endblock %}

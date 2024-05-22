@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <form method="post" action="{% url 'core:create-workflow' %}" enctype="multipart/form-data" id="upload-form">
+        {% csrf_token %}
+        <label>Select Paper:
+            <select name="pid">
+                {% for p in papers %}
+                    <option value="{{ p.pid }}">{{ p.title }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <br><br>
+        <label>Workflow name:
+            <input type="text" name="name" placeholder="Untitled Workflow" />
+        </label>
+        <br><br>
+        <button type="submit">Process</button>
+    </form>
+
+    {% if err_msg %}
+        <p style="color: red"> Error: {{ err_msg }} </p>
+    {% endif %}
+
+{% endblock %}
