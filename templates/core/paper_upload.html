@@ -17,22 +17,21 @@
         <br><br>
         <label>Type:
             <select name="type">
-                <option value="upload_process">upload and process</option>
-                <option value="upload">upload</option>
+{#                <option value="upload_process">upload and process</option>#}
+                <option value="{{ UPLOAD }}">upload</option>
             </select>
         </label>
         <br><br>
-        <label>Replace: <input type="checkbox" name="replace" value="true"></label>
+        <label>Replace (if any): <input type="checkbox" name="replace" value="true"></label>
         <br><br>
         <button type="submit">Start Workflow</button>
     </form>
 
-    {% if err_msg %}
-        <p style="color: red"> Error: {{ err_msg }} </p>
-    {% endif %}
+    <p id="err-msg" style="color: red"></p>
 
     <script>
         $(document).ready(() => {
+            // detect file name
             $("#paper").on("change", () => {
                 const fileInput = $('#paper');
                 if (fileInput[0].files.length > 0) {
@@ -40,6 +39,29 @@
                     const title = fullName.substring(0, fullName.lastIndexOf('.'));
                     $('#title').val(title);
                 }
+            });
+
+            // ajax submit form
+            $('#upload-form').submit(e => {
+                e.preventDefault();
+                const form = $('#upload-form');
+                var formData = new FormData(form[0]);
+                $.ajax({
+                    url: form.attr('action'),
+                    type: form.attr('method'),
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: res => {
+                        if (res.status === 0) {
+                            const wid = res.wid.toString();
+                            const url = '{% url 'core:workflow-detail' 99999 %}'.replace('99999', wid);
+                            window.open(url, "_blank");
+                        } else {
+                            $('#err-msg').text("Error: " + res.err_msg);
+                        }
+                    }
+                });
             })
         })
     </script>
