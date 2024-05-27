@@ -14,6 +14,10 @@ ABORTED = "aborted"
 # stage
 S_START = "start"
 S_UPLOAD_AND_PROCESS = "upload and process"
+S_UPLOADING = "uploading"
+S_PROCESSING_0 = "retrieving"
+S_PROCESSING_1 = "processing"
+S_PROCESSING_2 = "tagging"
 S_POST_PROCESS = "post-process"
 S_FINISH = "finish"
 

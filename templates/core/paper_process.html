@@ -1,7 +1,26 @@
 {% extends 'base.html' %}
 
+{% block style %}
+    <style>
+        .scrollable-checkboxes {
+            display: flex;
+            flex-wrap: wrap;
+            height: 200px;
+            width: 600px;
+            overflow-y: scroll;
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+
+        .scrollable-checkboxes label {
+            width: 33.33%;
+            box-sizing: border-box;
+        }
+    </style>
+{% endblock %}
+
 {% block content %}
-    <form method="post" action="{% url 'core:create-workflow' %}" enctype="multipart/form-data" id="upload-form">
+    <form method="post" action="{% url 'core:create-workflow' %}" enctype="multipart/form-data" id="process-form">
         {% csrf_token %}
         <label>Select Paper:
             <select name="pid">
@@ -11,6 +30,13 @@
             </select>
         </label>
         <br><br>
+        Select Tags: <br><br>
+        <div class="scrollable-checkboxes">
+            {% for t in tags %}
+                <label><input type="checkbox" name="tag-names" value="{{ t.name }}">{{ t.name }}</label>
+            {% endfor %}
+        </div>
+        <br><br>
         <label>Workflow name:
             <input type="text" name="name" placeholder="Untitled Workflow" />
         </label>
@@ -18,8 +44,41 @@
         <button type="submit">Process</button>
     </form>
 
-    {% if err_msg %}
-        <p style="color: red"> Error: {{ err_msg }} </p>
-    {% endif %}
+    <p id="err-msg" style="color: red"></p>
+
+    <script>
+        $(document).ready(() => {
+            // ajax submit form
+            $('#process-form').submit(e => {
+                e.preventDefault();
+                var checkedTags = $('input[name="tag-names"]:checked').map(function() {
+                    return this.value;
+                }).get();
+
+                const form = $('#process-form');
+                var formData = new FormData(form[0]);
+                formData.append("type", "{{ PROCESS }}");
+                checkedTags.forEach(val => {
+                    formData.append('tag-names[]', val);
+                })
+                $.ajax({
+                    url: form.attr('action'),
+                    type: form.attr('method'),
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: res => {
+                        if (res.status === 0) {
+                            const wid = res.wid.toString();
+                            const url = '{% url 'core:workflow-detail' 99999 %}'.replace('99999', wid);
+                            window.open(url, "_blank");
+                        } else {
+                            $('#err-msg').text("Error: " + res.err_msg);
+                        }
+                    }
+                });
+            })
+        })
+    </script>
 
 {% endblock %}

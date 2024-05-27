@@ -11,7 +11,7 @@ from django.contrib.auth.decorators import login_required
 from .macros import *
 from .models import Paper, Tag, SakanaUser, Workflow
 from .cdn_utils import PseudoCDNClient
-from .llm_utils import PseudoLLMClient
+from .llm_utils import PseudoLLMClient, SimpleKeywordClient
 
 
 def home_page(request):
@@ -23,14 +23,15 @@ def home_page(request):
 
 @login_required()
 def upload_paper_page(request):
-    return render(request, "core/paper_upload.html")
+    return render(request, "core/paper_upload.html", {"UPLOAD": UPLOAD})
 
 
 @login_required()
 def process_paper_page(request):
     uid = request.session.get("uid")
     papers = Paper.objects.filter(owner_id=uid)
-    return render(request, "core/paper_process.html", {"papers": papers})
+    tags = Tag.objects.all()
+    return render(request, "core/paper_process.html", {"papers": papers, "tags": tags, "PROCESS": PROCESS})
 
 
 class PaperDetailView(DetailView):
@@ -72,7 +73,6 @@ async def _start_workflow_task(request, wid):
         return
 
     uid = await async_get_uid(request)
-    file_obj = request.FILES.get("paper")
     title = request.POST.get("title")
 
     work_type = request.POST.get("type")
@@ -89,6 +89,7 @@ async def _start_workflow_task(request, wid):
         workflow.stage = S_UPLOAD_AND_PROCESS
         await workflow.asave()
         # asynchronously execute CDN and LLM tasks
+        file_obj = request.FILES.get("paper")
         cdn_client = PseudoCDNClient()
         llm_client = PseudoLLMClient()
         cdn_task = asyncio.create_task(cdn_client.store_paper(file_obj))
@@ -129,6 +130,107 @@ async def _start_workflow_task(request, wid):
         workflow.status = TAGS_READY
         await workflow.asave()
 
+    elif work_type == UPLOAD:
+        paper = await Paper.objects.filter(title=title, owner_id=uid).afirst()
+        if not paper:
+            return
+
+        # in case of caching, re-query
+        workflow = await Workflow.objects.filter(wid=wid).afirst()
+        if not workflow or workflow.status == ABORTED:
+            return
+        workflow.stage = S_UPLOADING
+        await workflow.asave()
+
+        file_obj = request.FILES.get("paper")
+        cdn_client = PseudoCDNClient()
+        file_path = await cdn_client.store_paper(file_obj)
+
+        # in case of caching, re-query
+        workflow = await Workflow.objects.filter(wid=wid).afirst()
+        # if workflow is aborted or deleted (not allowed for users)
+        if not workflow or workflow.status == ABORTED:
+            _ = await cdn_client.delete_paper(file_path)  # delete new paper
+            paper = await Paper.objects.filter(title=title, owner_id=uid).afirst()
+            if not paper:  # if paper is deleted
+                return
+            if not paper.file_path:  # delete paper entry
+                await paper.adelete()
+            return
+        # else
+        paper = await Paper.objects.filter(title=title, owner_id=uid).afirst()
+        if not paper:  # if paper is deleted or altered during normal workflow execution
+            workflow.result = json.dumps({**json.loads(workflow.result), **{"error": "paper is not available"}})
+            workflow.status = FAILED
+            await workflow.asave()
+        old_path = paper.file_path
+        if old_path:
+            # delete old paper because user must have selected "replace" in this position
+            _ = await cdn_client.delete_paper(old_path)
+        paper.file_path = file_path
+        await paper.asave()
+
+        workflow.stage = S_FINISH
+        workflow.status = COMPLETE
+        await workflow.asave()
+
+    elif work_type == PROCESS:  # for now automatically tag paper, so without the TAGS_READY status
+        pid = request.POST.get("pid")
+        paper = await Paper.objects.filter(pid=pid, owner_id=uid).afirst()
+        if not paper:
+            return
+
+        # in case of caching, re-query
+        workflow = await Workflow.objects.filter(wid=wid).afirst()
+        if not workflow or workflow.status == ABORTED:
+            return
+        workflow.stage = S_PROCESSING_0
+        await workflow.asave()
+
+        # Task 0: retrieve paper
+        file_path = paper.file_path
+        cdn_client = PseudoCDNClient()
+        file_obj = await cdn_client.request_for_paper(file_path)
+
+        # in case of caching, re-query
+        workflow = await Workflow.objects.filter(wid=wid).afirst()
+        if not workflow or workflow.status == ABORTED:
+            return
+        workflow.stage = S_PROCESSING_1
+        await workflow.asave()
+
+        # Task 1: read and process paper
+        tags = request.POST.getlist("tag-names")
+        llm_client = SimpleKeywordClient()
+        matching_tags = await llm_client.process_paper_on_tags(file_obj, tags)
+
+        # in case of caching, re-query
+        workflow = await Workflow.objects.filter(wid=wid).afirst()
+        if not workflow or workflow.status == ABORTED:
+            return
+        workflow.stage = S_PROCESSING_2
+        await workflow.asave()
+
+        # Task 2: tag paper
+        paper = await Paper.objects.filter(pid=pid, owner_id=uid).afirst()
+        if not paper:
+            return
+        for t in matching_tags:
+            tag = await Tag.objects.filter(name=t).afirst()
+            if tag:
+                await paper.tags.aadd(tag)
+
+        # in case of caching, re-query
+        workflow = await Workflow.objects.filter(wid=wid).afirst()
+        if not workflow or workflow.status == ABORTED:
+            return
+        workflow.stage = S_FINISH
+        workflow.status = COMPLETE
+        await workflow.asave()
+
+    else:  # illegal work type parameter
+        return
+
 
 def start_workflow_task(request, wid):  # we need to pass a sync function to thread
     asyncio.run(_start_workflow_task(request, wid))
@@ -142,12 +244,12 @@ def handle_create_workflow(request):
         title = request.POST.get("title")
         if not (file_obj and title):
             err_msg = "Please select a paper to upload and give a title!"
-            return render(request, "core/paper_upload.html", {"err_msg": err_msg})
+            return JsonResponse({"status": 1, "err_msg": err_msg})
         replace = not not request.POST.get("replace")
         paper = Paper.objects.filter(title=title, owner_id=uid).first()
         if paper and not replace:
             err_msg = "You have uploaded the same paper, check replace if you want to replace it"
-            return render(request, "core/paper_upload.html", {"err_msg": err_msg})
+            return JsonResponse({"status": 1, "err_msg": err_msg})
         if not paper:
             paper = Paper(title=title, owner_id=uid)
             paper.save()
@@ -156,11 +258,17 @@ def handle_create_workflow(request):
         pid = request.POST.get("pid")
         paper = Paper.objects.filter(pid=pid).first()
         if not paper:
-            err_msg = "The paper you want to process does not exist, please check again"
-            return render(request, "core/paper_upload.html", {"err_msg": err_msg})
+            err_msg = "The paper you want to process does not exist, please select again"
+            return JsonResponse({"status": 1, "err_msg": err_msg})
+        tags = request.POST.getlist("tag-names")
+        for n in tags:
+            tag = Tag.objects.filter(name=n).first()
+            if not tag:
+                err_msg = "Some tags selected do not exist!"
+                return JsonResponse({"status": 1, "err_msg": err_msg})
     else:
         err_msg = "Illegal workflow creation"
-        return render(request, "core/paper_upload.html", {"err_msg": err_msg})
+        return JsonResponse({"status": 1, "err_msg": err_msg})
 
     name = request.POST.get("name")
     if not name:  # when name is an empty string
@@ -171,7 +279,7 @@ def handle_create_workflow(request):
                                        status=IN_PROGRESS).first()
     if workflow:
         err_msg = "You have a running workflow with the same paper. Abort it first or wait for it to complete"
-        return render(request, "core/paper_upload.html", {"err_msg": err_msg})
+        return JsonResponse({"status": 1, "err_msg": err_msg})
 
     workflow = Workflow(starter_id=uid, paper_id=pid, name=name, work_type=work_type, stage=S_START, status=IN_PROGRESS)
     workflow.save()
@@ -181,7 +289,7 @@ def handle_create_workflow(request):
     thread.start()
     workflow.messages = f"Thread id {thread.ident}; "
     workflow.save()
-    return redirect(f"/workflow/{wid}")
+    return JsonResponse({"status": 0, "wid": wid})
 
 
 @login_required()
@@ -208,7 +316,7 @@ def add_tags(request):
     for t in tags:
         tag = Tag.objects.filter(name=t).first()
         if not tag:
-            tag = Tag(name=t)
+            tag = Tag(name=t, adder_id=uid)
             tag.save()
         paper.tags.add(tag)
     return JsonResponse({"status": 0})
@@ -276,3 +384,37 @@ def abort_workflow(request):
     workflow.status = ABORTED
     workflow.save()
     return JsonResponse({"status": 0})
+
+
+@login_required()
+def add_tag_and_definition_page(request):
+    return render(request, "core/tag_definition_add.html")
+
+
+@login_required()
+def add_tag_and_definition(request):
+    tag_name = request.POST.get("name")
+    if not tag_name:
+        err_msg = "Please enter a tag name!"
+        return JsonResponse({"status": 1, "err_msg": err_msg})
+    tag_name = tag_name.replace(";", "").strip()
+    uid = request.session.get("uid")
+    tag = Tag.objects.filter(name=tag_name).first()
+    definition = request.POST.get("definition")
+    update_definition = not not request.POST.get("update")
+    # if tag already exists
+    if tag:
+        if tag.adder_id != uid:
+            err_msg = f'Tag added by somebody else. Please contact "{tag.adder.auth_user.username}" via ' \
+                      f'{tag.adder.auth_user.email}'
+            return JsonResponse({"status": 1, "err_msg": err_msg})
+        elif not update_definition:
+            err_msg = "You have added the same tag, check update definition if you want to update its definition"
+            return JsonResponse({"status": 1, "err_msg": err_msg})
+        tag.definition = definition
+        tag.save()
+        return JsonResponse({"status": 0, "tag_name": tag_name, "is_update": True})
+    # else
+    tag = Tag(name=tag_name, definition=definition, adder_id=uid)
+    tag.save()
+    return JsonResponse({"status": 0, "tag_name": tag_name})
