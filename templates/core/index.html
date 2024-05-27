@@ -13,15 +13,16 @@
         <b>UID: {{ request.session.uid }}</b>
         <a href="{% url 'accounts:logout-page' %}">Logout</a>
         <br><br><br>
-{#        <a href="{% url 'core:upload-page-1' %}">Go to upload</a>#}
-        <a href="{% url 'core:upload-paper-page' %}">Upload new paper</a>
+        <a href="{% url 'core:upload-paper-page' %}" target="_blank">Upload new paper</a>
         <br>
-        <a href="{% url 'core:process-paper-page' %}">Process existing paper</a>
+        <a href="{% url 'core:add-tag-definition-page' %}" target="_blank">Add tag and definition</a>
         <br>
-        <a href="{% url 'core:my-papers' request.session.uid %}">My papers</a>
+        <a href="{% url 'core:process-paper-page' %}" target="_blank">Process existing paper</a>
+        <br>
+        <a href="{% url 'core:my-papers' request.session.uid %}" target="_blank">My papers</a>
 
         <br><br><br>
-        <h2>My Workflows</h2> ( <a href="{% url 'core:my-workflows' request.session.uid %}">View All</a> )
+        <h2>My Workflows</h2> <a href="{% url 'core:my-workflows' request.session.uid %}" target="_blank">View All</a>
         <hr>
         {% if workflows %}
             <div class="table-container">
@@ -46,7 +47,7 @@
                                 <td>{{ wf.stage }}</td>
                                 <td>{{ wf.status }}</td>
                                 <td>{{ wf.last_updated }}</td>
-                                <td><a href="{% url 'core:workflow-detail' wf.wid %}">Go to Manage</a></td>
+                                <td><a href="{% url 'core:workflow-detail' wf.wid %}" target="_blank">Go to Manage</a></td>
                             </tr>
                         {% endfor %}
                     </tbody>

@@ -62,7 +62,7 @@
                     },
                     success: res => {
                         if (res.status === 0) {
-                            window.location.href = '{% url 'core:paper-detail' workflow.paper.pid %}';
+                            window.open('{% url 'core:paper-detail' workflow.paper.pid %}', "_blank");
                         } else {
                             $('#err-msg').text("Error: " + res.err_msg);
                         }
