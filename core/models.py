@@ -11,6 +11,7 @@ class Tag(models.Model):
     tid = models.BigAutoField(primary_key=True)
     name = models.CharField(unique=True, max_length=100)
     definition = models.TextField()
+    adder = models.ForeignKey(SakanaUser, on_delete=models.CASCADE)  # ManyToOne relation to SakanaUser
 
     # Will automatically be filled in once instance is instantiated
     created_at = models.DateTimeField(auto_now_add=True)

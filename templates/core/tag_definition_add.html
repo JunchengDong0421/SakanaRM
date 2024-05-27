@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Add Tag and Definition
+{% endblock %}
+
+{% block content %}
+    <form method="post" action="{% url 'core:add-tag-definition' %}" enctype="multipart/form-data" id="tag-form">
+        {% csrf_token %}
+        <label>Tag name:
+            <input type="text" name="name" id="name" /> (one at a time;
+            semicolons, leading and trailing spaces will be removed)
+        </label>
+        <br><br>
+        <label>Definition:
+            <input type="text" name="definition" id="definition" />
+        </label>
+        <br><br>
+        <label>Update definition (if any): <input type="checkbox" name="update" value="true"></label>
+        <br><br>
+        <button type="submit">Add Tag</button>
+    </form>
+    <p id="suc-msg" style="color: green"></p>
+    <p id="err-msg" style="color: red"></p>
+
+    <script>
+        $(document).ready(() => {
+            $('#tag-form').submit(e => {
+                e.preventDefault();
+                const form = $('#tag-form');
+                var formData = new FormData(form[0]);
+                $.ajax({
+                    url: form.attr('action'),
+                    type: form.attr('method'),
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: res => {
+                        if (res.status === 0) {
+                            const msg = !res.is_update ? 'Successfully added tag "' + res.tag_name + '"!' :
+                                'Successfully updated definition for tag "' + res.tag_name + '"!';
+                            $('#suc-msg').text(msg);
+                            $('#err-msg').text('');
+                            $('#name').val('');
+                            $('#definition').val('');
+                        } else {
+                            $('#suc-msg').text('');
+                            $('#err-msg').text("Error: " + res.err_msg);
+                        }
+                    }
+                });
+            })
+        })
+    </script>
+{% endblock %}
