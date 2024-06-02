@@ -20,7 +20,7 @@ class SimpleKeywordClient(AbstractLLMClient):
         return " ".join(text_content)
 
     async def process_paper_on_tags(self, file_obj, tags):
-        with open("C:\\Users\\Administrator\\Desktop\\project\\fd_production_suite_ICPADS23.pdf", "rb") as f:
+        with file_obj as f:
             content = self.read_pdf_content(f)
         matching_tags = []
         for t in tags:
