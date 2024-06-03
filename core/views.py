@@ -1,6 +1,7 @@
 import asyncio
 import json
 import threading
+from io import BytesIO
 
 from asgiref.sync import sync_to_async
 from django.shortcuts import redirect, render
@@ -67,7 +68,7 @@ def async_get_uid(request):
     return request.session.get("uid")
 
 
-async def _start_workflow_task(request, wid):
+async def _start_workflow_task(request, wid, file_obj):
     workflow = await Workflow.objects.filter(wid=wid).afirst()
     if not workflow:
         return
@@ -89,7 +90,6 @@ async def _start_workflow_task(request, wid):
         workflow.stage = S_UPLOAD_AND_PROCESS
         await workflow.asave()
         # asynchronously execute CDN and LLM tasks
-        file_obj = request.FILES.get("paper")
         cdn_client = PseudoCDNClient()
         llm_client = PseudoLLMClient()
         cdn_task = asyncio.create_task(cdn_client.store_paper(file_obj))
@@ -142,7 +142,6 @@ async def _start_workflow_task(request, wid):
         workflow.stage = S_UPLOADING
         await workflow.asave()
 
-        file_obj = request.FILES.get("paper")
         cdn_client = PseudoCDNClient()
         file_path = await cdn_client.store_paper(file_obj)
 
@@ -232,15 +231,15 @@ async def _start_workflow_task(request, wid):
         return
 
 
-def start_workflow_task(request, wid):  # we need to pass a sync function to thread
-    asyncio.run(_start_workflow_task(request, wid))
+def start_workflow_task(*args, **kwargs):  # we need to pass a sync function to thread
+    asyncio.run(_start_workflow_task(*args, **kwargs))
 
 
 def handle_create_workflow(request):
     uid = request.session.get("uid")
+    file_obj = request.FILES.get("paper")
     work_type = request.POST.get("type")
     if work_type == UPLOAD_AND_PROCESS or work_type == UPLOAD:
-        file_obj = request.FILES.get("paper")
         title = request.POST.get("title")
         if not (file_obj and title):
             err_msg = "Please select a paper to upload and give a title!"
@@ -270,6 +269,10 @@ def handle_create_workflow(request):
         err_msg = "Illegal workflow creation"
         return JsonResponse({"status": 1, "err_msg": err_msg})
 
+    # VERY IMPORTANT: file object might be closed after request complete, so we read all of it before sending response
+    # Of course, this could take a long time, so on the web page we inform user of this
+    file_obj = BytesIO(file_obj.read()) if file_obj else None
+
     name = request.POST.get("name")
     if not name:  # when name is an empty string
         name = "Untitled Workflow"
@@ -285,7 +288,7 @@ def handle_create_workflow(request):
     workflow.save()
     wid = workflow.wid
 
-    thread = threading.Thread(target=start_workflow_task, args=[request, wid], daemon=True)
+    thread = threading.Thread(target=start_workflow_task, args=[request, wid, file_obj], daemon=True)
     thread.start()
     workflow.messages = f"Thread id {thread.ident}; "
     workflow.save()

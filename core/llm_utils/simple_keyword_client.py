@@ -21,9 +21,9 @@ class SimpleKeywordClient(AbstractLLMClient):
 
     async def process_paper_on_tags(self, file_obj, tags):
         with file_obj as f:
-            content = self.read_pdf_content(f)
+            file_content = f.read()
         matching_tags = []
         for t in tags:
-            if t in content:
+            if t in file_content:
                 matching_tags.append(t)
         return matching_tags
