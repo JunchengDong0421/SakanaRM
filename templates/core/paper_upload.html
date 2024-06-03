@@ -24,10 +24,11 @@
         <br><br>
         <label>Replace (if any): <input type="checkbox" name="replace" value="true"></label>
         <br><br>
-        <button type="submit">Start Workflow</button>
+        <button type="submit">Upload</button>
     </form>
 
     <p id="err-msg" style="color: red"></p>
+    <p id="info" style="color: orangered"></p>
 
     <script>
         $(document).ready(() => {
@@ -58,10 +59,12 @@
                             const url = '{% url 'core:workflow-detail' 99999 %}'.replace('99999', wid);
                             window.open(url, "_blank");
                         } else {
+                            $('#info').text('');
                             $('#err-msg').text("Error: " + res.err_msg);
                         }
                     }
                 });
+                $('#info').text('It may take a long time to spawn a workflow. Please wait...');
             })
         })
     </script>
