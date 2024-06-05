@@ -4,6 +4,12 @@
         table, th, td {
             border: 1px solid black;
         }
+        .jump-container {
+            display: flex;
+            width: 400px;
+            justify-content: space-around;
+        }
+
     </style>
 {% endblock %}
 {% block content %}
@@ -13,13 +19,20 @@
         <b>UID: {{ request.session.uid }}</b>
         <a href="{% url 'accounts:logout-page' %}">Logout</a>
         <br><br><br>
-        <a href="{% url 'core:upload-paper-page' %}" target="_blank">Upload new paper</a>
-        <br>
-        <a href="{% url 'core:add-tag-definition-page' %}" target="_blank">Add tag and definition</a>
-        <br>
-        <a href="{% url 'core:process-paper-page' %}" target="_blank">Process existing paper</a>
-        <br>
-        <a href="{% url 'core:my-papers' request.session.uid %}" target="_blank">My papers</a>
+        <div class="jump-container">
+            <div class="workflow-links">
+                <a href="{% url 'core:upload-paper-page' %}" target="_blank">Upload new paper</a>
+                <br>
+                <a href="{% url 'core:add-tag-definition-page' %}" target="_blank">Add tag and definition</a>
+                <br>
+                <a href="{% url 'core:process-paper-page' %}" target="_blank">Process existing paper</a>
+            </div>
+            <div class="info-links">
+                <a href="{% url 'core:search-page' %}" target="_blank">Search</a>
+                <br>
+                <a href="{% url 'core:my-papers' request.session.uid %}" target="_blank">My papers</a>
+            </div>
+        </div>
 
         <br><br><br>
         <h2>My Workflows</h2> <a href="{% url 'core:my-workflows' request.session.uid %}" target="_blank">View All</a>

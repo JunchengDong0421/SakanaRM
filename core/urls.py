@@ -17,6 +17,8 @@ urlpatterns = [
     path("api/workflow/status", views.get_workflow_status, name="workflow-status"),
     path("api/workflow/addtags", views.workflow_add_tags, name="workflow-add-tags"),
     path("api/workflow/abort", views.abort_workflow, name="abort-workflow"),
-    path("api/tag/add", views.add_tag_and_definition, name="add-tag-definition")
+    path("api/tag/add", views.add_tag_and_definition, name="add-tag-definition"),
 
+    path("search", views.search_page, name="search-page"),
+    path("search/all", views.search_result, name="search-result")
 ]

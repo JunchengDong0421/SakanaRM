@@ -8,6 +8,7 @@ from django.shortcuts import redirect, render
 from django.http import JsonResponse
 from django.views.generic import DetailView, ListView
 from django.contrib.auth.decorators import login_required
+from django.db.models import Count, Q
 
 from .macros import *
 from .models import Paper, Tag, SakanaUser, Workflow
@@ -421,3 +422,39 @@ def add_tag_and_definition(request):
     tag = Tag(name=tag_name, definition=definition, adder_id=uid)
     tag.save()
     return JsonResponse({"status": 0, "tag_name": tag_name})
+
+
+@login_required()
+def search_page(request):
+    tags = Tag.objects.all()
+    return render(request, "core/search.html", {"tags": list(tags)})
+
+
+@login_required()
+def search_result(request):
+    partial_title = request.GET.get("title")
+    owner = request.GET.get("owner")
+    tags_contain = request.GET.getlist("tags-contain")
+    tags_in = request.GET.getlist("tags-in")
+
+    if tags_contain and tags_in:
+        err_msg = "Unfortunately it is impossible to search for both Matches and Has Tags"
+        return render(request, "core/search_result.html", {"err_msg": err_msg})
+
+    if not owner:
+        err_msg = "Please select a owner type to filter"
+        return render(request, "core/search_result.html", {"err_msg": err_msg})
+
+    print(partial_title, owner, tags_contain, tags_in)
+
+    if tags_contain:
+        if "untagged;" in tags_contain:
+            papers = Paper.objects.filter(tags__isnull=True)
+        else:
+            papers = Paper.objects.annotate(
+                num_tags=Count('tags', filter=Q(tags__name__in=tags_contain))
+            ).filter(num_tags=len(tags_contain))
+    else:
+        # papers = Paper.objects.filter( tags__name__in=["game theory", "Nash Equilibrium"]).exclude(owner_id=2)
+        papers = []
+    return render(request, "core/search_result.html", {"papers": papers})

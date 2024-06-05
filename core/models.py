@@ -38,7 +38,7 @@ class Paper(models.Model):
     last_modified = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"<Tag tid={self.pid} title={self.title}>"
+        return f"<Paper pid={self.pid} title={self.title}>"
 
 
 class Workflow(models.Model):
