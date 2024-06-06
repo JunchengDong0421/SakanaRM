@@ -19,7 +19,7 @@ class SimpleKeywordClient(AbstractLLMClient):
 
         return " ".join(text_content)
 
-    async def process_paper_on_tags(self, file_obj, tags):
+    async def match_paper_on_tags(self, file_obj, tags):
         with file_obj as f:
             file_content = f.read()
         matching_tags = []
