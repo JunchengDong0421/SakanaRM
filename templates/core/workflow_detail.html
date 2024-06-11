@@ -1,18 +1,18 @@
 {% extends 'base.html' %}
 
 {% block title %}
-    Workflow Detail - {{ workflow.wid }}
+    Workflow Detail - {{ workflow.id }}
 {% endblock %}
 
 {% block content %}
-    <h2>WID: {{ workflow.wid }}</h2>
+    <h2>WID: {{ workflow.id }}</h2>
     <h2>Name: {{ workflow.name }}</h2>
     <h2>Title: {{ workflow.paper.title }}</h2>
-    <h2>Type: {{ workflow.work_type }}</h2>
-    <h2>Stage: {{ workflow.stage }}</h2>
-    <h2>Status: {{ workflow.status }}</h2>
+    <h2>Type: {{ workflow.get_work_type_display }}</h2>
+    <h2>Stage: {{ workflow.get_stage_display }}</h2>
+    <h2>Status: {{ workflow.get_status_display }}</h2>
     <br><br>
-    {% if workflow.starter.uid != request.session.uid %}
+    {% if workflow.user.id != request.session.uid %}
         <h2><em>You are not the owner! No actions available</em></h2>
     {% else %}
         <h2><em>Actions</em></h2>
@@ -56,13 +56,13 @@
                     url: addTagsURL,
                     type: 'POST',
                     data: {
-                        "wid": '{{ workflow.wid }}',
+                        "wid": '{{ workflow.id }}',
                         "tags": selectedTags,
                         "csrfmiddlewaretoken": '{{ csrf_token }}'
                     },
                     success: res => {
                         if (res.status === 0) {
-                            window.open('{% url 'core:paper-detail' workflow.paper.pid %}', "_blank");
+                            window.open('{% url 'core:paper-detail' workflow.paper.id %}', "_blank");
                         } else {
                             $('#err-msg').text("Error: " + res.err_msg);
                         }
@@ -76,7 +76,7 @@
                     url: abortURL,
                     type: 'POST',
                     data: {
-                        "wid": '{{ workflow.wid }}',
+                        "wid": '{{ workflow.id }}',
                         "csrfmiddlewaretoken": '{{ csrf_token }}'
                     },
                     success: res => {
@@ -91,8 +91,8 @@
         })
 
         // poll for workflow complete
-        {% if workflow.status == in_progress %}
-            const wid = {{ workflow.wid }};
+        {% if workflow.status == pending %}
+            const wid = {{ workflow.id }};
             var poll = () => {
                 $.ajax({
                     url: pollURL,

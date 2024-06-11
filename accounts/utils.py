@@ -21,7 +21,7 @@ def sakana_authenticate(request, **credentials):  # returns a RMUser object
 def sakana_login(request, user, backend=None):  # takes in a RMUser object
     auth_user = user.auth_user
     login(request, auth_user, backend)
-    request.session["uid"] = user.uid
+    request.session["uid"] = user.id
 
 
 def sakana_logout(request):

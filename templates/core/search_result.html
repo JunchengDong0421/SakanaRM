@@ -39,7 +39,7 @@
                             <td>{{ p.owner.auth_user.username }}</td>
                             <td>[{% for t in p.tags.all %}{{ t.name }}; {% endfor %}]</td>
                             <td>{{ p.last_modified }}</td>
-                            <td><a href="{% url 'core:paper-detail' p.pid %}" target="_blank">View</a></td>
+                            <td><a href="{% url 'core:paper-detail' p.id %}" target="_blank">View</a></td>
                         </tr>
                     {% endfor %}
                 </tbody>

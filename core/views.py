@@ -19,7 +19,7 @@ from .llm_utils import PseudoLLMClient, SimpleKeywordClient
 def home_page(request):
     uid = request.session.get("uid")
     # only display 10 most recent workflows on homepage
-    workflows = Workflow.objects.filter(starter__uid=uid)[:10]
+    workflows = Workflow.objects.filter(user_id=uid)[:10]
     return render(request, "core/index.html", {"workflows": workflows})
 
 
@@ -55,10 +55,10 @@ class WorkflowDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        workflow = Workflow.objects.filter(wid=self.kwargs['pk']).first()
+        workflow = Workflow.objects.filter(id=self.kwargs['pk']).first()
         if workflow:
             context["tags"] = json.loads(workflow.result).get("generated_tags", [])
-            context["in_progress"] = IN_PROGRESS
+            context["pending"] = PENDING
             context["tags_ready"] = TAGS_READY
             context["can_abort_status"] = CAN_ABORT_STATUS
         return context
@@ -70,7 +70,7 @@ def async_get_uid(request):
 
 
 async def _start_workflow_task(request, wid, file_obj):
-    workflow = await Workflow.objects.filter(wid=wid).afirst()
+    workflow = await Workflow.objects.filter(id=wid).afirst()
     if not workflow:
         return
 
@@ -85,7 +85,7 @@ async def _start_workflow_task(request, wid, file_obj):
             return
 
         # in case of caching, re-query
-        workflow = await Workflow.objects.filter(wid=wid).afirst()
+        workflow = await Workflow.objects.filter(id=wid).afirst()
         if not workflow or workflow.status == ABORTED:
             return
         workflow.stage = S_UPLOAD_AND_PROCESS
@@ -101,7 +101,7 @@ async def _start_workflow_task(request, wid, file_obj):
         tags = results[1]  # LLM task result
 
         # in case of caching, re-query
-        workflow = await Workflow.objects.filter(wid=wid).afirst()
+        workflow = await Workflow.objects.filter(id=wid).afirst()
         # if workflow is aborted or deleted (not allowed for users)
         if not workflow or workflow.status == ABORTED:
             _ = await cdn_client.delete_paper(file_path)  # delete new paper
@@ -137,7 +137,7 @@ async def _start_workflow_task(request, wid, file_obj):
             return
 
         # in case of caching, re-query
-        workflow = await Workflow.objects.filter(wid=wid).afirst()
+        workflow = await Workflow.objects.filter(id=wid).afirst()
         if not workflow or workflow.status == ABORTED:
             return
         workflow.stage = S_UPLOADING
@@ -147,7 +147,7 @@ async def _start_workflow_task(request, wid, file_obj):
         file_path = await cdn_client.store_paper(file_obj)
 
         # in case of caching, re-query
-        workflow = await Workflow.objects.filter(wid=wid).afirst()
+        workflow = await Workflow.objects.filter(id=wid).afirst()
         # if workflow is aborted or deleted (not allowed for users)
         if not workflow or workflow.status == ABORTED:
             _ = await cdn_client.delete_paper(file_path)  # delete new paper
@@ -170,18 +170,18 @@ async def _start_workflow_task(request, wid, file_obj):
         paper.file_path = file_path
         await paper.asave()
 
-        workflow.stage = S_FINISH
-        workflow.status = COMPLETE
+        workflow.stage = S_END
+        workflow.status = COMPLETED
         await workflow.asave()
 
     elif work_type == PROCESS:  # for now automatically tag paper, so without the TAGS_READY status
         pid = request.POST.get("pid")
-        paper = await Paper.objects.filter(pid=pid, owner_id=uid).afirst()
+        paper = await Paper.objects.filter(id=pid, owner_id=uid).afirst()
         if not paper:
             return
 
         # in case of caching, re-query
-        workflow = await Workflow.objects.filter(wid=wid).afirst()
+        workflow = await Workflow.objects.filter(id=wid).afirst()
         if not workflow or workflow.status == ABORTED:
             return
         workflow.stage = S_PROCESSING_0
@@ -193,7 +193,7 @@ async def _start_workflow_task(request, wid, file_obj):
         file_obj = await cdn_client.request_for_paper(file_path)
 
         # in case of caching, re-query
-        workflow = await Workflow.objects.filter(wid=wid).afirst()
+        workflow = await Workflow.objects.filter(id=wid).afirst()
         if not workflow or workflow.status == ABORTED:
             return
         workflow.stage = S_PROCESSING_1
@@ -202,17 +202,17 @@ async def _start_workflow_task(request, wid, file_obj):
         # Task 1: read and process paper
         tags = request.POST.getlist("tag-names")
         llm_client = SimpleKeywordClient()
-        matching_tags = await llm_client.process_paper_on_tags(file_obj, tags)
+        matching_tags = await llm_client.match_paper_on_tags(file_obj, tags)
 
         # in case of caching, re-query
-        workflow = await Workflow.objects.filter(wid=wid).afirst()
+        workflow = await Workflow.objects.filter(id=wid).afirst()
         if not workflow or workflow.status == ABORTED:
             return
         workflow.stage = S_PROCESSING_2
         await workflow.asave()
 
         # Task 2: tag paper
-        paper = await Paper.objects.filter(pid=pid, owner_id=uid).afirst()
+        paper = await Paper.objects.filter(id=pid, owner_id=uid).afirst()
         if not paper:
             return
         for t in matching_tags:
@@ -221,11 +221,11 @@ async def _start_workflow_task(request, wid, file_obj):
                 await paper.tags.aadd(tag)
 
         # in case of caching, re-query
-        workflow = await Workflow.objects.filter(wid=wid).afirst()
+        workflow = await Workflow.objects.filter(id=wid).afirst()
         if not workflow or workflow.status == ABORTED:
             return
-        workflow.stage = S_FINISH
-        workflow.status = COMPLETE
+        workflow.stage = S_END
+        workflow.status = COMPLETED
         await workflow.asave()
 
     else:  # illegal work type parameter
@@ -253,10 +253,10 @@ def handle_create_workflow(request):
         if not paper:
             paper = Paper(title=title, owner_id=uid)
             paper.save()
-        pid = paper.pid
+        pid = paper.id
     elif work_type == PROCESS:
         pid = request.POST.get("pid")
-        paper = Paper.objects.filter(pid=pid).first()
+        paper = Paper.objects.filter(id=pid).first()
         if not paper:
             err_msg = "The paper you want to process does not exist, please select again"
             return JsonResponse({"status": 1, "err_msg": err_msg})
@@ -279,15 +279,15 @@ def handle_create_workflow(request):
         name = "Untitled Workflow"
 
     # user cannot upload, process or upload_process at the same time
-    workflow = Workflow.objects.filter(starter_id=uid, paper_id=paper, work_type__in=INCOMPATIBLE_WORK_TYPE,
-                                       status=IN_PROGRESS).first()
+    workflow = Workflow.objects.filter(user_id=uid, paper_id=paper, work_type__in=INCOMPATIBLE_WORK_TYPE,
+                                       status=PENDING).first()
     if workflow:
         err_msg = "You have a running workflow with the same paper. Abort it first or wait for it to complete"
         return JsonResponse({"status": 1, "err_msg": err_msg})
 
-    workflow = Workflow(starter_id=uid, paper_id=pid, name=name, work_type=work_type, stage=S_START, status=IN_PROGRESS)
+    workflow = Workflow(user_id=uid, paper_id=pid, name=name, work_type=work_type, stage=S_START, status=PENDING)
     workflow.save()
-    wid = workflow.wid
+    wid = workflow.id
 
     thread = threading.Thread(target=start_workflow_task, args=[request, wid, file_obj], daemon=True)
     thread.start()
@@ -299,7 +299,7 @@ def handle_create_workflow(request):
 @login_required()
 def get_workflow_status(request):
     wid = request.GET.get("wid")
-    workflow = Workflow.objects.filter(wid=wid).first()
+    workflow = Workflow.objects.filter(id=wid).first()
     if not workflow:
         err_msg = "Something went wrong! Please refresh page or try again later"
         return JsonResponse({"status": 1, "err_msg": err_msg})
@@ -311,7 +311,7 @@ def get_workflow_status(request):
 def add_tags(request):
     uid = request.session.get("uid")
     pid = request.POST.get("pid")
-    paper = Paper.objects.filter(pid=pid, owner_id=uid).first()
+    paper = Paper.objects.filter(id=pid, owner_id=uid).first()
     if not paper:
         err_msg = "Paper does not exist!"
         return JsonResponse({"status": 1, "err_msg": err_msg})
@@ -333,14 +333,14 @@ class WorkflowUserListView(ListView):
 
     def get_queryset(self):
         uid = self.request.session.get("uid")
-        return Workflow.objects.filter(starter_id=uid)
+        return Workflow.objects.filter(user_id=uid)
 
 
 @login_required()
 def workflow_add_tags(request):
     uid = request.session.get("uid")
     wid = request.POST.get("wid")
-    workflow = Workflow.objects.filter(wid=wid, starter_id=uid).first()
+    workflow = Workflow.objects.filter(id=wid, user_id=uid).first()
     if not workflow or workflow.status == ABORTED:
         err_msg = "Workflow is not available for operations!"
         return JsonResponse({"status": 1, "err_msg": err_msg})
@@ -356,12 +356,12 @@ def workflow_add_tags(request):
         paper.tags.add(tag)
 
     # in case of caching, re-query
-    workflow = Workflow.objects.filter(wid=wid).first()
+    workflow = Workflow.objects.filter(id=wid).first()
     if workflow.status == ABORTED:
         err_msg = "Workflow is already aborted!"
         return JsonResponse({"status": 1, "err_msg": err_msg})
-    workflow.stage = S_FINISH
-    workflow.status = COMPLETE
+    workflow.stage = S_END
+    workflow.status = COMPLETED
     workflow.save()
 
     return JsonResponse({"status": 0})
@@ -371,7 +371,7 @@ def workflow_add_tags(request):
 def abort_workflow(request):
     uid = request.session.get("uid")
     wid = request.POST.get("wid")
-    workflow = Workflow.objects.filter(wid=wid, starter_id=uid).first()
+    workflow = Workflow.objects.filter(id=wid, user_id=uid).first()
     if not workflow:
         err_msg = "Workflow does not exist!"
         return JsonResponse({"status": 1, "err_msg": err_msg})

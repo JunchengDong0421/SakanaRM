@@ -8,7 +8,7 @@
     {% if page_obj %}
         {% for paper in page_obj %}
             {{ paper.title }} | {{ paper.tags.all }} |
-            <a href="{% url 'core:paper-detail' paper.pid %}" target="_blank">Go to manage</a> <br>
+            <a href="{% url 'core:paper-detail' paper.id %}" target="_blank">Go to manage</a> <br>
         {% endfor %}
         <br><br><br>
         <div class="pagination">

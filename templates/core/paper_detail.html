@@ -1,11 +1,11 @@
 {% extends 'base.html' %}
 
 {% block title %}
-    Paper Detail - {{ paper.pid }}
+    Paper Detail - {{ paper.id }}
 {% endblock %}
 
 {% block content %}
-    <h2>PID: {{ paper.pid }}</h2>
+    <h2>PID: {{ paper.id }}</h2>
     <h2>Title: {{ paper.title }}</h2>
     <h2>Owner: {{ paper.owner }}</h2>
     <h2>Tags:
@@ -14,7 +14,7 @@
         {% endfor %}
     </h2>
     <br><br>
-    {% if paper.owner.uid != request.session.uid %}
+    {% if paper.owner.id != request.session.uid %}
         <h2><em>You are not the owner! No actions available</em></h2>
     {% else %}
         <h2><em>Actions</em></h2>
@@ -27,7 +27,7 @@
                 <input id="tags" type="text" name="tags"/>
                 (separate with ;)
             </label>
-            <input type="hidden" name="pid" value="{{ paper.pid }}">
+            <input type="hidden" name="pid" value="{{ paper.id }}">
             <p id="confirm" style="color: green"></p>
             <br>
             <button type="submit">Add Tags</button>

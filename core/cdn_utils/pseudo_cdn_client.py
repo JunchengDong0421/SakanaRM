@@ -18,7 +18,7 @@ class PseudoCDNClient(AbstractCDNClient):
         # Takes in a file, make a request to store it in cdn server and retrieve the filepath (url)
         # to access it. The logic is, by directly accessing this url, we will have access to the paper
         # "file_obj" is a file I/O object or in-memory buffer
-        await asyncio.sleep(5)
+        await asyncio.sleep(3)
         filepath = "random_path_1"
         # filepath = make_store_request_to_cdn_server(file_obj, replace)
         return filepath

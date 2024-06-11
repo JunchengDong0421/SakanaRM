@@ -7,8 +7,8 @@
 {% block content %}
     {% if page_obj %}
         {% for workflow in page_obj %}
-            {{ workflow.name }} | {{ workflow.status }} |
-            <a href="{% url 'core:workflow-detail' workflow.wid %}" target="_blank">Go to manage</a> <br>
+            {{ workflow.name }} | {{ workflow.get_status_display }} |
+            <a href="{% url 'core:workflow-detail' workflow.id %}" target="_blank">Go to manage</a> <br>
         {% endfor %}
         <br><br><br>
         <div class="pagination">

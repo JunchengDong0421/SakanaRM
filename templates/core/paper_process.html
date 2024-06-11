@@ -25,7 +25,7 @@
         <label>Select Paper:
             <select name="pid">
                 {% for p in papers %}
-                    <option value="{{ p.pid }}">{{ p.title }}</option>
+                    <option value="{{ p.id }}">{{ p.title }}</option>
                 {% endfor %}
             </select>
         </label>

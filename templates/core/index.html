@@ -56,11 +56,11 @@
                             <tr>
                                 <td>{{ wf.name }}</td>
                                 <td>{{ wf.paper.title }}</td>
-                                <td>{{ wf.work_type }}</td>
-                                <td>{{ wf.stage }}</td>
-                                <td>{{ wf.status }}</td>
+                                <td>{{ wf.get_work_type_display }}</td>
+                                <td>{{ wf.get_stage_display }}</td>
+                                <td>{{ wf.get_status_display }}</td>
                                 <td>{{ wf.last_updated }}</td>
-                                <td><a href="{% url 'core:workflow-detail' wf.wid %}" target="_blank">Go to Manage</a></td>
+                                <td><a href="{% url 'core:workflow-detail' wf.id %}" target="_blank">Go to Manage</a></td>
                             </tr>
                         {% endfor %}
                     </tbody>
