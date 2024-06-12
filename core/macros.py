@@ -25,3 +25,6 @@ END_POLLING_STATUS = [COMPLETED, FAILED, ABORTED]
 
 # statuses - can abort
 CAN_ABORT_STATUS = [PENDING]
+
+# threshold of the number of pending workflows
+PENDING_WORKFLOWS_LIMIT = 5

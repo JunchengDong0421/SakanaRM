@@ -184,6 +184,11 @@ def start_workflow_task(*args, **kwargs):  # we need to pass a sync function to 
 
 def handle_create_workflow(request):
     uid = request.session.get("uid")
+    pending_workflow_count = Workflow.objects.filter(status=PENDING, user_id=uid).count()
+    if pending_workflow_count >= PENDING_WORKFLOWS_LIMIT:
+        err_msg = f"You can't have more than {PENDING_WORKFLOWS_LIMIT} workflows running at the same time. " \
+                  f"Upgrade to premium to lift the limit."
+        return JsonResponse({"status": 1, "err_msg": err_msg})
     file_obj = request.FILES.get("paper")
     work_type = int(req_type) if (req_type := request.POST.get("type")).isnumeric() else -1
     if work_type == UPLOAD:
