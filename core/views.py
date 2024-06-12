@@ -59,7 +59,6 @@ class WorkflowDetailView(DetailView):
         if workflow:
             context["tags"] = json.loads(workflow.result).get("generated_tags", [])
             context["pending"] = PENDING
-            context["tags_ready"] = TAGS_READY
             context["can_abort_status"] = CAN_ABORT_STATUS
         return context
 
@@ -77,61 +76,8 @@ async def _start_workflow_task(request, wid, file_obj):
     uid = await async_get_uid(request)
     title = request.POST.get("title")
 
-    work_type = request.POST.get("type")
-    if work_type == UPLOAD_AND_PROCESS:
-
-        paper = await Paper.objects.filter(title=title, owner_id=uid).afirst()
-        if not paper:
-            return
-
-        # in case of caching, re-query
-        workflow = await Workflow.objects.filter(id=wid).afirst()
-        if not workflow or workflow.status == ABORTED:
-            return
-        workflow.stage = S_UPLOAD_AND_PROCESS
-        await workflow.asave()
-        # asynchronously execute CDN and LLM tasks
-        cdn_client = PseudoCDNClient()
-        llm_client = PseudoLLMClient()
-        cdn_task = asyncio.create_task(cdn_client.store_paper(file_obj))
-        llm_task = asyncio.create_task(llm_client.generate_tags_for_paper(file_obj))
-        task_list = [cdn_task, llm_task]
-        results = await asyncio.gather(*task_list)  # wait for tasks to complete and gather results
-        file_path = results[0]  # CDN task result
-        tags = results[1]  # LLM task result
-
-        # in case of caching, re-query
-        workflow = await Workflow.objects.filter(id=wid).afirst()
-        # if workflow is aborted or deleted (not allowed for users)
-        if not workflow or workflow.status == ABORTED:
-            _ = await cdn_client.delete_paper(file_path)  # delete new paper
-            paper = await Paper.objects.filter(title=title, owner_id=uid).afirst()
-            if not paper:  # if paper is deleted
-                return
-            if not paper.file_path:  # delete paper entry
-                await paper.adelete()
-            return
-        # else
-        paper = await Paper.objects.filter(title=title, owner_id=uid).afirst()
-        if not paper:  # if paper is deleted or altered during normal workflow execution
-            workflow.result = json.dumps({**json.loads(workflow.result), **{"error": "paper is not available"}})
-            workflow.status = FAILED
-            await workflow.asave()
-        old_path = paper.file_path
-        if old_path:
-            # delete old paper because user must have selected "replace" in this position
-            _ = await cdn_client.delete_paper(old_path)
-        paper.file_path = file_path
-        await paper.asave()
-
-        result = json.loads(workflow.result)
-        result = {**result, **{"generated_tags": tags}}
-        workflow.result = json.dumps(result)
-        workflow.stage = S_POST_PROCESS
-        workflow.status = TAGS_READY
-        await workflow.asave()
-
-    elif work_type == UPLOAD:
+    work_type = int(req_type) if (req_type := request.POST.get("type")).isnumeric() else -1
+    if work_type == UPLOAD:
         paper = await Paper.objects.filter(title=title, owner_id=uid).afirst()
         if not paper:
             return
@@ -239,8 +185,8 @@ def start_workflow_task(*args, **kwargs):  # we need to pass a sync function to 
 def handle_create_workflow(request):
     uid = request.session.get("uid")
     file_obj = request.FILES.get("paper")
-    work_type = request.POST.get("type")
-    if work_type == UPLOAD_AND_PROCESS or work_type == UPLOAD:
+    work_type = int(req_type) if (req_type := request.POST.get("type")).isnumeric() else -1
+    if work_type == UPLOAD:
         title = request.POST.get("title")
         if not (file_obj and title):
             err_msg = "Please select a paper to upload and give a title!"

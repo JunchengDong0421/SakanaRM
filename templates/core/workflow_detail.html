@@ -17,18 +17,6 @@
     {% else %}
         <h2><em>Actions</em></h2>
         <hr>
-        {% if workflow.status == tags_ready %}
-            <h3>Select tags to add (merge)</h3>
-            {% if tags %}
-                {% for t in tags %}
-                    <label><input type="checkbox" class="checkbox" value="{{ t }}"> {{ t }} </label><br>
-                {% endfor %}
-                <button id="add-tags">Add (Complete workflow)</button>
-            {% endif %}
-            <p id="err-msg" style="color: red"></p>
-            <hr>
-        {% endif %}
-
         {% if workflow.status in can_abort_status %}
             <h3>Abort workflow</h3>
             <button id="abort">Abort</button>
@@ -45,31 +33,6 @@
         var abortURL = "{% url 'core:abort-workflow' %}";
 
         $(document).ready(() => {
-            // Add tags event
-            $('#add-tags').click(function() {
-                var selectedTags = "";
-                $('.checkbox:checked').each(function() {
-                    selectedTags += $(this).val();
-                    selectedTags += ";"
-                });
-                $.ajax({
-                    url: addTagsURL,
-                    type: 'POST',
-                    data: {
-                        "wid": '{{ workflow.id }}',
-                        "tags": selectedTags,
-                        "csrfmiddlewaretoken": '{{ csrf_token }}'
-                    },
-                    success: res => {
-                        if (res.status === 0) {
-                            window.open('{% url 'core:paper-detail' workflow.paper.id %}', "_blank");
-                        } else {
-                            $('#err-msg').text("Error: " + res.err_msg);
-                        }
-                    },
-                })
-            });
-
             // Abort event
             $("#abort").click(() => {
                 $.ajax({
