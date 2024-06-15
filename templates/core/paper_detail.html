@@ -13,7 +13,11 @@
             <p style="color: grey"> #{{ tag.name }} &nbsp;&nbsp; </p>
         {% endfor %}
     </h2>
-    <br><br>
+    <br>
+
+    <a href="{% url 'core:index' %}" target="_blank">Homepage</a><br>
+
+    <br>
     {% if paper.owner.id != request.session.uid %}
         <h2><em>You are not the owner! No actions available</em></h2>
     {% else %}

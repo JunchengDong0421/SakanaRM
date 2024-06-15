@@ -30,6 +30,9 @@
     <p id="err-msg" style="color: red"></p>
     <p id="info" style="color: orangered"></p>
 
+    <br>
+    <a id="back" href="#">Go Back</a><br>
+
     <script>
         $(document).ready(() => {
             // detect file name
@@ -57,7 +60,12 @@
                         if (res.status === 0) {
                             const wid = res.wid.toString();
                             const url = '{% url 'core:workflow-detail' 99999 %}'.replace('99999', wid);
-                            window.open(url, "_blank");
+
+                            $('#info').html('If you are not redirected to the workflow page, ' +
+                                'click <a href="' + url + '">here</a> to redirect');
+                            $('#err-msg').text('');
+
+                            window.open(url, "_self");
                         } else {
                             $('#info').text('');
                             $('#err-msg').text("Error: " + res.err_msg);
@@ -65,7 +73,17 @@
                     }
                 });
                 $('#info').text('It may take a long time to spawn a workflow. Please wait...');
-            })
+            });
+
+            // go back or redirect to home link
+            $("#back").click(e => {
+                e.preventDefault();
+                if (window.history.length > 1) {
+                    window.history.back();
+                } else {
+                    window.location.href = "{% url 'core:index' %}";
+                }
+            });
         })
     </script>
 

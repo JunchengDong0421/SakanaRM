@@ -59,6 +59,8 @@ class WorkflowDetailView(DetailView):
         if workflow:
             context["tags"] = json.loads(workflow.result).get("generated_tags", [])
             context["pending"] = PENDING
+            context["completed"] = COMPLETED
+            context["upload"] = UPLOAD
             context["can_abort_status"] = CAN_ABORT_STATUS
         return context
 

@@ -32,5 +32,21 @@
     {% else %}
         No papers matched.
     {% endif %}
+    <br>
+    <a id="back" href="#">Go Back</a><br>
+
+    <script>
+        $(document).ready(() => {
+            // go back or redirect to home link
+            $("#back").click(e => {
+                e.preventDefault();
+                if (window.history.length > 1) {
+                    window.history.back();
+                } else {
+                    window.location.href = "{% url 'core:index' %}";
+                }
+            });
+        })
+    </script>
 
 {% endblock %}

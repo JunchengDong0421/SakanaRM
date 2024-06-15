@@ -11,7 +11,19 @@
     <h2>Type: {{ workflow.get_work_type_display }}</h2>
     <h2>Stage: {{ workflow.get_stage_display }}</h2>
     <h2>Status: {{ workflow.get_status_display }}</h2>
-    <br><br>
+    <br>
+
+    <a href="{% url 'core:upload-paper-page' %}" target="_blank">Upload another</a><br>
+    <a href="{% url 'core:index' %}" target="_blank">Homepage</a><br>
+    <a href="{% url 'core:add-tag-definition-page' %}" target="_blank">Go to add tags</a><br>
+    {% if workflow.status == completed %}
+        {% if workflow.work_type ==  upload %}
+            <a href="{% url 'core:process-paper-page' %}" target="_blank">Go to process</a><br>
+        {% endif %}
+        <a href="{% url 'core:paper-detail' workflow.paper.id %}" target="_blank">Paper detail page</a><br>
+    {% endif %}
+
+    <br>
     {% if workflow.user.id != request.session.uid %}
         <h2><em>You are not the owner! No actions available</em></h2>
     {% else %}
