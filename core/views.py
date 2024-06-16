@@ -19,7 +19,7 @@ from .llm_utils import PseudoLLMClient, SimpleKeywordClient
 def home_page(request):
     uid = request.session.get("uid")
     # only display 10 most recent workflows on homepage
-    workflows = Workflow.objects.filter(user_id=uid)[:10]
+    workflows = Workflow.objects.filter(user_id=uid, is_archived=False)[:10]
     return render(request, "core/index.html", {"workflows": workflows})
 
 
@@ -122,7 +122,7 @@ async def _start_workflow_task(request, wid, file_obj):
         workflow.status = COMPLETED
         await workflow.asave()
 
-    elif work_type == PROCESS:  # for now automatically tag paper, so without the TAGS_READY status
+    elif work_type == PROCESS:
         pid = request.POST.get("pid")
         paper = await Paper.objects.filter(id=pid, owner_id=uid).afirst()
         if not paper:
@@ -286,7 +286,8 @@ class WorkflowUserListView(ListView):
 
     def get_queryset(self):
         uid = self.request.session.get("uid")
-        return Workflow.objects.filter(user_id=uid)
+        # only shows unarchived workflows
+        return Workflow.objects.filter(user_id=uid, is_archived=False)
 
 
 @login_required()
@@ -411,3 +412,66 @@ def search_result(request):
         # papers = Paper.objects.filter( tags__name__in=["game theory", "Nash Equilibrium"]).exclude(owner_id=2)
         papers = []
     return render(request, "core/search_result.html", {"papers": papers})
+
+
+class WorkflowUserArchivedListView(ListView):
+    model = SakanaUser  # in the url, we want uid as parameter, not pid
+    paginate_by = 10
+    template_name = "core/workflow_user_archived_list.html"
+
+    def get_queryset(self):
+        uid = self.request.session.get("uid")
+        # only shows unarchived workflows
+        return Workflow.objects.filter(user_id=uid, is_archived=True)
+
+
+@login_required()
+def archive_workflow(request):
+    uid = request.session.get("uid")
+    wid = request.POST.get("wid")
+    workflow = Workflow.objects.filter(id=wid, user_id=uid).first()
+    if not workflow:
+        err_msg = "Workflow does not exist!"
+        return JsonResponse({"status": 1, "err_msg": err_msg})
+    if workflow.is_archived:
+        err_msg = "Can't archive an archived workflow!"
+        return JsonResponse({"status": 1, "err_msg": err_msg})
+    if (status := workflow.status) not in CAN_ARCHIVE_STATUS:
+        err_msg = f"Can't archive if workflow status is {status}!"
+        return JsonResponse({"status": 1, "err_msg": err_msg})
+
+    workflow.is_archived = True
+    workflow.save()
+    return JsonResponse({"status": 0})
+
+
+@login_required()
+def restore_workflow(request):
+    uid = request.session.get("uid")
+    wid = request.POST.get("wid")
+    workflow = Workflow.objects.filter(id=wid, user_id=uid).first()
+    if not workflow:
+        err_msg = "Workflow does not exist!"
+        return JsonResponse({"status": 1, "err_msg": err_msg})
+    if not workflow.is_archived:
+        err_msg = "Can't restore an unarchived workflow!"
+        return JsonResponse({"status": 1, "err_msg": err_msg})
+
+    workflow.is_archived = False
+    workflow.save()
+    return JsonResponse({"status": 0})
+
+
+@login_required()
+async def delete_paper(request):
+    uid = async_get_uid(request)
+    pid = request.POST.get("pid")
+    paper = await Paper.objects.filter(id=pid, owner_id=uid).afirst()
+    if not paper:
+        err_msg = "Paper does not exist!"
+        return JsonResponse({"status": 1, "err_msg": err_msg})
+
+    cdn_client = PseudoCDNClient()
+    _ = await cdn_client.delete_paper(paper.file_path)
+    await paper.adelete()
+    return JsonResponse({"status": 0})

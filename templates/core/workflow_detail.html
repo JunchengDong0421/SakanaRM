@@ -13,14 +13,17 @@
     <h2>Status: {{ workflow.get_status_display }}</h2>
     <br>
 
-    <a href="{% url 'core:upload-paper-page' %}" target="_blank">Upload another</a><br>
+    <a id="back" href="#">Go Back</a><br>
     <a href="{% url 'core:index' %}" target="_blank">Homepage</a><br>
-    <a href="{% url 'core:add-tag-definition-page' %}" target="_blank">Go to add tags</a><br>
-    {% if workflow.status == completed %}
-        {% if workflow.work_type ==  upload %}
-            <a href="{% url 'core:process-paper-page' %}" target="_blank">Go to process</a><br>
+    {% if not workflow.is_archived %}
+        <a href="{% url 'core:upload-paper-page' %}" target="_blank">Go to upload</a><br>
+        <a href="{% url 'core:add-tag-definition-page' %}" target="_blank">Go to add tags</a><br>
+        {% if workflow.status == completed %}
+            {% if workflow.work_type ==  upload %}
+                <a href="{% url 'core:process-paper-page' %}" target="_blank">Go to process</a><br>
+            {% endif %}
+            <a href="{% url 'core:paper-detail' workflow.paper.id %}" target="_blank">Paper detail page</a><br>
         {% endif %}
-        <a href="{% url 'core:paper-detail' workflow.paper.id %}" target="_blank">Paper detail page</a><br>
     {% endif %}
 
     <br>
@@ -29,13 +32,16 @@
     {% else %}
         <h2><em>Actions</em></h2>
         <hr>
-        {% if workflow.status in can_abort_status %}
+        {% if workflow.is_archived %}
+            <h3 style="color: lightgreen">Restore workflow</h3>
+            <button id="restore">Restore</button>
+        {% elif workflow.status in can_abort_status %}
             <h3>Abort workflow</h3>
             <button id="abort">Abort</button>
             <p id="err-msg-1" style="color: red"></p>
         {% else %}
-            <h3>Archive workflow</h3>
-            <button>Archive</button>
+            <h3 style="color: red">Archive workflow</h3>
+            <button id="archive">Archive</button>
         {% endif %}
     {% endif %}
 
@@ -43,6 +49,8 @@
         var pollURL = "{% url 'core:workflow-status' %}";
         var addTagsURL = "{% url 'core:workflow-add-tags' %}";
         var abortURL = "{% url 'core:abort-workflow' %}";
+        var archiveURL = "{% url 'core:archive-workflow' %}";
+        var restoreURL = "{% url 'core:restore-workflow' %}";
 
         $(document).ready(() => {
             // Abort event
@@ -62,7 +70,55 @@
                         }
                     }
                 })
-            })
+            });
+
+            // Archive event
+            $("#archive").click(() => {
+                $.ajax({
+                    url: archiveURL,
+                    type: 'POST',
+                    data: {
+                        "wid": '{{ workflow.id }}',
+                        "csrfmiddlewaretoken": '{{ csrf_token }}'
+                    },
+                    success: res => {
+                        if (res.status === 0) {
+                            location.reload();
+                        } else {
+                            $('#err-msg-1').text("Error: " + res.err_msg);
+                        }
+                    }
+                })
+            });
+
+            // Restore event
+            $("#restore").click(() => {
+                $.ajax({
+                    url: restoreURL,
+                    type: 'POST',
+                    data: {
+                        "wid": '{{ workflow.id }}',
+                        "csrfmiddlewaretoken": '{{ csrf_token }}'
+                    },
+                    success: res => {
+                        if (res.status === 0) {
+                            location.reload();
+                        } else {
+                            $('#err-msg-1').text("Error: " + res.err_msg);
+                        }
+                    }
+                })
+            });
+
+            // go back or redirect to home link
+            $("#back").click(e => {
+                e.preventDefault();
+                if (window.history.length > 1) {
+                    window.history.back();
+                } else {
+                    window.location.href = "{% url 'core:index' %}";
+                }
+            });
         })
 
         // poll for workflow complete

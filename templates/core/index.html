@@ -6,7 +6,7 @@
         }
         .jump-container {
             display: flex;
-            width: 400px;
+            width: 500px;
             justify-content: space-around;
         }
 
@@ -31,6 +31,10 @@
                 <a href="{% url 'core:search-page' %}" target="_blank">Search</a>
                 <br>
                 <a href="{% url 'core:my-papers' request.session.uid %}" target="_blank">My papers</a>
+                <br>
+                <a href="{% url 'core:my-archived-workflows' request.session.uid %}" target="_blank">
+                    Managed archived workflows
+                </a>
             </div>
         </div>
 

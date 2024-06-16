@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    My Workflows
+{% endblock %}
+
+{% block content %}
+    {% if page_obj %}
+        {% for workflow in page_obj %}
+            {{ workflow.name }} | {{ workflow.get_status_display }} |
+            <button class="restore" data-wid="{{ workflow.id }}">Restore</button> <br>
+        {% endfor %}
+        <br><br><br>
+        <div class="pagination">
+            <span class="step-links">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1">&laquo; first</a>
+                    <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+                {% endif %}
+
+                <span class="current">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                </span>
+
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}">next</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+                {% endif %}
+            </span>
+        </div>
+
+    {% else %}
+        No workflows matched.
+    {% endif %}
+    <br>
+    <a id="back" href="#">Go Back</a><br>
+
+    <script>
+        var restoreURL = "{% url 'core:restore-workflow' %}";
+
+        $(document).ready(() => {
+            // go back or redirect to home link
+            $("#back").click(e => {
+                e.preventDefault();
+                if (window.history.length > 1) {
+                    window.history.back();
+                } else {
+                    window.location.href = "{% url 'core:index' %}";
+                }
+            });
+
+            // Restore event
+            $(".restore").on('click', function () {
+                var wid = $(this).data('wid');
+                $.ajax({
+                    url: restoreURL,
+                    type: 'POST',
+                    data: {
+                        "wid": wid,
+                        "csrfmiddlewaretoken": '{{ csrf_token }}'
+                    },
+                    success: res => {
+                        if (res.status === 0) {
+                            location.reload();
+                        } else {
+                            $('#err-msg-1').text("Error: " + res.err_msg);
+                        }
+                    }
+                })
+            })
+        })
+    </script>
+
+{% endblock %}
