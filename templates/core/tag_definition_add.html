@@ -16,8 +16,6 @@
             <input type="text" name="definition" id="definition" />
         </label>
         <br><br>
-        <label>Update definition if tag exists: <input type="checkbox" name="update" value="true"></label>
-        <br><br>
         <button type="submit">Add Tag</button>
     </form>
     <p id="suc-msg" style="color: green"></p>
@@ -40,9 +38,7 @@
                     contentType: false,
                     success: res => {
                         if (res.status === 0) {
-                            const msg = !res.is_update ? 'Successfully added tag "' + res.tag_name + '"!' :
-                                'Successfully updated definition for tag "' + res.tag_name + '"!';
-                            $('#suc-msg').text(msg);
+                            $('#suc-msg').text('Successfully added tag "' + res.tag_name + '"!');
                             $('#err-msg').text('');
                             $('#name').val('');
                             $('#definition').val('');

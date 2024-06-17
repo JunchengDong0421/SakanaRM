@@ -328,19 +328,15 @@ def add_tag_and_definition(request):
     uid = request.session.get("uid")
     tag = Tag.objects.filter(name=tag_name).first()
     definition = request.POST.get("definition")
-    update_definition = not not request.POST.get("update")
     # if tag already exists
     if tag:
-        if tag.adder_id != uid:
+        if tag.adder_id != uid:  # adder is other user
             err_msg = f'Tag added by somebody else. Please contact "{tag.adder.auth_user.username}" via ' \
                       f'{tag.adder.auth_user.email}'
             return JsonResponse({"status": 1, "err_msg": err_msg})
-        elif not update_definition:
-            err_msg = "You have added the same tag, check update definition if you want to update its definition"
-            return JsonResponse({"status": 1, "err_msg": err_msg})
-        tag.definition = definition
-        tag.save()
-        return JsonResponse({"status": 0, "tag_name": tag_name, "is_update": True})
+        # adder is current user
+        err_msg = "You have added the same tag, please go to update definition page"
+        return JsonResponse({"status": 1, "err_msg": err_msg})
     # else
     tag = Tag(name=tag_name, definition=definition, adder_id=uid)
     tag.save()
