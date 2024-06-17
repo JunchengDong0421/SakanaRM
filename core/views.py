@@ -3,7 +3,7 @@ import json
 import threading
 from io import BytesIO
 
-from asgiref.sync import sync_to_async
+from asgiref.sync import sync_to_async, async_to_sync
 from django.shortcuts import redirect, render
 from django.http import JsonResponse
 from django.views.generic import DetailView, ListView
@@ -462,9 +462,11 @@ def restore_workflow(request):
     return JsonResponse({"status": 0})
 
 
+@sync_to_async
 @login_required()
+@async_to_sync
 async def delete_paper(request):
-    uid = async_get_uid(request)
+    uid = await async_get_uid(request)
     pid = request.POST.get("pid")
     paper = await Paper.objects.filter(id=pid, owner_id=uid).afirst()
     if not paper:

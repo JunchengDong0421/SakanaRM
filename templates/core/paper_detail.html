@@ -14,17 +14,19 @@
         {% endfor %}
     </h2>
     <br>
-
+    <a id="back" href="#">Go Back</a><br>
     <a href="{% url 'core:index' %}" target="_blank">Homepage</a><br>
-
+    <a href="{% url 'core:upload-paper-page' %}" target="_blank">Go to upload</a><br>
+    <a href="{% url 'core:process-paper-page' %}" target="_blank">Go to process</a><br>
     <br>
+
     {% if paper.owner.id != request.session.uid %}
         <h2><em>You are not the owner! No actions available</em></h2>
     {% else %}
         <h2><em>Actions</em></h2>
         <hr>
 
-        <h3>Add (merge) tags</h3>
+        <h3>Add (merge) tags to paper</h3>
         <form id="add-tags-form" method="post" action="{% url 'core:add-tags' %}" enctype="multipart/form-data">
             {% csrf_token %}
             <label>Enter tags:
@@ -36,18 +38,20 @@
             <br>
             <button type="submit">Add Tags</button>
         </form>
-        <p id="err-msg" style="color: red"></p>
+        <p id="err-msg-1" style="color: red"></p>
+
         <hr>
-        <h3>More operations</h3>
-        <button>Replace</button>
-        <button>(Re-) process</button>
-        <hr>
-        <h3>Delete paper</h3>
-        <button>Delete</button>
+        <h3 style="color: red">Delete paper</h3>
+        <button id="delete">Delete</button>
+        <p id="err-msg-2" style="color: red"></p>
+        <p id="del-info" style="color:green;"></p>
     {% endif %}
 
     <script>
+        var deleteURL = "{% url 'core:delete-paper' %}";
+
         $(document).ready(() => {
+            // Show tag names on input
             $('#tags').on("change", () => {
                 const input = $('#tags').val();
                 if (input.length > 0) {
@@ -56,8 +60,9 @@
                 } else {
                     $("#confirm").text("");
                 }
-
             });
+
+            // Submit add tags form
             $('#add-tags-form').submit(e => {
                 e.preventDefault();
                 const form = $('#add-tags-form');
@@ -72,11 +77,43 @@
                         if (res.status === 0) {
                             location.reload();
                         } else {
-                            $('#err-msg').text("Error: " + res.err_msg);
+                            $('#err-msg-1').text("Error: " + res.err_msg);
                         }
                     }
                 });
-            })
+            });
+
+            // Delete event
+            $("#delete").click(() => {
+                $.ajax({
+                    url: deleteURL,
+                    type: 'POST',
+                    data: {
+                        "pid": '{{ paper.id }}',
+                        "csrfmiddlewaretoken": '{{ csrf_token }}'
+                    },
+                    success: res => {
+                        if (res.status === 0) {
+                            $("#del-info").text('');
+                            alert("Delete successful!")
+                            location.href = "{% url 'core:index' %}";
+                        } else {
+                            $('#err-msg-2').text("Error: " + res.err_msg);
+                        }
+                    }
+                });
+                $("#del-info").text("Deleting ... Please wait");
+            });
+
+            // go back or redirect to home link
+            $("#back").click(e => {
+                e.preventDefault();
+                if (window.history.length > 1) {
+                    window.history.back();
+                } else {
+                    window.location.href = "{% url 'core:index' %}";
+                }
+            });
         })
     </script>
 {% endblock %}
