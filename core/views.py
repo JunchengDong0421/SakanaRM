@@ -12,7 +12,7 @@ from django.db.models import Count, Q
 
 from .macros import *
 from .models import Paper, Tag, SakanaUser, Workflow
-from .cdn_utils import PseudoCDNClient
+from .cdn_utils import PseudoCDNClient, SakanaCDNClient
 from .llm_utils import PseudoLLMClient, SimpleKeywordClient
 
 
@@ -91,7 +91,7 @@ async def _start_workflow_task(request, wid, file_obj):
         workflow.stage = S_UPLOADING
         await workflow.asave()
 
-        cdn_client = PseudoCDNClient()
+        cdn_client = SakanaCDNClient()
         file_path = await cdn_client.store_paper(file_obj)
 
         # in case of caching, re-query
