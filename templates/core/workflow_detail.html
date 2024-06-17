@@ -11,6 +11,11 @@
     <h2>Type: {{ workflow.get_work_type_display }}</h2>
     <h2>Stage: {{ workflow.get_stage_display }}</h2>
     <h2>Status: {{ workflow.get_status_display }}</h2>
+    {% if workflow.work_type == process and workflow.status == completed %}
+        <h3 style="color: green">Tags added: {{ result.added_tags|join:"; "  }}</h3>
+        <h3 style="color: red">Tags removed: {{ result.removed_tags|join:"; " }} </h3>
+        <h3 style="color: yellowgreen">Tags kept: {{ result.kept_tags|join:"; " }}</h3>
+    {% endif %}
     <br>
 
     <a id="back" href="#">Go Back</a><br>
@@ -49,7 +54,6 @@
 
     <script>
         var pollURL = "{% url 'core:workflow-status' %}";
-        var addTagsURL = "{% url 'core:workflow-add-tags' %}";
         var abortURL = "{% url 'core:abort-workflow' %}";
         var archiveURL = "{% url 'core:archive-workflow' %}";
         var restoreURL = "{% url 'core:restore-workflow' %}";
@@ -143,7 +147,7 @@
                     },
                 });
             };
-            setInterval(poll, 1000 * 60); // poll every 60 seconds
+            setInterval(poll, 1000 * 10); // poll every 10 seconds
         {% endif %}
     </script>
 
