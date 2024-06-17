@@ -103,7 +103,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = "Europe/Berlin"
 
 USE_I18N = True
 
@@ -126,8 +126,3 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Used by @login_required decorator
 LOGIN_URL = "/login/"
-
-# My customized settings
-CDN_ROOT = ''
-
-CDN_URL = '/cdn/'
