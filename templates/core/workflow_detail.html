@@ -35,6 +35,7 @@
         {% if workflow.is_archived %}
             <h3 style="color: lightgreen">Restore workflow</h3>
             <button id="restore">Restore</button>
+            <p id="err-msg-3" style="color: red"></p>
         {% elif workflow.status in can_abort_status %}
             <h3>Abort workflow</h3>
             <button id="abort">Abort</button>
@@ -42,6 +43,7 @@
         {% else %}
             <h3 style="color: red">Archive workflow</h3>
             <button id="archive">Archive</button>
+            <p id="err-msg-2" style="color: red"></p>
         {% endif %}
     {% endif %}
 
@@ -64,6 +66,7 @@
                     },
                     success: res => {
                         if (res.status === 0) {
+                            $('#err-msg-1').text('');
                             location.reload();
                         } else {
                             $('#err-msg-1').text("Error: " + res.err_msg);
@@ -83,9 +86,10 @@
                     },
                     success: res => {
                         if (res.status === 0) {
+                            $('#err-msg-2').text('');
                             location.reload();
                         } else {
-                            $('#err-msg-1').text("Error: " + res.err_msg);
+                            $('#err-msg-2').text("Error: " + res.err_msg);
                         }
                     }
                 })
@@ -102,9 +106,10 @@
                     },
                     success: res => {
                         if (res.status === 0) {
+                            $('#err-msg-3').text('');
                             location.reload();
                         } else {
-                            $('#err-msg-1').text("Error: " + res.err_msg);
+                            $('#err-msg-3').text("Error: " + res.err_msg);
                         }
                     }
                 })

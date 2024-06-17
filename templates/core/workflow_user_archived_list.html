@@ -28,6 +28,7 @@
                 {% endif %}
             </span>
         </div>
+        <p id="err-msg" style="color: red"></p>
 
     {% else %}
         No workflows matched.
@@ -61,9 +62,10 @@
                     },
                     success: res => {
                         if (res.status === 0) {
+                            $('#err-msg').text('');
                             location.reload();
                         } else {
-                            $('#err-msg-1').text("Error: " + res.err_msg);
+                            $('#err-msg').text("Error: " + res.err_msg);
                         }
                     }
                 })
