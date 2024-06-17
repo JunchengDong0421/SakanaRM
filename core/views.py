@@ -291,37 +291,6 @@ class WorkflowUserListView(ListView):
 
 
 @login_required()
-def workflow_add_tags(request):
-    uid = request.session.get("uid")
-    wid = request.POST.get("wid")
-    workflow = Workflow.objects.filter(id=wid, user_id=uid).first()
-    if not workflow or workflow.status == ABORTED:
-        err_msg = "Workflow is not available for operations!"
-        return JsonResponse({"status": 1, "err_msg": err_msg})
-    paper = workflow.paper
-
-    tags = request.POST.get("tags", "")
-    tags = [tag for t in tags.split(";") if (tag := t.strip()) != '']
-    for t in tags:
-        tag = Tag.objects.filter(name=t).first()
-        if not tag:
-            tag = Tag(name=t)
-            tag.save()
-        paper.tags.add(tag)
-
-    # in case of caching, re-query
-    workflow = Workflow.objects.filter(id=wid).first()
-    if workflow.status == ABORTED:
-        err_msg = "Workflow is already aborted!"
-        return JsonResponse({"status": 1, "err_msg": err_msg})
-    workflow.stage = S_END
-    workflow.status = COMPLETED
-    workflow.save()
-
-    return JsonResponse({"status": 0})
-
-
-@login_required()
 def abort_workflow(request):
     uid = request.session.get("uid")
     wid = request.POST.get("wid")

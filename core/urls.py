@@ -18,7 +18,6 @@ urlpatterns = [
     path("api/paper/addtags", views.add_tags, name="add-tags"),
     path("api/paper/delete", views.delete_paper, name="delete-paper"),
     path("api/workflow/status", views.get_workflow_status, name="workflow-status"),
-    path("api/workflow/addtags", views.workflow_add_tags, name="workflow-add-tags"),
     path("api/workflow/abort", views.abort_workflow, name="abort-workflow"),
     path("api/workflow/archive", views.archive_workflow, name="archive-workflow"),
     path("api/workflow/restore", views.restore_workflow, name="restore-workflow"),
