@@ -367,31 +367,45 @@ def search_page(request):
 
 @login_required()
 def search_result(request):
+    uid = request.session.get("uid")
     partial_title = request.GET.get("title")
     owner = request.GET.get("owner")
     tags_contain = request.GET.getlist("tags-contain")
     tags_in = request.GET.getlist("tags-in")
 
     if tags_contain and tags_in:
-        err_msg = "Unfortunately it is impossible to search for both Matches and Has Tags"
+        err_msg = 'Unfortunately it is impossible to search for both "Matches Tags" and "Has Tags"'
         return render(request, "core/search_result.html", {"err_msg": err_msg})
 
     if not owner:
         err_msg = "Please select a owner type to filter"
         return render(request, "core/search_result.html", {"err_msg": err_msg})
 
-    print(partial_title, owner, tags_contain, tags_in)
-
+    # First filter tags_contain and tags_in
     if tags_contain:
-        if "untagged;" in tags_contain:
+        if "untagged;" in tags_contain:  # impossible for other tags to have a semicolon
             papers = Paper.objects.filter(tags__isnull=True)
         else:
             papers = Paper.objects.annotate(
                 num_tags=Count('tags', filter=Q(tags__name__in=tags_contain))
             ).filter(num_tags=len(tags_contain))
-    else:
+    elif tags_in:  # impossible for other tags to have a semicolon
+        papers = Paper.objects.filter(tags__name__in=tags_in)
+        if "untagged;" in tags_in:
+            papers |= Paper.objects.filter(tags__isnull=True)
         # papers = Paper.objects.filter( tags__name__in=["game theory", "Nash Equilibrium"]).exclude(owner_id=2)
-        papers = []
+    else:
+        papers = Paper.objects.all()
+
+    # Then filter title
+    if partial_title:
+        papers = papers.filter(title__icontains=partial_title)  # case insensitive
+
+    # Lastly filter owner
+    if owner == "me":
+        papers = papers.filter(owner_id=uid)
+    elif owner == "others":
+        papers = papers.exclude(owner_id=uid)
     return render(request, "core/search_result.html", {"papers": papers})
 
 
