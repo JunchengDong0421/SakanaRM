@@ -11,6 +11,9 @@
         {% endblock %}
     </title>
 
+    {% load static %}
+        <link rel="shortcut icon" type="image/x-icon" href="{% static 'ico/favicon.ico' %}">
+
     {% block style %}
     {% endblock %}
 
@@ -19,7 +22,7 @@
 <body>
 
 {% load static %}
-<script src={% static "js/jquery-3.7.1.min.js" %}></script>
+    <script src={% static "js/jquery-3.7.1.min.js" %}></script>
 
 {% block content %}
     <h2> Replace with
