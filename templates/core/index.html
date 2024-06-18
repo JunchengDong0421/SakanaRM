@@ -25,12 +25,16 @@
                 <br>
                 <a href="{% url 'core:add-tag-definition-page' %}" target="_blank">Add tag and definition</a>
                 <br>
+                <a href="#">Update tag and definition</a>
+                <br>
                 <a href="{% url 'core:process-paper-page' %}" target="_blank">Process existing paper</a>
             </div>
             <div class="info-links">
                 <a href="{% url 'core:search-page' %}" target="_blank">Search</a>
                 <br>
                 <a href="{% url 'core:my-papers' request.session.uid %}" target="_blank">My papers</a>
+                <br>
+                <a href="#">My tags</a>
                 <br>
                 <a href="{% url 'core:my-archived-workflows' request.session.uid %}" target="_blank">
                     Managed archived workflows
