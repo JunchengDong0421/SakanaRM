@@ -321,9 +321,14 @@ def abort_workflow(request):
         err_msg = f'You can not abort workflow with status "{status}"'
         return JsonResponse({"status": 1, "err_msg": err_msg})
 
-    messages = workflow.messages
-    messages += "Manual abortion; "
-    workflow.messages = messages
+    paper = workflow.paper
+    # if workflow aborted before upload of new (otherwise there should be an old filepath) paper completed
+    if not paper.file_path:
+        workflow.paper.delete()
+        alert_msg = "It seems that you are aborting a workflow while paper upload is not completed. " \
+                    "This action deletes the workflow and you will now be redirected to homepage."
+        return JsonResponse({"status": 1, "alert_msg": alert_msg})
+    workflow.messages += "Manual abortion; "
     workflow.status = ABORTED
     workflow.save()
     return JsonResponse({"status": 0})

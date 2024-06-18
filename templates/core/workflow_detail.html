@@ -72,6 +72,9 @@
                         if (res.status === 0) {
                             $('#err-msg-1').text('');
                             location.reload();
+                        } else if (res.alert_msg) {
+                            alert(res.alert_msg);
+                            location.href = "{% url 'core:index' %}";
                         } else {
                             $('#err-msg-1').text("Error: " + res.err_msg);
                         }
