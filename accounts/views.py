@@ -1,5 +1,5 @@
-from django.shortcuts import redirect, render
 from django.contrib.auth.models import User
+from django.shortcuts import redirect, render
 
 from .utils import create_sakana_user, sakana_authenticate, sakana_login, sakana_logout
 

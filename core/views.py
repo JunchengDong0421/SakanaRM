@@ -2,16 +2,16 @@ import json
 import threading
 from io import BytesIO
 
-from django.shortcuts import redirect, render
-from django.http import JsonResponse
-from django.views.generic import DetailView, ListView
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Q
+from django.http import JsonResponse
+from django.shortcuts import render
+from django.views.generic import DetailView, ListView
 
+from .cdn_utils import SakanaCDNClient
+from .llm_utils import SimpleKeywordClient
 from .macros import *
 from .models import Paper, Tag, SakanaUser, Workflow
-from .cdn_utils import PseudoCDNClient, SakanaCDNClient
-from .llm_utils import PseudoLLMClient, SimpleKeywordClient
 
 
 def home_page(request):

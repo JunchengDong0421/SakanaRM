@@ -8,12 +8,12 @@
     <form method="post" action="{% url 'core:add-tag-definition' %}" enctype="multipart/form-data" id="tag-form">
         {% csrf_token %}
         <label>Tag name:
-            <input type="text" name="name" id="name" /> (one at a time;
+            <input type="text" name="name" id="name"/> (one at a time;
             semicolons, leading and trailing spaces will be removed)
         </label>
         <br><br>
         <label>Definition:
-            <input type="text" name="definition" id="definition" />
+            <input type="text" name="definition" id="definition"/>
         </label>
         <br><br>
         <button type="submit">Add Tag</button>

@@ -38,7 +38,7 @@
         </div>
         <br><br>
         <label>Workflow name:
-            <input type="text" name="name" placeholder="Untitled Workflow" />
+            <input type="text" name="name" placeholder="Untitled Workflow"/>
         </label>
         <br><br>
         <button type="submit">Process</button>
@@ -54,7 +54,7 @@
             // ajax submit form
             $('#process-form').submit(e => {
                 e.preventDefault();
-                var checkedTags = $('input[name="tag-names"]:checked').map(function() {
+                var checkedTags = $('input[name="tag-names"]:checked').map(function () {
                     return this.value;
                 }).get();
 

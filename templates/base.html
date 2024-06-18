@@ -2,7 +2,6 @@
 <html lang="en">
 
 
-
 <head>
     <meta charset="UTF-8">
 
@@ -19,14 +18,14 @@
 
 <body>
 
-    {% load static %}
-    <script src={% static "js/jquery-3.7.1.min.js" %}></script>
+{% load static %}
+<script src={% static "js/jquery-3.7.1.min.js" %}></script>
 
-    {% block content %}
-        <h2> Replace with
+{% block content %}
+    <h2> Replace with
         <span style="color: red">{% verbatim %} {% block content %} some content ... {% endblock %} {% endverbatim %}</span>
         in your template!</h2>
-    {% endblock %}
+{% endblock %}
 </body>
 
 </html>

@@ -35,9 +35,10 @@
 {% endblock %}
 
 {% block content %}
-    <form method="get" action="{% url 'core:search-result' %}" target="_blank" enctype="multipart/form-data" id="search-form">
+    <form method="get" action="{% url 'core:search-result' %}" target="_blank" enctype="multipart/form-data"
+          id="search-form">
         <label><b>Title contains:</b>
-            <input type="text" name="title" />
+            <input type="text" name="title"/>
         </label>
         <br><br>
 
@@ -60,9 +61,11 @@
             <b>Matches tags:</b> <label>&#x1F50E;&#xFE0F;<input id="search1" type="search"></label>
             <br><br>
             <div class="scrollable-checkboxes" id="t-contain">
-                <label><input type="checkbox" id="untagged-checkbox" name="tags-contain" value="untagged;"><i>untagged</i></label>
+                <label><input type="checkbox" id="untagged-checkbox" name="tags-contain"
+                              value="untagged;"><i>untagged</i></label>
                 {% for t in tags %}
-                    <label><input type="checkbox" class="tag-checkbox" name="tags-contain" value="{{ t.name }}">{{ t.name }}</label>
+                    <label><input type="checkbox" class="tag-checkbox" name="tags-contain"
+                                  value="{{ t.name }}">{{ t.name }}</label>
                 {% endfor %}
             </div>
             (Only papers with all the selected tags will be shown)
@@ -73,9 +76,11 @@
             <b>Has tags:</b> <label>&#x1F50E;&#xFE0F;<input id="search2" type="search"></label>
             <br><br>
             <div class="scrollable-checkboxes" id="t-in">
-                <label><input type="checkbox" class="tag-checkbox" name="tags-in" value="untagged;"><i>untagged</i></label>
+                <label><input type="checkbox" class="tag-checkbox" name="tags-in"
+                              value="untagged;"><i>untagged</i></label>
                 {% for t in tags %}
-                    <label><input type="checkbox" class="tag-checkbox" name="tags-in" value="{{ t.name }}">{{ t.name }}</label>
+                    <label><input type="checkbox" class="tag-checkbox" name="tags-in" value="{{ t.name }}">{{ t.name }}
+                    </label>
                 {% endfor %}
             </div>
             (All papers with one or some of the selected tags will be shown)
@@ -92,9 +97,9 @@
     <script>
         $(document).ready(() => {
             // search for tags in "Matches Tags"
-            $('#search1').on('input', function() {
+            $('#search1').on('input', function () {
                 var searchValue = $(this).val().toLowerCase();
-                $('#t-contain input[type="checkbox"]').each(function() {
+                $('#t-contain input[type="checkbox"]').each(function () {
                     var tagName = $(this).val().toLowerCase();
                     if (tagName.includes(searchValue)) {
                         $(this).parent().show();
@@ -105,9 +110,9 @@
             });
 
             // search for tags in "Has Tags"
-            $('#search2').on('input', function() {
+            $('#search2').on('input', function () {
                 var searchValue = $(this).val().toLowerCase();
-                $('#t-in input[type="checkbox"]').each(function() {
+                $('#t-in input[type="checkbox"]').each(function () {
                     var tagName = $(this).val().toLowerCase();
                     if (tagName.includes(searchValue)) {
                         $(this).parent().show();
@@ -151,16 +156,16 @@
             tagIn.on('change', updateCheckboxStates);
 
             // disable other boxes when "untagged" is selected in "Matches Tags", no need to do so for "Has Tags"
-            untaggedTagContains.change(function() {
+            untaggedTagContains.change(function () {
                 if ($(this).is(':checked')) {
                     // don't uncheck other boxes (in case of a misclick or something), just disable them
                     $('.tag-checkbox').prop('disabled', true)
-                                      .parent().addClass('disabled-checkbox');
+                        .parent().addClass('disabled-checkbox');
                     // also grey out has tags search box
                     container2.addClass('disabled-container');
                 } else {
                     $('.tag-checkbox').prop('disabled', false)
-                                      .parent().removeClass('disabled-checkbox');
+                        .parent().removeClass('disabled-checkbox');
                     container2.removeClass('disabled-container');
                 }
             });

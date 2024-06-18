@@ -4,7 +4,7 @@
     <form method="post" action="{% url 'core:create-workflow' %}" enctype="multipart/form-data" id="upload-form">
         {% csrf_token %}
         <label>Select Paper:
-            <input id="paper" type="file" name="paper" accept="application/pdf" required />
+            <input id="paper" type="file" name="paper" accept="application/pdf" required/>
         </label>
         <br><br>
         <label>Title:
@@ -12,12 +12,12 @@
         </label>
         <br><br>
         <label>Workflow name:
-            <input type="text" name="name" placeholder="Untitled Workflow" />
+            <input type="text" name="name" placeholder="Untitled Workflow"/>
         </label>
         <br><br>
         <label>Type:
             <select name="type">
-{#                <option value="upload_process">upload and process</option>#}
+                {#                <option value="upload_process">upload and process</option>#}
                 <option value="{{ UPLOAD }}">upload</option>
             </select>
         </label>

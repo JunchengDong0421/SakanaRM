@@ -21,9 +21,9 @@
         <h2>Search Result Count: {{ papers|length }}</h2>
 
         {% if papers %}
-        <div class="table-container">
-            <table class="data-table">
-                <thead>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
                     <tr>
                         <th>Title</th>
                         <th>Owner</th>
@@ -31,8 +31,8 @@
                         <th>Last modified</th>
                         <th></th>
                     </tr>
-                </thead>
-                <tbody>
+                    </thead>
+                    <tbody>
                     {% for p in papers %}
                         <tr>
                             <td>{{ p.title }}</td>
@@ -42,9 +42,9 @@
                             <td><a href="{% url 'core:paper-detail' p.id %}" target="_blank">View</a></td>
                         </tr>
                     {% endfor %}
-                </tbody>
-            </table>
-        </div>
+                    </tbody>
+                </table>
+            </div>
         {% else %}
             <h3>No matched results.</h3>
         {% endif %}

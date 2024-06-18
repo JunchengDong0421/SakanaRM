@@ -12,7 +12,7 @@
     <h2>Stage: {{ workflow.get_stage_display }}</h2>
     <h2>Status: {{ workflow.get_status_display }}</h2>
     {% if workflow.work_type == process and workflow.status == completed %}
-        <h3 style="color: green">Tags added: {{ result.added_tags|join:"; "  }}</h3>
+        <h3 style="color: green">Tags added: {{ result.added_tags|join:"; " }}</h3>
         <h3 style="color: red">Tags removed: {{ result.removed_tags|join:"; " }} </h3>
         <h3 style="color: yellowgreen">Tags kept: {{ result.kept_tags|join:"; " }}</h3>
     {% endif %}
