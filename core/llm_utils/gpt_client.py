@@ -10,9 +10,12 @@ from .utils import read_pdf_texts
 
 class GPTClient(AbstractLLMClient):
 
+    PAPER_SLICE_LENGTH = 4000
+    MODEL_TEMPERATURE = 0.1
+
     def match_paper_on_tags(self, paper, tags):
         content = read_pdf_texts(paper)
-        slice_length = 4000
+        slice_length = self.PAPER_SLICE_LENGTH
         num_slices = math.ceil(len(content) / slice_length)
         slices = [content[slice_length * i:slice_length * (i + 1)] for i in range(num_slices)]
         matching_tags = []
@@ -35,7 +38,8 @@ class GPTClient(AbstractLLMClient):
 
         client = Client(provider=You)
 
-        response = client.chat.completions.create(model="gpt-3.5-turbo", messages=messages, temperature=0.1)
+        temperature = self.MODEL_TEMPERATURE
+        response = client.chat.completions.create(model="gpt-3.5-turbo", messages=messages, temperature=temperature)
         choice = response.choices[0].message.content
         if 'yes' in choice.lower():
             matching_tags.append(tag_names[0])
@@ -45,7 +49,7 @@ class GPTClient(AbstractLLMClient):
             time.sleep(1)  # avoid too frequent requests to API
             tag_query = f'Question 2: {d}'
             messages.append({"role": "user", "content": tag_query})
-            response = client.chat.completions.create(model="gpt-3.5-turbo", messages=messages)
+            response = client.chat.completions.create(model="gpt-3.5-turbo", messages=messages, temperature=temperature)
             choice = response.choices[0].message.content
             if 'yes' in choice.lower():
                 matching_tags.append(n)
