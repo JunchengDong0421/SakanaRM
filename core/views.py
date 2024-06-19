@@ -228,6 +228,7 @@ def handle_create_workflow(request):
             paper = Paper(title=title, owner_id=uid)
             paper.save()
         pid = paper.id
+        instructions = f"paper: {title}"
     elif work_type == PROCESS:
         pid = request.POST.get("pid")
         paper = Paper.objects.filter(id=pid).first()
@@ -240,6 +241,7 @@ def handle_create_workflow(request):
             if not tag:
                 err_msg = "Some tags selected do not exist!"
                 return JsonResponse({"status": 1, "err_msg": err_msg})
+        instructions = f'tags: {", ".join(tags)}'
     else:
         err_msg = "Illegal workflow creation"
         return JsonResponse({"status": 1, "err_msg": err_msg})
@@ -259,7 +261,8 @@ def handle_create_workflow(request):
         err_msg = "You have a running workflow with the same paper. Abort it first or wait for it to complete"
         return JsonResponse({"status": 1, "err_msg": err_msg})
 
-    workflow = Workflow(user_id=uid, paper_id=pid, name=name, work_type=work_type, stage=S_START, status=PENDING)
+    workflow = Workflow(user_id=uid, paper_id=pid, name=name, work_type=work_type, instructions=instructions,
+                        stage=S_START, status=PENDING)
     workflow.save()
     wid = workflow.id
 

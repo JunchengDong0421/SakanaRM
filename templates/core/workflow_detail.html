@@ -11,11 +11,24 @@
     <h2>Type: {{ workflow.get_work_type_display }}</h2>
     <h2>Stage: {{ workflow.get_stage_display }}</h2>
     <h2>Status: {{ workflow.get_status_display }}</h2>
-    {% if workflow.work_type == process and workflow.status == completed %}
-        <h3 style="color: green">Tags added: {{ result.added_tags|join:"; " }}</h3>
-        <h3 style="color: red">Tags removed: {{ result.removed_tags|join:"; " }} </h3>
-        <h3 style="color: yellowgreen">Tags kept: {{ result.kept_tags|join:"; " }}</h3>
-    {% endif %}
+    <div class="wf-info">
+        {% if workflow.work_type == upload%}
+            {% if workflow.status == pending %}
+                <h3 style="color: darkblue">Uploading {{ workflow.instructions }}</h3>
+            {% elif workflow.status == completed %}
+                <h3 style="color: darkblue">Uploaded {{ workflow.instructions }}</h3>
+            {% endif %}
+        {% elif workflow.work_type == process%}
+            {% if workflow.status == pending %}
+                <h3 style="color: darkblue">Processing with {{ workflow.instructions }}</h3>
+            {% elif workflow.status == completed %}
+                <h3 style="color: darkblue">Processed with {{ workflow.instructions }}</h3>
+                <h3 style="color: green">Tags added: {{ result.added_tags|join:"; " }}</h3>
+                <h3 style="color: red">Tags removed: {{ result.removed_tags|join:"; " }} </h3>
+                <h3 style="color: yellowgreen">Tags kept: {{ result.kept_tags|join:"; " }}</h3>
+            {% endif %}
+        {% endif %}
+    </div>
     <br>
 
     <a id="back" href="#">Go Back</a><br>
