@@ -29,9 +29,14 @@ def upload_paper_page(request):
 @login_required()
 def process_paper_page(request):
     uid = request.session.get("uid")
+    selected_pid = request.GET.get("selectedPid")
     papers = Paper.objects.filter(owner_id=uid)
+    selected_paper = papers.filter(id=selected_pid).first()
+    if not selected_paper or selected_pid is None:
+        selected_pid = -1
     tags = Tag.objects.all()
-    return render(request, "core/paper_process.html", {"papers": papers, "tags": tags, "PROCESS": PROCESS})
+    return render(request, "core/paper_process.html", {"papers": papers, "tags": tags, "PROCESS": PROCESS,
+                                                       "selected_pid": int(selected_pid)})
 
 
 class PaperDetailView(DetailView):
