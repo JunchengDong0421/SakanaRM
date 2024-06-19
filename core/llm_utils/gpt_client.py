@@ -35,14 +35,14 @@ class GPTClient(AbstractLLMClient):
 
         client = Client(provider=You)
 
-        response = client.chat.completions.create(model="gpt-3.5-turbo", messages=messages)
+        response = client.chat.completions.create(model="gpt-3.5-turbo", messages=messages, temperature=0.1)
         choice = response.choices[0].message.content
         if 'yes' in choice.lower():
             matching_tags.append(tag_names[0])
         messages.append({"role": "assistant", "content": choice})
 
         for i, (n, d) in enumerate(zip(tag_names[1:], questions[1:])):
-            time.sleep(0.5)  # avoid too frequent requests to API
+            time.sleep(1)  # avoid too frequent requests to API
             tag_query = f'Question 2: {d}'
             messages.append({"role": "user", "content": tag_query})
             response = client.chat.completions.create(model="gpt-3.5-turbo", messages=messages)
