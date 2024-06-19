@@ -109,16 +109,12 @@ def start_workflow_task(request, wid, file_obj):
             if not paper.file_path:  # delete paper entry
                 paper.delete()
             return
-        # else
+        # otherwise continue
         paper = Paper.objects.filter(title=title, owner_id=uid).first()
         if not paper:  # if paper is deleted or altered during normal workflow execution
             workflow.result = json.dumps({**json.loads(workflow.result), **{"error": "paper is not available"}})
             workflow.status = FAILED
             workflow.save()
-        old_path = paper.file_path
-        if old_path:
-            # delete old paper because user must have selected "replace" in this position
-            _ = cdn_client.delete_paper(old_path)
         paper.file_path = file_path
         paper.save()
 
@@ -228,7 +224,7 @@ def handle_create_workflow(request):
             paper = Paper(title=title, owner_id=uid)
             paper.save()
         pid = paper.id
-        instructions = f"paper: {title}"
+        instructions = f"paper {'(to replace)' if replace else ''}: {title}"
     elif work_type == PROCESS:
         pid = request.POST.get("pid")
         paper = Paper.objects.filter(id=pid).first()
