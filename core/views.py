@@ -73,140 +73,136 @@ def start_workflow_task(request, wid, file_obj):
     workflow = Workflow.objects.filter(id=wid).first()
     if not workflow:
         return
-    try:
-        uid = request.session.get('uid')
-        title = request.POST.get("title")
 
-        work_type = int(req_type) if (req_type := request.POST.get("type")).isnumeric() else -1
-        if work_type == UPLOAD:
+    uid = request.session.get('uid')
+    title = request.POST.get("title")
+
+    work_type = int(req_type) if (req_type := request.POST.get("type")).isnumeric() else -1
+    if work_type == UPLOAD:
+        paper = Paper.objects.filter(title=title, owner_id=uid).first()
+        if not paper:
+            return
+
+        # in case of caching, re-query
+        workflow = Workflow.objects.filter(id=wid).first()
+        if not workflow or workflow.status == ABORTED:
+            return
+        workflow.stage = S_UPLOADING
+        workflow.save()
+
+        cdn_client = SakanaCDNClient()
+        replace = not not request.POST.get("replace")
+        if not replace:
+            file_path = cdn_client.store_paper(file_obj)
+        else:
+            filepath = paper.file_path
+            file_path = cdn_client.replace_paper(filepath, file_obj)
+
+        # in case of caching, re-query
+        workflow = Workflow.objects.filter(id=wid).first()
+        # if workflow is aborted or deleted (not allowed for users)
+        if not workflow or workflow.status == ABORTED:
+            _ = cdn_client.delete_paper(file_path)  # delete new paper
             paper = Paper.objects.filter(title=title, owner_id=uid).first()
-            if not paper:
+            if not paper:  # if paper is deleted
                 return
-
-            # in case of caching, re-query
-            workflow = Workflow.objects.filter(id=wid).first()
-            if not workflow or workflow.status == ABORTED:
-                return
-            workflow.stage = S_UPLOADING
+            if not paper.file_path:  # delete paper entry
+                paper.delete()
+            return
+        # else
+        paper = Paper.objects.filter(title=title, owner_id=uid).first()
+        if not paper:  # if paper is deleted or altered during normal workflow execution
+            workflow.result = json.dumps({**json.loads(workflow.result), **{"error": "paper is not available"}})
+            workflow.status = FAILED
             workflow.save()
+        old_path = paper.file_path
+        if old_path:
+            # delete old paper because user must have selected "replace" in this position
+            _ = cdn_client.delete_paper(old_path)
+        paper.file_path = file_path
+        paper.save()
 
-            cdn_client = SakanaCDNClient()
-            replace = not not request.POST.get("replace")
-            if not replace:
-                file_path = cdn_client.store_paper(file_obj)
+        workflow.stage = S_END
+        workflow.status = COMPLETED
+        workflow.save()
+
+    elif work_type == PROCESS:
+        pid = request.POST.get("pid")
+        paper = Paper.objects.filter(id=pid, owner_id=uid).first()
+        if not paper:
+            return
+
+        # in case of caching, re-query
+        workflow = Workflow.objects.filter(id=wid).first()
+        if not workflow or workflow.status == ABORTED:
+            return
+        workflow.stage = S_PROCESSING_0
+        workflow.save()
+
+        # Task 0: retrieve paper
+        file_path = paper.file_path
+        cdn_client = SakanaCDNClient()
+        file_obj = cdn_client.request_for_paper(file_path)
+
+        # in case of caching, re-query
+        workflow = Workflow.objects.filter(id=wid).first()
+        if not workflow or workflow.status == ABORTED:
+            return
+        workflow.stage = S_PROCESSING_1
+        workflow.save()
+
+        # Task 1: read and process paper
+        tags = request.POST.getlist("tag-names")
+        tags_dict = {}  # key: tag name, value: definition
+        for t in tags:
+            tag = Tag.objects.filter(name=t).first()
+            tags_dict[t] = tag.definition
+        llm_client = SimpleKeywordClient()
+        matching_tags = llm_client.match_paper_on_tags(file_obj, tags)
+
+        # in case of caching, re-query
+        workflow = Workflow.objects.filter(id=wid).first()
+        if not workflow or workflow.status == ABORTED:
+            return
+        workflow.stage = S_PROCESSING_2
+        workflow.save()
+
+        # Task 2: tag paper (add matching tags, remove non-matching)
+        paper = Paper.objects.filter(id=pid, owner_id=uid).first()
+        if not paper:
+            return
+        original_tags = [t.name for t in paper.tags.all()]
+        added_tags = []
+        removed_tags = []
+        kept_tags = []
+        for t in matching_tags:
+            if t in original_tags:
+                kept_tags.append(t)
             else:
-                filepath = paper.file_path
-                file_path = cdn_client.replace_paper(filepath, file_obj)
-
-            # in case of caching, re-query
-            workflow = Workflow.objects.filter(id=wid).first()
-            # if workflow is aborted or deleted (not allowed for users)
-            if not workflow or workflow.status == ABORTED:
-                _ = cdn_client.delete_paper(file_path)  # delete new paper
-                paper = Paper.objects.filter(title=title, owner_id=uid).first()
-                if not paper:  # if paper is deleted
-                    return
-                if not paper.file_path:  # delete paper entry
-                    paper.delete()
-                return
-            # else
-            paper = Paper.objects.filter(title=title, owner_id=uid).first()
-            if not paper:  # if paper is deleted or altered during normal workflow execution
-                workflow.result = json.dumps({**json.loads(workflow.result), **{"error": "paper is not available"}})
-                workflow.status = FAILED
-                workflow.save()
-            old_path = paper.file_path
-            if old_path:
-                # delete old paper because user must have selected "replace" in this position
-                _ = cdn_client.delete_paper(old_path)
-            paper.file_path = file_path
-            paper.save()
-
-            workflow.stage = S_END
-            workflow.status = COMPLETED
-            workflow.save()
-
-        elif work_type == PROCESS:
-            pid = request.POST.get("pid")
-            paper = Paper.objects.filter(id=pid, owner_id=uid).first()
-            if not paper:
-                return
-
-            # in case of caching, re-query
-            workflow = Workflow.objects.filter(id=wid).first()
-            if not workflow or workflow.status == ABORTED:
-                return
-            workflow.stage = S_PROCESSING_0
-            workflow.save()
-
-            # Task 0: retrieve paper
-            file_path = paper.file_path
-            cdn_client = SakanaCDNClient()
-            file_obj = cdn_client.request_for_paper(file_path)
-
-            # in case of caching, re-query
-            workflow = Workflow.objects.filter(id=wid).first()
-            if not workflow or workflow.status == ABORTED:
-                return
-            workflow.stage = S_PROCESSING_1
-            workflow.save()
-
-            # Task 1: read and process paper
-            tags = request.POST.getlist("tag-names")
-            tags_dict = {}  # key: tag name, value: definition
-            for t in tags:
-                tag = Tag.objects.filter(name=t).first()
-                tags_dict[t] = tag.definition
-            llm_client = SimpleKeywordClient()
-            matching_tags = llm_client.match_paper_on_tags(file_obj, tags)
-
-            # in case of caching, re-query
-            workflow = Workflow.objects.filter(id=wid).first()
-            if not workflow or workflow.status == ABORTED:
-                return
-            workflow.stage = S_PROCESSING_2
-            workflow.save()
-
-            # Task 2: tag paper (add matching tags, remove non-matching)
-            paper = Paper.objects.filter(id=pid, owner_id=uid).first()
-            if not paper:
-                return
-            original_tags = [t.name for t in paper.tags.all()]
-            added_tags = []
-            removed_tags = []
-            kept_tags = []
-            for t in matching_tags:
-                if t in original_tags:
-                    kept_tags.append(t)
-                else:
-                    added_tags.append(t)
+                added_tags.append(t)
+            tag = Tag.objects.filter(name=t).first()
+            if tag:
+                paper.tags.add(tag)
+        for t in tags:
+            if t in original_tags and t not in matching_tags:
                 tag = Tag.objects.filter(name=t).first()
                 if tag:
-                    paper.tags.add(tag)
-            for t in tags:
-                if t in original_tags and t not in matching_tags:
-                    tag = Tag.objects.filter(name=t).first()
-                    if tag:
-                        paper.tags.remove(tag)
-                    removed_tags.append(t)
+                    paper.tags.remove(tag)
+                removed_tags.append(t)
 
-            # in case of caching, re-query
-            workflow = Workflow.objects.filter(id=wid).first()
-            if not workflow or workflow.status == ABORTED:
-                return
-            workflow.stage = S_END
-            workflow.status = COMPLETED
-            workflow.result = json.dumps({**json.loads(workflow.result), **{"added_tags": added_tags,
-                                                                            "removed_tags": removed_tags,
-                                                                            "kept_tags": kept_tags}})
-            workflow.save()
-
-        else:  # illegal work type parameter
+        # in case of caching, re-query
+        workflow = Workflow.objects.filter(id=wid).first()
+        if not workflow or workflow.status == ABORTED:
             return
-    except Exception as e:
-        workflow.result = json.dumps({**json.loads(workflow.result), **{"error": str(e)}})
-        workflow.status = FAILED
+        workflow.stage = S_END
+        workflow.status = COMPLETED
+        workflow.result = json.dumps({**json.loads(workflow.result), **{"added_tags": added_tags,
+                                                                        "removed_tags": removed_tags,
+                                                                        "kept_tags": kept_tags}})
         workflow.save()
+
+    else:  # illegal work type parameter
+        return
 
 
 def handle_create_workflow(request):
@@ -218,7 +214,6 @@ def handle_create_workflow(request):
         return JsonResponse({"status": 1, "err_msg": err_msg})
     file_obj = request.FILES.get("paper")
     work_type = int(req_type) if (req_type := request.POST.get("type")).isnumeric() else -1
-    instructions = ""  # in case the variable in workflow creation not defined for some reasons
     if work_type == UPLOAD:
         title = request.POST.get("title")
         if not (file_obj and title):
