@@ -209,8 +209,7 @@ def handle_create_workflow(request):
     uid = request.session.get("uid")
     pending_workflow_count = Workflow.objects.filter(status=PENDING, user_id=uid).count()
     if pending_workflow_count >= PENDING_WORKFLOWS_LIMIT:
-        err_msg = f"You can't have more than {PENDING_WORKFLOWS_LIMIT} workflows running at the same time. " \
-                  f"Upgrade to premium to lift the limit."
+        err_msg = f"You can't have more than {PENDING_WORKFLOWS_LIMIT} workflows running at the same time. "
         return JsonResponse({"status": 1, "err_msg": err_msg})
     file_obj = request.FILES.get("paper")
     work_type = int(req_type) if (req_type := request.POST.get("type")).isnumeric() else -1
@@ -221,9 +220,13 @@ def handle_create_workflow(request):
             return JsonResponse({"status": 1, "err_msg": err_msg})
         replace = not not request.POST.get("replace")
         paper = Paper.objects.filter(title=title, owner_id=uid).first()
-        if paper and not replace:
-            err_msg = "You have uploaded the same paper, check replace if you want to replace it"
-            return JsonResponse({"status": 1, "err_msg": err_msg})
+        if paper:
+            if not paper.file_path:
+                err_msg = "You are uploading the same paper, please wait for the upload to complete"
+                return JsonResponse({"status": 1, "err_msg": err_msg})
+            elif not replace:
+                err_msg = "You have uploaded the same paper, check replace if you want to replace it"
+                return JsonResponse({"status": 1, "err_msg": err_msg})
         if not paper:
             paper = Paper(title=title, owner_id=uid)
             paper.save()
@@ -254,8 +257,8 @@ def handle_create_workflow(request):
     if not name:  # when name is an empty string
         name = "Untitled Workflow"
 
-    # user cannot upload, process or upload_process at the same time
-    workflow = Workflow.objects.filter(user_id=uid, paper_id=paper, work_type__in=INCOMPATIBLE_WORK_TYPE,
+    # user cannot upload and process the same paper at the same time
+    workflow = Workflow.objects.filter(user_id=uid, paper_id=pid, work_type__in=INCOMPATIBLE_WORK_TYPE,
                                        status=PENDING).first()
     if workflow:
         err_msg = "You have a running workflow with the same paper. Abort it first or wait for it to complete"
@@ -478,9 +481,13 @@ def delete_paper(request):
     if not paper:
         err_msg = "Paper does not exist!"
         return JsonResponse({"status": 1, "err_msg": err_msg})
-    if not paper.file_path:  # could be deleting a paper before the upload finishes
+    if paper.workflow_set.filter(status=PENDING).count() > 0:  # if paper still being used by some running workflows
+        err_msg = "Cannot delete paper while a workflow associated with it is running!"
+        return JsonResponse({"status": 1, "err_msg": err_msg})
+    if not paper.file_path:  # in case of some obscure bugs
         err_msg = "Invalid request, please contact the administrator!"
         return JsonResponse({"status": 1, "err_msg": err_msg})
+
     try:
         cdn_client = SakanaCDNClient()
         _ = cdn_client.delete_paper(paper.file_path)
