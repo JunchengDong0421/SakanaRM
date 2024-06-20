@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Update Tag and Definition
+{% endblock %}
+
+{% block content %}
+    <form method="post" action="{% url 'core:update-tag-definition' %}" enctype="multipart/form-data" id="update-form">
+        {% csrf_token %}
+        <label>Select Tag:
+            <select name="tid" id="tid">
+                {% for t in tags %}
+                    {% if t.id != s_tid %}
+                        <option value="{{ t.id }}" data-def="{{ t.definition }}">{{ t.name }}</option>
+                    {% else %}
+                        <option value="{{ t.id }}" data-def="{{ t.definition }}" selected="selected">
+                            {{ t.name }}
+                        </option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+        </label>
+        <br>
+        <p id="cur-def">Current definition: </p>
+        <label>New definition:
+            <input type="text" name="definition" id="new-def"/>
+        </label>
+        <br><br>
+        <button type="submit">Update Tag</button>
+    </form>
+    <p id="suc-msg" style="color: green"></p>
+    <p id="err-msg" style="color: red"></p>
+
+    <br>
+    <a id="back" href="#">Go Back</a><br>
+
+    <script>
+        $(document).ready(() => {
+            // update old definition when a tag is selected
+            function updateDef() {
+                var definition = $("#tid option:selected").data('def');
+                $('#cur-def').html("Current definition: <span style='color: orange;'>" + definition + "</span>");
+            }
+            $('#tid').change(updateDef);
+            updateDef();
+
+            $('#update-form').submit(e => {
+                e.preventDefault();
+                var newDef = $("#new-def").val();
+                if (newDef.trim() === "") {
+                    if (!confirm("The 'New definition' field is empty. Are you sure you want to submit the form?")) {
+                        return
+                    }
+                }
+                const form = $('#update-form');
+                var formData = new FormData(form[0]);
+                $.ajax({
+                    url: form.attr('action'),
+                    type: form.attr('method'),
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: res => {
+                        console.log(res);
+                        if (res.status === 0) {
+                            $('#cur-def').html("Current definition: <span style='color: orange;'>" +
+                                res.tag_def + "</span>");
+                            $('#suc-msg').text('Successfully updated tag "' + res.tag_name + '"!');
+                            $('#err-msg').text('');
+                            $('#name').val('');
+                            $('#new-def').val('');
+                        } else {
+                            $('#suc-msg').text('');
+                            $('#err-msg').text("Error: " + res.err_msg);
+                        }
+                    }
+                });
+            });
+
+            // go back or redirect to home link
+            $("#back").click(e => {
+                e.preventDefault();
+                if (window.history.length > 1) {
+                    window.history.back();
+                } else {
+                    window.location.href = "{% url 'core:index' %}";
+                }
+            });
+        })
+    </script>
+{% endblock %}
