@@ -40,12 +40,13 @@
     <a href="{% url 'core:process-paper-page' %}?selectedPid={{ paper.id }}" target="_blank">Go to process</a><br>
     <br>
 
-    {% if paper.owner.id != request.session.uid %}
-        <h2><em>You are not the owner! No actions available</em></h2>
-    {% else %}
-        <h2><em>Actions</em></h2>
+    <h2><em>Actions</em></h2>
+    <hr>
+    {% if paper.file_path %}
+        <h3 style="display:inline;margin-right: 20px">Download paper</h3>
+        <a href="{{ paper.file_path }}?asattachment=1"><button id="download">Download</button></a>
         <hr>
-        {% if paper.file_path %}
+        {% if paper.owner.id == request.session.uid %}
             <h3>Add (merge) tags to paper</h3>
             <div class="scrollable-checkboxes" id="add-tags-box">
                 {% for t in tags %}
@@ -54,6 +55,7 @@
             </div>
             <button id="add-tags">Add</button>
             <p id="err-msg-1" style="color: red"></p>
+            <hr>
 
             <h3>Remove tags from paper</h3>
             <div class="scrollable-checkboxes" id="remove-tags-box">
@@ -63,16 +65,16 @@
             </div>
             <button id="remove-tags">Remove</button>
             <p id="err-msg-3" style="color: red"></p>
-
             <hr>
+
             <h3 style="color: red">Delete paper</h3>
             <button id="delete">Delete</button>
             <p id="err-msg-2" style="color: red"></p>
             <p id="del-info" style="color:green;"></p>
-        {% else %}
-            <i style="color: red; font-size: large">Paper not ready yet. Please wait until it is fully uploaded or
-                contact the administrator for help.</i>
         {% endif %}
+    {% else %}
+        <i style="color: red; font-size: large">Paper not ready yet. Please wait until it is fully uploaded or
+            contact the administrator for help.</i>
     {% endif %}
 
     <script>
