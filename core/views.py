@@ -29,14 +29,9 @@ def upload_paper_page(request):
 @login_required()
 def process_paper_page(request):
     uid = request.session.get("uid")
-    selected_pid = request.GET.get("selectedPid")
     papers = Paper.objects.filter(owner_id=uid)
-    selected_paper = papers.filter(id=selected_pid).first()
-    if not selected_paper or selected_pid is None:
-        selected_pid = -1
     tags = Tag.objects.all()
-    return render(request, "core/paper_process.html", {"papers": papers, "tags": tags, "PROCESS": PROCESS,
-                                                       "selected_pid": int(selected_pid)})
+    return render(request, "core/paper_process.html", {"papers": papers, "tags": tags, "PROCESS": PROCESS})
 
 
 class PaperDetailView(DetailView):
@@ -495,3 +490,27 @@ def delete_paper(request):
         return JsonResponse({"status": 0})
     except Exception as e:
         return JsonResponse({"status": 1, "err_msg": str(e)})
+
+
+@login_required()
+def update_tag_and_definition_page(request):
+    uid = request.session.get("uid")
+    tags = Tag.objects.filter(adder_id=uid)
+    tag_name = request.GET.get("tagname")
+    selected_tag = tags.filter(name=tag_name).first()
+    selected_tid = selected_tag.id if selected_tag else -1
+    return render(request, "core/tag_definition_update.html", {"tags": tags, "s_tid": selected_tid})
+
+
+@login_required()
+def update_tag_and_definition(request):
+    uid = request.session.get("uid")
+    tid = request.POST.get("tid")
+    tag = Tag.objects.filter(id=tid, adder_id=uid).first()
+    if not tag:
+        err_msg = "Tag does not exist or you do not have access to it"
+        return JsonResponse({"status": 1, "err_msg": err_msg})
+    definition = request.POST.get("definition")
+    tag.definition = definition
+    tag.save()
+    return JsonResponse({"status": 0, "tag_name": tag.name, "tag_def": tag.definition})

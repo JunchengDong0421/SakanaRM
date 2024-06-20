@@ -25,11 +25,7 @@
         <label>Select Paper:
             <select name="pid">
                 {% for p in papers %}
-                    {% if p.id != selected_pid %}
-                        <option value="{{ p.id }}">{{ p.title }}</option>
-                    {% else %}
-                        <option value="{{ p.id }}" selected="selected">{{ p.title }}</option>
-                    {% endif %}
+                    <option value="{{ p.id }}">{{ p.title }}</option>
                 {% endfor %}
             </select>
         </label>
