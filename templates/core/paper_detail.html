@@ -4,6 +4,26 @@
     Paper Detail - {{ paper.id }}
 {% endblock %}
 
+{% block style %}
+    <style>
+        .scrollable-checkboxes {
+            display: flex;
+            flex-wrap: wrap;
+            height: 120px;
+            width: 400px;
+            overflow-y: scroll;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 5px;
+        }
+
+        .scrollable-checkboxes label {
+            width: 33.33%;
+            box-sizing: border-box;
+        }
+    </style>
+{% endblock %}
+
 {% block content %}
     <h2>PID: {{ paper.id }}</h2>
     <h2>Title: {{ paper.title }}</h2>
@@ -27,18 +47,22 @@
         <hr>
         {% if paper.file_path %}
             <h3>Add (merge) tags to paper</h3>
-            <form id="add-tags-form" method="post" action="{% url 'core:add-tags' %}" enctype="multipart/form-data">
-                {% csrf_token %}
-                <label>Enter tags:
-                    <input id="tags" type="text" name="tags"/>
-                    (separate with ;)
-                </label>
-                <input type="hidden" name="pid" value="{{ paper.id }}">
-                <p id="confirm" style="color: green"></p>
-                <br>
-                <button type="submit">Add Tags</button>
-            </form>
+            <div class="scrollable-checkboxes" id="add-tags-box">
+                {% for t in tags %}
+                    <label><input type="checkbox" name="tag-ids" value="{{ t.id }}">{{ t.name }}</label>
+                {% endfor %}
+            </div>
+            <button id="add-tags">Add</button>
             <p id="err-msg-1" style="color: red"></p>
+
+            <h3>Remove tags from paper</h3>
+            <div class="scrollable-checkboxes" id="remove-tags-box">
+                {% for t in paper.tags.all %}
+                    <label><input type="checkbox" name="tag-ids" value="{{ t.id }}">{{ t.name }}</label>
+                {% endfor %}
+            </div>
+            <button id="remove-tags">Remove</button>
+            <p id="err-msg-3" style="color: red"></p>
 
             <hr>
             <h3 style="color: red">Delete paper</h3>
@@ -52,6 +76,8 @@
     {% endif %}
 
     <script>
+        var addTagsURL = "{% url 'core:paper-add-tags' %}";
+        var removeTagsURL = "{% url 'core:paper-remove-tags' %}";
         var deleteURL = "{% url 'core:delete-paper' %}";
 
         $(document).ready(() => {
@@ -66,14 +92,17 @@
                 }
             });
 
-            // Submit add tags form
-            $('#add-tags-form').submit(e => {
-                e.preventDefault();
-                const form = $('#add-tags-form');
-                var formData = new FormData(form[0]);
+            // Add tags event
+            $("#add-tags").click(function (){
+                var formData = new FormData();
+                $('#add-tags-box input[name="tag-ids"]:checked').each(function() {
+                    formData.append('tag-ids', $(this).val());
+                });
+                formData.append('pid', '{{ paper.id }}');
+                formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
                 $.ajax({
-                    url: form.attr('action'),
-                    type: form.attr('method'),
+                    url: addTagsURL,
+                    type: 'POST',
                     data: formData,
                     processData: false,
                     contentType: false,
@@ -86,7 +115,32 @@
                         }
                     }
                 });
-            });
+            })
+
+            // Remove tags event
+            $("#remove-tags").click(function (){
+                var formData = new FormData();
+                $('#remove-tags-box input[name="tag-ids"]:checked').each(function() {
+                    formData.append('tag-ids', $(this).val());
+                });
+                formData.append('pid', '{{ paper.id }}');
+                formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+                $.ajax({
+                    url: removeTagsURL,
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: res => {
+                        if (res.status === 0) {
+                            $('#err-msg-3').text('');
+                            location.reload();
+                        } else {
+                            $('#err-msg-3').text("Error: " + res.err_msg);
+                        }
+                    }
+                });
+            })
 
             // Delete event
             $("#delete").click(() => {

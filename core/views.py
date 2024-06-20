@@ -37,6 +37,12 @@ def process_paper_page(request):
 class PaperDetailView(DetailView):
     model = Paper
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        tags = Tag.objects.all()
+        context["tags"] = tags
+        return context
+
 
 class PaperUserListView(ListView):
     model = SakanaUser  # in the url, we want uid as parameter, not pid
@@ -282,25 +288,6 @@ def get_workflow_status(request):
     return JsonResponse({"status": 0, "is_done": is_done})
 
 
-@login_required()
-def add_tags(request):
-    uid = request.session.get("uid")
-    pid = request.POST.get("pid")
-    paper = Paper.objects.filter(id=pid, owner_id=uid).first()
-    if not paper:
-        err_msg = "Paper does not exist!"
-        return JsonResponse({"status": 1, "err_msg": err_msg})
-    tags = request.POST.get("tags", "")
-    tags = [tag for t in tags.split(";") if (tag := t.strip()) != '']
-    for t in tags:
-        tag = Tag.objects.filter(name=t).first()
-        if not tag:
-            tag = Tag(name=t, adder_id=uid)
-            tag.save()
-        paper.tags.add(tag)
-    return JsonResponse({"status": 0})
-
-
 class WorkflowUserListView(ListView):
     model = SakanaUser  # in the url, we want uid as parameter, not pid
     paginate_by = 10
@@ -508,9 +495,45 @@ def update_tag_and_definition(request):
     tid = request.POST.get("tid")
     tag = Tag.objects.filter(id=tid, adder_id=uid).first()
     if not tag:
-        err_msg = "Tag does not exist or you do not have access to it"
+        err_msg = "Tag does not exist or you do not have access to it!"
         return JsonResponse({"status": 1, "err_msg": err_msg})
     definition = request.POST.get("definition")
     tag.definition = definition
     tag.save()
     return JsonResponse({"status": 0, "tag_name": tag.name, "tag_def": tag.definition})
+
+
+@login_required()
+def paper_add_tags(request):
+    uid = request.session.get("uid")
+    pid = request.POST.get("pid")
+    paper = Paper.objects.filter(id=pid, owner_id=uid).first()
+    if not paper:
+        err_msg = "Paper does not exist!"
+        return JsonResponse({"status": 1, "err_msg": err_msg})
+    tag_ids = request.POST.getlist("tag-ids")
+    for tid in tag_ids:
+        tag = Tag.objects.filter(id=tid).first()
+        if not tag:
+            err_msg = "Tag does not exist！"
+            return JsonResponse({"status": 1, "err_msg": err_msg})
+        paper.tags.add(tag)
+    return JsonResponse({"status": 0})
+
+
+@login_required()
+def paper_remove_tags(request):
+    uid = request.session.get("uid")
+    pid = request.POST.get("pid")
+    paper = Paper.objects.filter(id=pid, owner_id=uid).first()
+    if not paper:
+        err_msg = "Paper does not exist!"
+        return JsonResponse({"status": 1, "err_msg": err_msg})
+    tag_ids = request.POST.getlist("tag-ids")
+    for tid in tag_ids:
+        tag = Tag.objects.filter(id=tid).first()
+        if not tag:
+            err_msg = "Tag does not exist！"
+            return JsonResponse({"status": 1, "err_msg": err_msg})
+        paper.tags.remove(tag)
+    return JsonResponse({"status": 0})
