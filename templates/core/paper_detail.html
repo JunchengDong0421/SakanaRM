@@ -79,6 +79,7 @@
                     contentType: false,
                     success: res => {
                         if (res.status === 0) {
+                            $('#err-msg-1').text('');
                             location.reload();
                         } else {
                             $('#err-msg-1').text("Error: " + res.err_msg);
@@ -97,9 +98,10 @@
                         "csrfmiddlewaretoken": '{{ csrf_token }}'
                     },
                     success: res => {
+                        $("#del-info").text('');
                         if (res.status === 0) {
-                            $("#del-info").text('');
-                            alert("Delete successful!")
+                            $('#err-msg-2').text('');
+                            alert("Delete successful!");
                             location.href = "{% url 'core:index' %}";
                         } else {
                             $('#err-msg-2').text("Error: " + res.err_msg);

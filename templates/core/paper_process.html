@@ -76,9 +76,10 @@
                     contentType: false,
                     success: res => {
                         if (res.status === 0) {
+                            $('#err-msg').text('');
                             const wid = res.wid.toString();
                             const url = '{% url 'core:workflow-detail' 99999 %}'.replace('99999', wid);
-                            window.open(url, "_blank");
+                            window.open(url);
                         } else {
                             $('#err-msg').text("Error: " + res.err_msg);
                         }
