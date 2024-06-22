@@ -21,163 +21,249 @@
             box-sizing: border-box;
         }
 
-        .disabled-checkbox {
-            pointer-events: none;
-            opacity: 0.6;
-            color: grey;
+        table, th, td {
+            border: 1px solid black;
         }
 
-        .disabled-container {
-            color: grey;
-            opacity: 0.6;
+        .filters-container {
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+
+        .filters-container.collapsed {
+            max-height: 0;
+        }
+
+        .filters-container.expanded {
+            max-height: 500px;
+        }
+
+        .toggle-button {
+            cursor: pointer;
+            display: inline-block;
+            margin: 10px 0;
+        }
+
+        .disabled-checkbox {
+            pointer-events: none;
+            opacity: 0.5;
+            color: #ccc;
+        }
+        .disabled-label {
+            color: #ccc;
         }
     </style>
 {% endblock %}
 
 {% block content %}
-    <form method="get" action="{% url 'core:search-result' %}" target="_blank" enctype="multipart/form-data"
-          id="search-form">
+    {% load custom_filters %}
+    <div class="toggle-button">
+        <span id="toggle-filters">&#x25B2; <i>(click to collapse)</i></span>
+    </div>
+    <div class="filters-container expanded" id="filters-container">
         <label><b>Title contains:</b>
-            <input type="text" name="title"/>
+            <input type="text" name="title-filter" id="title-filter"/>
         </label>
         <br><br>
 
         <label>
             <b>Owner: </b>
-            <input type="radio" name="owner" value="anyone" checked>
+            <input type="radio" name="owner-filter" value="anyone" checked>
             Anyone
         </label>
         <label>
-            <input type="radio" name="owner" value="me">
+            <input type="radio" name="owner-filter" value="me">
             Me
         </label>
         <label>
-            <input type="radio" name="owner" value="others">
+            <input type="radio" name="owner-filter" value="others">
             Others
         </label>
         <br><br>
 
-        <div class="t-container1">
-            <b>Matches tags:</b> <label>&#x1F50E;&#xFE0F;<input id="search1" type="search"></label>
-            <br><br>
-            <div class="scrollable-checkboxes" id="t-contain">
-                <label><input type="checkbox" id="untagged-checkbox" name="tags-contain"
-                              value="untagged;"><i>untagged</i></label>
-                {% for t in tags %}
-                    <label><input type="checkbox" class="tag-checkbox" name="tags-contain"
-                                  value="{{ t.name }}">{{ t.name }}</label>
-                {% endfor %}
-            </div>
-            (Only papers with all the selected tags will be shown)
-            <br><br>
+        <b>Select tags:</b> <label>&#x1F50E;&#xFE0F;<input id="search-bar" type="search"></label>
+        <br><br>
+        <div class="scrollable-checkboxes" id="t-filter">
+            <label><input type="checkbox" id="untagged-checkbox" name="tags-filter"
+                          value="-1"><i>untagged</i></label>
+            {% for t in tags %}
+                <label><input type="checkbox" class="tag-checkbox" name="tags-filter"
+                              value="{{ t.id }}">{{ t.name }}</label>
+            {% endfor %}
         </div>
+        <br>
 
-        <div class="t-container2">
-            <b>Has tags:</b> <label>&#x1F50E;&#xFE0F;<input id="search2" type="search"></label>
-            <br><br>
-            <div class="scrollable-checkboxes" id="t-in">
-                <label><input type="checkbox" class="tag-checkbox" name="tags-in"
-                              value="untagged;"><i>untagged</i></label>
-                {% for t in tags %}
-                    <label><input type="checkbox" class="tag-checkbox" name="tags-in" value="{{ t.name }}">{{ t.name }}
-                    </label>
+        <label>
+            <b>Match type: </b>
+            <input type="radio" class="match-filter" name="match-filter" value="exact" id="exact">
+            Exact match
+        </label>
+        <label>
+            <input type="radio" class="match-filter" name="match-filter" value="inclusive">
+            Inclusive match
+        </label>
+        <label>
+            <input type="radio" class="match-filter" name="match-filter" value="union">
+            Union
+        </label>
+        <br><br>
+        <button id="search">Search</button>
+        <button id="reset">Reset filters</button>
+        <p id="err-msg" style="color: red"></p>
+    </div>
+
+    <hr>
+    <div class="table-container">
+        <p id="paper-count">Paper count: {{ papers.count }}</p>
+        <table class="result-table">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Tags</th>
+                    <th>Owner</th>
+                    <th>Last Updated</th>
+                    <th>manage</th>
+                </tr>
+            </thead>
+            <tbody id="results-body">
+                {% for p in papers %}
+                    <tr>
+                        <td>{{ p.title }}</td>
+                        <td>{{ p|join_tags:", " }}</td>
+                        <td>{{ p.owner.auth_user.username }}</td>
+                        <td>{{ p.last_modified }}</td>
+                        <td><a href="{% url 'core:paper-detail' p.id %}" target="_blank">Go to Manage</a></td>
+                    </tr>
                 {% endfor %}
-            </div>
-            (All papers with one or some of the selected tags will be shown)
-            <br><br>
-        </div>
-
-        <button type="submit">Search</button>
-    </form>
-
-    <p id="err-msg" style="color: red"></p>
-    <br>
-    <a id="back" href="#">Go Back</a><br>
+            </tbody>
+        </table>
+    </div>
 
     <script>
         $(document).ready(() => {
-            // search for tags in "Matches Tags"
-            $('#search1').on('input', function () {
-                var searchValue = $(this).val().toLowerCase();
-                $('#t-contain input[type="checkbox"]').each(function () {
-                    var tagName = $(this).val().toLowerCase();
-                    if (tagName.includes(searchValue)) {
-                        $(this).parent().show();
-                    } else {
-                        $(this).parent().hide();
+            var searchURL = "{% url 'core:search-result' %}";
+            var errMsg = $("#err-msg");
+
+            // toggle filters button
+            $("#toggle-filters").click(function () {
+                var filtersContainer = $("#filters-container");
+                if (filtersContainer.hasClass("collapsed")) {
+                    filtersContainer.removeClass("collapsed").addClass("expanded");
+                    $("#toggle-filters").html("&#x25B2; <i>(click to collapse)</i>"); // Up arrow
+                } else {
+                    filtersContainer.removeClass("expanded").addClass("collapsed");
+                    $("#toggle-filters").html("&#x25BC; <i>(click to expand)</i>"); // Down arrow
+                }
+            });
+
+            // reset filters to default, do not update table
+            $("#reset").click(function () {
+                var tagCheckbox = $(".tag-checkbox");
+                var untaggedBox = $("#untagged-checkbox");
+                $("#title-filter").val(""); // Clear title filter input
+                $("input[name='owner-filter'][value='anyone']").prop('checked', true); // Set 'anyone' radio checked
+                $("input[name='tags-filter']").prop('checked', false); // Uncheck all tags filter checkboxes
+                $("input[name='match-filter']").prop('checked', false); // Uncheck all match type radios
+                $("#search").val(""); // Clear search input for tags
+                errMsg.text(""); // Clear error message
+
+                // Re-enable all checkboxes
+                tagCheckbox.prop('disabled', false);
+                untaggedBox.prop('disabled', false);
+                tagCheckbox.removeClass("disabled-checkbox");
+                untaggedBox.removeClass("disabled-checkbox");
+            });
+
+            // grey out other checkboxes when untagged and exact match are selected at the same time
+            $(".match-filter").change(function () {
+                var tagCheckbox = $(".tag-checkbox");
+                var exactChecked = $("#exact").prop('checked');
+                var untaggedChecked = $("#untagged-checkbox").prop('checked');
+
+                if (exactChecked && untaggedChecked) {
+                    tagCheckbox.not("#untagged-checkbox").prop('disabled', true);
+                    tagCheckbox.not("#untagged-checkbox").addClass("disabled-checkbox");
+                    tagCheckbox.not("#untagged-checkbox").parent().addClass("disabled-label");
+                } else {
+                    tagCheckbox.prop('disabled', false);
+                    tagCheckbox.removeClass("disabled-checkbox");
+                    tagCheckbox.parent().removeClass("disabled-label");
+                }
+            });
+
+            $("#untagged-checkbox").change(function () {
+                var tagCheckbox = $(".tag-checkbox");
+                var exactChecked = $("#exact").prop('checked');
+                var untaggedChecked = $(this).prop('checked');
+
+                if (exactChecked && untaggedChecked) {
+                    tagCheckbox.not("#untagged-checkbox").prop('disabled', true);
+                    tagCheckbox.not("#untagged-checkbox").addClass("disabled-checkbox");
+                    tagCheckbox.not("#untagged-checkbox").parent().addClass("disabled-label");
+                } else {
+                    tagCheckbox.prop('disabled', false);
+                    tagCheckbox.removeClass("disabled-checkbox");
+                    tagCheckbox.parent().removeClass("disabled-label");
+                }
+            });
+
+            // Filter event (search and update table)
+            $("#search").click(function () {
+                var titleFilter = $("#title-filter").val();
+                var ownerFilter = $("input[name='owner-filter']:checked").val();
+                var tagsFilter = [];
+                $("input[name='tags-filter']:checked").each(function () {
+                    tagsFilter.push($(this).val());
+                });
+                var matchFilter = $("input[name='match-filter']:checked").val();
+
+                // Clear previous error messages and check for restrictions
+                errMsg.text('');
+                if (tagsFilter.length > 0 && !matchFilter) {
+                    errMsg.text("Error: Please select a match type.");
+                    return;
+                }
+
+                var formData = new FormData();
+                formData.append('title', titleFilter);
+                formData.append('owner', ownerFilter);
+                tagsFilter.forEach(function(t) {
+                    formData.append('tags', t);
+                });
+                formData.append('match', matchFilter);
+                formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+                $.ajax({
+                    url: searchURL,
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: res => {
+                        if (res.status === 0) {
+                            errMsg.text('');
+                            // Update table
+                            var resultsBody = $("#results-body");
+                            resultsBody.empty();
+                            res.papers.forEach(p => {
+                                var newRow = `
+                                    <tr>
+                                        <td>${p.title}</td>
+                                        <td>${p.tags}</td>
+                                        <td>${p.owner}</td>
+                                        <td>${p.last_modified}</td>
+                                        <td><a href="/core/paper-detail/${p.id}" target="_blank">Go to Manage</a></td>
+                                    </tr>
+                                `;
+                                resultsBody.append(newRow);
+                            });
+
+                            $("#paper-count").text("Paper count: " + res.papers.length);
+                        } else {
+                            errMsg.text("Error: " + res.err_msg);
+                        }
                     }
                 });
-            });
-
-            // search for tags in "Has Tags"
-            $('#search2').on('input', function () {
-                var searchValue = $(this).val().toLowerCase();
-                $('#t-in input[type="checkbox"]').each(function () {
-                    var tagName = $(this).val().toLowerCase();
-                    if (tagName.includes(searchValue)) {
-                        $(this).parent().show();
-                    } else {
-                        $(this).parent().hide();
-                    }
-                });
-            });
-
-            // disable checkboxes in one group if one or more are checked in one group
-            const tagContains = $('#t-contain .tag-checkbox');
-            const tagIn = $('#t-in .tag-checkbox');
-            const untaggedTagContains = $('#untagged-checkbox');
-            const container1 = $('.t-container1');
-            const container2 = $('.t-container2');
-
-            function updateCheckboxStates() {
-                const isTagContainsChecked = tagContains.is(':checked');
-                const isTagInChecked = tagIn.is(':checked');
-
-                if (isTagContainsChecked) {
-                    tagIn.prop('disabled', true).closest('label').addClass('disabled-checkbox');
-                    container2.addClass('disabled-container');
-                } else {
-                    tagIn.prop('disabled', false).closest('label').removeClass('disabled-checkbox');
-                    container2.removeClass('disabled-container');
-                }
-
-                if (isTagInChecked) {
-                    tagContains.prop('disabled', true).closest('label').addClass('disabled-checkbox');
-                    untaggedTagContains.prop('disabled', true).closest('label').addClass('disabled-checkbox');
-                    container1.addClass('disabled-container');
-                } else {
-                    tagContains.prop('disabled', false).closest('label').removeClass('disabled-checkbox');
-                    untaggedTagContains.prop('disabled', false).closest('label').removeClass('disabled-checkbox');
-                    container1.removeClass('disabled-container');
-                }
-            }
-
-            tagContains.on('change', updateCheckboxStates);
-            tagIn.on('change', updateCheckboxStates);
-
-            // disable other boxes when "untagged" is selected in "Matches Tags", no need to do so for "Has Tags"
-            untaggedTagContains.change(function () {
-                if ($(this).is(':checked')) {
-                    // don't uncheck other boxes (in case of a misclick or something), just disable them
-                    $('.tag-checkbox').prop('disabled', true)
-                        .parent().addClass('disabled-checkbox');
-                    // also grey out has tags search box
-                    container2.addClass('disabled-container');
-                } else {
-                    $('.tag-checkbox').prop('disabled', false)
-                        .parent().removeClass('disabled-checkbox');
-                    container2.removeClass('disabled-container');
-                }
-            });
-
-            // go back or redirect to home link
-            $("#back").click(e => {
-                e.preventDefault();
-                if (window.history.length > 1) {
-                    window.history.back();
-                } else {
-                    window.location.href = "{% url 'core:index' %}";
-                }
             });
         })
     </script>
