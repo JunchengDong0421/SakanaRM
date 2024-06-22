@@ -45,11 +45,11 @@
     {% endif %}
 
     <br>
-    {% if workflow.user.id != request.session.uid %}
-        <h2><em>You are not the owner! No actions available</em></h2>
-    {% else %}
-        <h2><em>Actions</em></h2>
+    <h2><em>Actions</em></h2>
         <hr>
+    {% if workflow.user.id != request.session.uid %}
+        <h2>You are not the owner! No actions available</h2>
+    {% else %}
         {% if workflow.is_archived %}
             <h3 style="color: lightgreen">Restore workflow</h3>
             <button id="restore">Restore</button>
@@ -84,6 +84,7 @@
                     success: res => {
                         if (res.status === 0) {
                             $('#err-msg-1').text('');
+                            alert("Aborted workflow successfully!");
                             location.reload();
                         } else if (res.alert_msg) {
                             alert(res.alert_msg);
@@ -107,6 +108,7 @@
                     success: res => {
                         if (res.status === 0) {
                             $('#err-msg-2').text('');
+                            alert("Archived workflow successfully!");
                             location.reload();
                         } else {
                             $('#err-msg-2').text("Error: " + res.err_msg);
@@ -127,6 +129,7 @@
                     success: res => {
                         if (res.status === 0) {
                             $('#err-msg-3').text('');
+                            alert("Restored workflow successfully!");
                             location.reload();
                         } else {
                             $('#err-msg-3').text("Error: " + res.err_msg);
