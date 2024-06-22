@@ -238,9 +238,9 @@ def handle_create_workflow(request):
         instructions = f"paper {'(to replace)' if replace else ''}: {title}"
     elif work_type == PROCESS:
         pid = request.POST.get("pid")
-        paper = Paper.objects.filter(id=pid).first()
+        paper = Paper.objects.filter(id=pid, owner_id=uid).first()
         if not paper:
-            err_msg = "The paper you want to process does not exist, please select again"
+            err_msg = "The paper you want to process does not exist or you do not have access to it, please re-select"
             return JsonResponse({"status": 1, "err_msg": err_msg})
         tags = request.POST.getlist("tag-names")
         for n in tags:
@@ -308,7 +308,7 @@ def abort_workflow(request):
     wid = request.POST.get("wid")
     workflow = Workflow.objects.filter(id=wid, user_id=uid).first()
     if not workflow:
-        err_msg = "Workflow does not exist!"
+        err_msg = "Workflow does not exist or you do not have access to it!"
         return JsonResponse({"status": 1, "err_msg": err_msg})
     status = workflow.status
     if status == ABORTED:
@@ -377,7 +377,7 @@ def archive_workflow(request):
     wid = request.POST.get("wid")
     workflow = Workflow.objects.filter(id=wid, user_id=uid).first()
     if not workflow:
-        err_msg = "Workflow does not exist!"
+        err_msg = "Workflow does not exist or you do not have access to it!"
         return JsonResponse({"status": 1, "err_msg": err_msg})
     if workflow.is_archived:
         err_msg = "Can't archive an archived workflow!"
@@ -397,7 +397,7 @@ def restore_workflow(request):
     wid = request.POST.get("wid")
     workflow = Workflow.objects.filter(id=wid, user_id=uid).first()
     if not workflow:
-        err_msg = "Workflow does not exist!"
+        err_msg = "Workflow does not exist or you do not have access to it!"
         return JsonResponse({"status": 1, "err_msg": err_msg})
     if not workflow.is_archived:
         err_msg = "Can't restore an unarchived workflow!"
@@ -414,7 +414,7 @@ def delete_paper(request):
     pid = request.POST.get("pid")
     paper = Paper.objects.filter(id=pid, owner_id=uid).first()
     if not paper:
-        err_msg = "Paper does not exist!"
+        err_msg = "Paper does not exist or you do not have access to it!"
         return JsonResponse({"status": 1, "err_msg": err_msg})
     if paper.workflow_set.filter(status=PENDING).count() > 0:  # if paper still being used by some running workflows
         err_msg = "Cannot delete paper while a workflow associated with it is running!"
@@ -462,7 +462,7 @@ def paper_add_tags(request):
     pid = request.POST.get("pid")
     paper = Paper.objects.filter(id=pid, owner_id=uid).first()
     if not paper:
-        err_msg = "Paper does not exist!"
+        err_msg = "Paper does not exist or you do not have access to it!"
         return JsonResponse({"status": 1, "err_msg": err_msg})
     tag_ids = request.POST.getlist("tag-ids")
     for tid in tag_ids:
@@ -480,7 +480,7 @@ def paper_remove_tags(request):
     pid = request.POST.get("pid")
     paper = Paper.objects.filter(id=pid, owner_id=uid).first()
     if not paper:
-        err_msg = "Paper does not exist!"
+        err_msg = "Paper does not exist or you do not have access to it!"
         return JsonResponse({"status": 1, "err_msg": err_msg})
     tag_ids = request.POST.getlist("tag-ids")
     for tid in tag_ids:
