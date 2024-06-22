@@ -81,7 +81,7 @@ def start_workflow_task(request, wid, file_obj):
         uid = request.session.get('uid')
         title = request.POST.get("title")
 
-        work_type = int(req_type) if (req_type := request.POST.get("type")).isnumeric() else -1
+        work_type = int(request.POST.get("type"))
         if work_type == UPLOAD:
             paper = Paper.objects.filter(title=title, owner_id=uid).first()
             if not paper:
@@ -127,7 +127,7 @@ def start_workflow_task(request, wid, file_obj):
             workflow.save()
 
         elif work_type == PROCESS:
-            pid = request.POST.get("pid")
+            pid = int(request.POST.get("pid"))
             paper = Paper.objects.filter(id=pid, owner_id=uid).first()
             if not paper:
                 return
@@ -216,7 +216,13 @@ def handle_create_workflow(request):
         err_msg = f"You can't have more than {PENDING_WORKFLOWS_LIMIT} workflows running at the same time. "
         return JsonResponse({"status": 1, "err_msg": err_msg})
     file_obj = request.FILES.get("paper")
-    work_type = int(req_type) if (req_type := request.POST.get("type")).isnumeric() else -1
+    work_type = request.POST.get("type")
+    try:
+        work_type = int(work_type)
+    except ValueError:
+        err_msg = "Illegal request parameter, please contact the administrator for help!"
+        return JsonResponse({"status": 1, "err_msg": err_msg})
+
     if work_type == UPLOAD:
         title = request.POST.get("title")
         if not (file_obj and title):
@@ -238,6 +244,11 @@ def handle_create_workflow(request):
         instructions = f"paper {'(to replace)' if replace else ''}: {title}"
     elif work_type == PROCESS:
         pid = request.POST.get("pid")
+        try:
+            pid = int(pid)
+        except ValueError:
+            err_msg = "Illegal request parameter, please contact the administrator for help!"
+            return JsonResponse({"status": 1, "err_msg": err_msg})
         paper = Paper.objects.filter(id=pid, owner_id=uid).first()
         if not paper:
             err_msg = "The paper you want to process does not exist or you do not have access to it, please re-select"
@@ -283,6 +294,11 @@ def handle_create_workflow(request):
 @login_required()
 def get_workflow_status(request):
     wid = request.GET.get("wid")
+    try:
+        wid = int(wid)
+    except ValueError:
+        err_msg = "Illegal request parameter, please contact the administrator for help!"
+        return JsonResponse({"status": 1, "err_msg": err_msg})
     workflow = Workflow.objects.filter(id=wid).first()
     if not workflow:
         err_msg = "Something went wrong! Please refresh page or try again later"
@@ -306,6 +322,11 @@ class WorkflowUserListView(ListView):
 def abort_workflow(request):
     uid = request.session.get("uid")
     wid = request.POST.get("wid")
+    try:
+        wid = int(wid)
+    except ValueError:
+        err_msg = "Illegal request parameter, please contact the administrator for help!"
+        return JsonResponse({"status": 1, "err_msg": err_msg})
     workflow = Workflow.objects.filter(id=wid, user_id=uid).first()
     if not workflow:
         err_msg = "Workflow does not exist or you do not have access to it!"
@@ -375,6 +396,11 @@ class WorkflowUserArchivedListView(ListView):
 def archive_workflow(request):
     uid = request.session.get("uid")
     wid = request.POST.get("wid")
+    try:
+        wid = int(wid)
+    except ValueError:
+        err_msg = "Illegal request parameter, please contact the administrator for help!"
+        return JsonResponse({"status": 1, "err_msg": err_msg})
     workflow = Workflow.objects.filter(id=wid, user_id=uid).first()
     if not workflow:
         err_msg = "Workflow does not exist or you do not have access to it!"
@@ -395,6 +421,11 @@ def archive_workflow(request):
 def restore_workflow(request):
     uid = request.session.get("uid")
     wid = request.POST.get("wid")
+    try:
+        wid = int(wid)
+    except ValueError:
+        err_msg = "Illegal request parameter, please contact the administrator for help!"
+        return JsonResponse({"status": 1, "err_msg": err_msg})
     workflow = Workflow.objects.filter(id=wid, user_id=uid).first()
     if not workflow:
         err_msg = "Workflow does not exist or you do not have access to it!"
@@ -412,6 +443,11 @@ def restore_workflow(request):
 def delete_paper(request):
     uid = request.session.get("uid")
     pid = request.POST.get("pid")
+    try:
+        pid = int(pid)
+    except ValueError:
+        err_msg = "Illegal request parameter, please contact the administrator for help!"
+        return JsonResponse({"status": 1, "err_msg": err_msg})
     paper = Paper.objects.filter(id=pid, owner_id=uid).first()
     if not paper:
         err_msg = "Paper does not exist or you do not have access to it!"
@@ -446,6 +482,11 @@ def update_tag_and_definition_page(request):
 def update_tag_and_definition(request):
     uid = request.session.get("uid")
     tid = request.POST.get("tid")
+    try:
+        tid = int(tid)
+    except ValueError:
+        err_msg = "Illegal request parameter, please contact the administrator for help!"
+        return JsonResponse({"status": 1, "err_msg": err_msg})
     tag = Tag.objects.filter(id=tid, adder_id=uid).first()
     if not tag:
         err_msg = "Tag does not exist or you do not have access to it!"
@@ -460,12 +501,22 @@ def update_tag_and_definition(request):
 def paper_add_tags(request):
     uid = request.session.get("uid")
     pid = request.POST.get("pid")
+    try:
+        pid = int(pid)
+    except ValueError:
+        err_msg = "Illegal request parameter, please contact the administrator for help!"
+        return JsonResponse({"status": 1, "err_msg": err_msg})
     paper = Paper.objects.filter(id=pid, owner_id=uid).first()
     if not paper:
         err_msg = "Paper does not exist or you do not have access to it!"
         return JsonResponse({"status": 1, "err_msg": err_msg})
     tag_ids = request.POST.getlist("tag-ids")
     for tid in tag_ids:
+        try:
+            tid = int(tid)
+        except ValueError:
+            err_msg = "Illegal request parameter, please contact the administrator for help!"
+            return JsonResponse({"status": 1, "err_msg": err_msg})
         tag = Tag.objects.filter(id=tid).first()  # allow for adding others' tags
         if not tag:
             err_msg = "Tag does not exist！"
@@ -478,12 +529,22 @@ def paper_add_tags(request):
 def paper_remove_tags(request):
     uid = request.session.get("uid")
     pid = request.POST.get("pid")
+    try:
+        pid = int(pid)
+    except ValueError:
+        err_msg = "Illegal request parameter, please contact the administrator for help!"
+        return JsonResponse({"status": 1, "err_msg": err_msg})
     paper = Paper.objects.filter(id=pid, owner_id=uid).first()
     if not paper:
         err_msg = "Paper does not exist or you do not have access to it!"
         return JsonResponse({"status": 1, "err_msg": err_msg})
     tag_ids = request.POST.getlist("tag-ids")
     for tid in tag_ids:
+        try:
+            tid = int(tid)
+        except ValueError:
+            err_msg = "Illegal request parameter, please contact the administrator for help!"
+            return JsonResponse({"status": 1, "err_msg": err_msg})
         tag = Tag.objects.filter(id=tid).first()
         if not tag:
             err_msg = "Tag does not exist！"
