@@ -28,5 +28,5 @@ urlpatterns = [
     path("api/tag/update", views.update_tag_and_definition, name="update-tag-definition"),
 
     path("search", views.search_page, name="search-page"),
-    path("search/all", views.search_result, name="search-result")
+    path("api/search", views.search_result, name="search-result")
 ]
