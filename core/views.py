@@ -1,7 +1,7 @@
 import json
-import os
 import threading
 from io import BytesIO
+from os import name as os_name
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -9,7 +9,7 @@ from django.db.models import Count, Q
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.generic import DetailView, ListView
-from zoneinfo import ZoneInfo  # In Python 3.9 or newer only
+from zoneinfo import ZoneInfo  # Python 3.9 or later only
 
 from .cdn_utils import SakanaCDNClient
 from .llm_utils import SimpleKeywordClient
@@ -116,7 +116,7 @@ def start_workflow_task(request, wid, file_obj):
             # otherwise continue
             paper = Paper.objects.filter(title=title, owner_id=uid).first()
             if not paper:  # if paper is deleted or altered during normal workflow execution
-                workflow.result = json.dumps({**json.loads(workflow.result), **{"error": "paper is not available"}})
+                workflow.result = json.dumps(json.loads(workflow.result) | {"error": "paper is not available"})
                 workflow.status = FAILED
                 workflow.save()
             paper.file_path = file_path
@@ -196,16 +196,16 @@ def start_workflow_task(request, wid, file_obj):
                 return
             workflow.stage = S_END
             workflow.status = COMPLETED
-            workflow.result = json.dumps({**json.loads(workflow.result), **{"added_tags": added_tags,
-                                                                            "removed_tags": removed_tags,
-                                                                            "kept_tags": kept_tags}})
+            workflow.result = json.dumps(json.loads(workflow.result) | {"added_tags": added_tags,
+                                                                        "removed_tags": removed_tags,
+                                                                        "kept_tags": kept_tags})
             workflow.save()
 
         else:  # illegal work type parameter
             return
     except Exception as e:
         workflow.status = FAILED
-        workflow.result = json.dumps({**json.loads(workflow.result), **{"error": str(e)}})
+        workflow.result = json.dumps(json.loads(workflow.result) | {"error": str(e)})
         workflow.save()
 
 
@@ -620,8 +620,8 @@ def search_result(request):
                 papers |= Paper.objects.filter(tags__isnull=True)  # add untagged papers back, filter all paper objects
             papers = papers.distinct()
 
-    # Different platforms use different format symbols to remove zero padding
-    format_option = '%#B %#d, %#Y, %#I:%M %p' if os.name == "nt" else '%-B %-d, %-Y, %-I:%M %p' if os.name == "posix" \
+    # Different platforms (registered as: 'posix', 'nt' or 'java') use different flags to remove zero padding
+    format_option = '%B %-d, %-Y, %-I:%M %p' if os_name == "posix" else '%B %#d, %#Y, %#I:%M %p' if os_name == "nt" \
         else '%B %d, %Y, %I:%M %p'
     # Pass and process columns data as JSON serializable objects
     papers = [
