@@ -218,6 +218,9 @@ def handle_create_workflow(request):
         return JsonResponse({"status": 1, "err_msg": err_msg})
     file_obj = request.FILES.get("paper")
     work_type = request.POST.get("type")
+    if not work_type:
+        err_msg = "Invalid request!"
+        return JsonResponse({"status": 1, "err_msg": err_msg})
     try:
         work_type = int(work_type)
     except ValueError:
@@ -245,6 +248,9 @@ def handle_create_workflow(request):
         instructions = f"paper {'(to replace)' if replace else ''}: {title}"
     elif work_type == PROCESS:
         pid = request.POST.get("pid")
+        if not pid:
+            err_msg = "Invalid request!"
+            return JsonResponse({"status": 1, "err_msg": err_msg})
         try:
             pid = int(pid)
         except ValueError:
@@ -255,6 +261,9 @@ def handle_create_workflow(request):
             err_msg = "The paper you want to process does not exist or you do not have access to it, please re-select"
             return JsonResponse({"status": 1, "err_msg": err_msg})
         tags = request.POST.getlist("tag-names")
+        if not tags:
+            err_msg = "Please select some tags to process!"
+            return JsonResponse({"status": 1, "err_msg": err_msg})
         for n in tags:
             tag = Tag.objects.filter(name=n).first()
             if not tag:
@@ -295,6 +304,9 @@ def handle_create_workflow(request):
 @login_required()
 def get_workflow_status(request):
     wid = request.GET.get("wid")
+    if not wid:
+        err_msg = "Invalid request!"
+        return JsonResponse({"status": 1, "err_msg": err_msg})
     try:
         wid = int(wid)
     except ValueError:
@@ -323,6 +335,9 @@ class WorkflowUserListView(LoginRequiredMixin, ListView):
 def abort_workflow(request):
     uid = request.session.get("uid")
     wid = request.POST.get("wid")
+    if not wid:
+        err_msg = "Invalid request!"
+        return JsonResponse({"status": 1, "err_msg": err_msg})
     try:
         wid = int(wid)
     except ValueError:
@@ -360,13 +375,12 @@ def add_tag_and_definition_page(request):
 @login_required()
 def add_tag_and_definition(request):
     tag_name = request.POST.get("name")
-    if not tag_name:
-        err_msg = "Please enter a tag name!"
+    if not tag_name or not (processed_name := tag_name.replace(";", "").strip()):
+        err_msg = "Please enter a valid tag name!"
         return JsonResponse({"status": 1, "err_msg": err_msg})
-    tag_name = tag_name.replace(";", "").strip()
     uid = request.session.get("uid")
-    tag = Tag.objects.filter(name=tag_name).first()
-    definition = request.POST.get("definition")
+    tag = Tag.objects.filter(name=processed_name).first()
+    definition = request.POST.get("definition", "")  # allow for empty definition
     # if tag already exists
     if tag:
         if tag.adder_id != uid:  # adder is other user
@@ -377,9 +391,9 @@ def add_tag_and_definition(request):
         err_msg = "You have added the same tag, please go to update definition page"
         return JsonResponse({"status": 1, "err_msg": err_msg})
     # else
-    tag = Tag(name=tag_name, definition=definition, adder_id=uid)
+    tag = Tag(name=processed_name, definition=definition, adder_id=uid)
     tag.save()
-    return JsonResponse({"status": 0, "tag_name": tag_name})
+    return JsonResponse({"status": 0, "tag_name": processed_name})
 
 
 class WorkflowUserArchivedListView(LoginRequiredMixin, ListView):
@@ -396,6 +410,9 @@ class WorkflowUserArchivedListView(LoginRequiredMixin, ListView):
 def archive_workflow(request):
     uid = request.session.get("uid")
     wid = request.POST.get("wid")
+    if not wid:
+        err_msg = "Invalid request!"
+        return JsonResponse({"status": 1, "err_msg": err_msg})
     try:
         wid = int(wid)
     except ValueError:
@@ -421,6 +438,9 @@ def archive_workflow(request):
 def restore_workflow(request):
     uid = request.session.get("uid")
     wid = request.POST.get("wid")
+    if not wid:
+        err_msg = "Invalid request!"
+        return JsonResponse({"status": 1, "err_msg": err_msg})
     try:
         wid = int(wid)
     except ValueError:
@@ -443,6 +463,9 @@ def restore_workflow(request):
 def delete_paper(request):
     uid = request.session.get("uid")
     pid = request.POST.get("pid")
+    if not pid:
+        err_msg = "Invalid request!"
+        return JsonResponse({"status": 1, "err_msg": err_msg})
     try:
         pid = int(pid)
     except ValueError:
@@ -473,8 +496,11 @@ def update_tag_and_definition_page(request):
     uid = request.session.get("uid")
     tags = Tag.objects.filter(adder_id=uid)
     tag_name = request.GET.get("tagname")
-    selected_tag = tags.filter(name=tag_name).first()
-    selected_tid = selected_tag.id if selected_tag else -1
+    if not tag_name:
+        selected_tid = -1
+    else:
+        selected_tag = tags.filter(name=tag_name).first()
+        selected_tid = selected_tag.id if selected_tag else -1
     return render(request, "core/tag_definition_update.html", {"tags": tags, "s_tid": selected_tid})
 
 
@@ -482,6 +508,9 @@ def update_tag_and_definition_page(request):
 def update_tag_and_definition(request):
     uid = request.session.get("uid")
     tid = request.POST.get("tid")
+    if not tid:
+        err_msg = "Invalid request!"
+        return JsonResponse({"status": 1, "err_msg": err_msg})
     try:
         tid = int(tid)
     except ValueError:
@@ -501,6 +530,9 @@ def update_tag_and_definition(request):
 def paper_add_tags(request):
     uid = request.session.get("uid")
     pid = request.POST.get("pid")
+    if not pid:
+        err_msg = "Invalid request!"
+        return JsonResponse({"status": 1, "err_msg": err_msg})
     try:
         pid = int(pid)
     except ValueError:
@@ -511,6 +543,9 @@ def paper_add_tags(request):
         err_msg = "Paper does not exist or you do not have access to it!"
         return JsonResponse({"status": 1, "err_msg": err_msg})
     tag_ids = request.POST.getlist("tag-ids")
+    if not tag_ids:
+        err_msg = "Please select at least one tag to add!"
+        return JsonResponse({"status": 1, "err_msg": err_msg})
     for tid in tag_ids:
         try:
             tid = int(tid)
@@ -529,6 +564,9 @@ def paper_add_tags(request):
 def paper_remove_tags(request):
     uid = request.session.get("uid")
     pid = request.POST.get("pid")
+    if not pid:
+        err_msg = "Invalid request!"
+        return JsonResponse({"status": 1, "err_msg": err_msg})
     try:
         pid = int(pid)
     except ValueError:
@@ -539,6 +577,9 @@ def paper_remove_tags(request):
         err_msg = "Paper does not exist or you do not have access to it!"
         return JsonResponse({"status": 1, "err_msg": err_msg})
     tag_ids = request.POST.getlist("tag-ids")
+    if not tag_ids:
+        err_msg = "Please select at least one tag to remove!"
+        return JsonResponse({"status": 1, "err_msg": err_msg})
     for tid in tag_ids:
         try:
             tid = int(tid)
