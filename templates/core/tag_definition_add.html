@@ -26,8 +26,12 @@
 
     <script>
         $(document).ready(() => {
+            // ajax submit form
             $('#tag-form').submit(e => {
                 e.preventDefault();
+                if (!confirm("Are you sure to create this new tag?")) {
+                    return
+                }
                 const form = $('#tag-form');
                 var formData = new FormData(form[0]);
                 $.ajax({

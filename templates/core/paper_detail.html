@@ -96,6 +96,9 @@
 
             // Add tags event
             $("#add-tags").click(function (){
+                if (!confirm("Are you sure to add selected tags to paper?")) {
+                    return
+                }
                 var formData = new FormData();
                 $('#add-tags-box input[name="tag-ids"]:checked').each(function() {
                     formData.append('tag-ids', $(this).val());
@@ -122,6 +125,9 @@
 
             // Remove tags event
             $("#remove-tags").click(function (){
+                if (!confirm("Are you sure to remove selected tags from paper?")) {
+                    return
+                }
                 var formData = new FormData();
                 $('#remove-tags-box input[name="tag-ids"]:checked').each(function() {
                     formData.append('tag-ids', $(this).val());
@@ -148,6 +154,9 @@
 
             // Delete event
             $("#delete").click(() => {
+                if (!confirm("Are you sure to delete paper? WARNING: This operation is not invertible!")) {
+                    return
+                }
                 $.ajax({
                     url: deleteURL,
                     type: 'POST',

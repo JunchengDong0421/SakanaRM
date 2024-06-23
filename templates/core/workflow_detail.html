@@ -74,6 +74,9 @@
         $(document).ready(() => {
             // Abort event
             $("#abort").click(() => {
+                if (!confirm("Are you sure to abort this workflow? WARNING: This operation is not invertible!")) {
+                    return
+                }
                 $.ajax({
                     url: abortURL,
                     type: 'POST',
@@ -98,6 +101,9 @@
 
             // Archive event
             $("#archive").click(() => {
+                if (!confirm("Are you sure to archive this workflow?")) {
+                    return
+                }
                 $.ajax({
                     url: archiveURL,
                     type: 'POST',
@@ -119,6 +125,9 @@
 
             // Restore event
             $("#restore").click(() => {
+                if (!confirm("Are you sure to restore this workflow?")) {
+                    return
+                }
                 $.ajax({
                     url: restoreURL,
                     type: 'POST',

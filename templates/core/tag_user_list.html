@@ -49,7 +49,7 @@
 
             // Delete event
             $(".delete-tag").click(function (){
-                if (!confirm("Are you sure to delete this tag?")) {
+                if (!confirm("Are you sure to delete this tag? WARNING: This operation is not invertible!")) {
                     return
                 }
                 $.ajax({

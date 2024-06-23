@@ -52,6 +52,9 @@
 
             // Restore event
             $(".restore").on('click', function () {
+                if (!confirm("Are you sure to restore selected workflow?")) {
+                    return
+                }
                 var wid = $(this).data('wid');
                 $.ajax({
                     url: restoreURL,

@@ -44,11 +44,16 @@
             $('#tid').change(updateDef);
             updateDef();
 
+            // ajax submit form
             $('#update-form').submit(e => {
                 e.preventDefault();
                 var newDef = $("#new-def").val();
                 if (newDef.trim() === "") {
-                    if (!confirm("The 'New definition' field is empty. Are you sure you want to submit the form?")) {
+                    if (!confirm("The 'New definition' field is empty. Are you sure to set an empty tag definition?")) {
+                        return
+                    }
+                } else {
+                    if (!confirm("Are you sure to update definition of selected tag?")) {
                         return
                     }
                 }
