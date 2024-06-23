@@ -34,7 +34,7 @@
                 <br>
                 <a href="{% url 'core:my-papers' request.session.uid %}" target="_blank">My papers</a>
                 <br>
-                <a href="#">My tags</a>
+                <a href="{% url 'core:my-tags' request.session.uid %}" target="_blank">My tags</a>
                 <br>
                 <a href="{% url 'core:my-archived-workflows' request.session.uid %}" target="_blank">
                     Managed archived workflows

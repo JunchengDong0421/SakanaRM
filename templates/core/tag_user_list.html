@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    My Tags
+{% endblock %}
+
+{% block content %}
+    {% if page_obj %}
+        {% for tag in page_obj %}
+            {{ tag.name }} | {{ tag.definition }} | {{ tag.paper_count }}
+            | <button class="update-tag-link" data-tname="{{ tag.name }}">update</button>
+            <button class="delete-tag" data-tid="{{ tag.id }}">delete</button>  <br>
+        {% endfor %}
+        <br><br><br>
+        <div class="pagination">
+            <span class="step-links">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1">&laquo; first</a>
+                    <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+                {% endif %}
+
+                <span class="current">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                </span>
+
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}">next</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+                {% endif %}
+            </span>
+        </div>
+
+    {% else %}
+        No papers matched.
+    {% endif %}
+    <br>
+    <p id="err-msg" style="color: red"></p>
+    <a id="back" href="#">Go Back</a><br>
+
+    <script>
+        $(document).ready(() => {
+            var deleteURL = "{% url 'core:delete-tag-definition' %}";
+
+            // Update event
+            $(".update-tag-link").click(function () {
+                var newURL = "{% url 'core:update-tag-definition-page' %}?tagname=" + $(this).data("tname");
+                window.open(newURL, "_blank");
+            })
+
+            // Delete event
+            $(".delete-tag").click(function (){
+                if (!confirm("Are you sure to delete this tag?")) {
+                    return
+                }
+                $.ajax({
+                    url: deleteURL,
+                    type: "POST",
+                    data: {
+                        'tid': $(this).data('tid'),
+                        'csrfmiddlewaretoken': '{{ csrf_token }}'
+                    },
+                    success: res => {
+                        if (res.status === 0) {
+                            $("#err-msg").text('');
+                            alert("Deleted tag successfully!");
+                            location.reload();
+                        } else {
+                            $("#err-msg").text("Error: " + res.err_msg);
+                        }
+                    }
+                })
+            })
+
+            // go back or redirect to home link
+            $("#back").click(e => {
+                e.preventDefault();
+                if (window.history.length > 1) {
+                    window.history.back();
+                } else {
+                    window.location.href = "{% url 'core:index' %}";
+                }
+            });
+        })
+    </script>
+
+{% endblock %}

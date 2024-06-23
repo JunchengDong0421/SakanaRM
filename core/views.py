@@ -5,6 +5,7 @@ from os import name as os_name
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Count, Q
 from django.http import JsonResponse
 from django.shortcuts import render
@@ -307,7 +308,7 @@ def get_workflow_status(request):
     return JsonResponse({"status": 0, "is_done": is_done})
 
 
-class WorkflowUserListView(ListView):
+class WorkflowUserListView(LoginRequiredMixin, ListView):
     model = SakanaUser  # in the url, we want uid as parameter, not pid
     paginate_by = 10
     template_name = "core/workflow_user_list.html"
@@ -381,14 +382,13 @@ def add_tag_and_definition(request):
     return JsonResponse({"status": 0, "tag_name": tag_name})
 
 
-class WorkflowUserArchivedListView(ListView):
+class WorkflowUserArchivedListView(LoginRequiredMixin, ListView):
     model = SakanaUser  # in the url, we want uid as parameter, not pid
     paginate_by = 10
     template_name = "core/workflow_user_archived_list.html"
 
     def get_queryset(self):
         uid = self.request.session.get("uid")
-        # only shows unarchived workflows
         return Workflow.objects.filter(user_id=uid, is_archived=True)
 
 
@@ -635,3 +635,27 @@ def search_result(request):
         } for p in papers
     ]
     return JsonResponse({"status": 0, "papers": papers})
+
+
+class TagUserListView(LoginRequiredMixin, ListView):
+    model = SakanaUser
+    paginate_by = 20
+    template_name = "core/tag_user_list.html"
+
+    def get_queryset(self):
+        uid = self.request.session.get("uid")
+        return Tag.objects.filter(adder_id=uid).annotate(paper_count=Count("paper")).order_by("name")
+
+
+def delete_tag_and_definition(request):  # delete tag instance, for uniformity we add 'and_definition' to function name
+    uid = request.session.get("uid")
+    tid = request.POST.get("tid")
+    if not tid:
+        err_msg = "Invalid request!"
+        return JsonResponse({"status": 1, "err_msg": err_msg})
+    tag = Tag.objects.filter(id=tid, adder_id=uid).first()
+    if not tag:
+        err_msg = "Tag does not exist or you do not have access to it!"
+        return JsonResponse({"status": 1, "err_msg": err_msg})
+    tag.delete()
+    return JsonResponse({"status": 0})

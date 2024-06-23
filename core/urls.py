@@ -16,6 +16,7 @@ urlpatterns = [
          name="my-archived-workflows"),
     path("tag/add", views.add_tag_and_definition_page, name="add-tag-definition-page"),
     path("tag/update", views.update_tag_and_definition_page, name="update-tag-definition-page"),
+    path("user/<int:pk>/tags", views.TagUserListView.as_view(), name="my-tags"),
 
     path("api/paper/addtags", views.paper_add_tags, name="paper-add-tags"),
     path("api/paper/removetags", views.paper_remove_tags, name="paper-remove-tags"),
@@ -26,6 +27,7 @@ urlpatterns = [
     path("api/workflow/restore", views.restore_workflow, name="restore-workflow"),
     path("api/tag/add", views.add_tag_and_definition, name="add-tag-definition"),
     path("api/tag/update", views.update_tag_and_definition, name="update-tag-definition"),
+    path("api/tag/delete", views.delete_tag_and_definition, name="delete-tag-definition"),
 
     path("search", views.search_page, name="search-page"),
     path("api/search", views.search_result, name="search-result")
