@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    About SakanaRM
+{% endblock %}
+
+{% block style %}
+    <style>
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .git-link {
+            margin-top: 20px;
+        }
+
+        .git-stars {
+            margin-top: 20px;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="main-container">
+        <h1>Sakana Reference Manager</h1>
+        <div class="intro">
+            A collaborative LLM-assisted reference manager that aims to provide researcher with maximum freedom in
+            managing and tagging research papers. Named after the Japanese word for "fish".
+        </div>
+        <div class="git-link">
+            GitHub Link: <a href="https://github.com/JunchengDong0421/SakanaRM">https://github.com/JunchengDong0421/SakanaRM</a>
+        </div>
+        <div class="git-stars">
+            Stars:
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        $(document).ready(() => {
+            $.ajax({
+                url: "https://api.github.com/repos/JunchengDong0421/SakanaRM",
+                type: "GET",
+                success: res => {
+                    $(".git-stars").text('Stars: ' + res.stargazers_count);
+                }
+            })
+        })
+    </script>
+{% endblock %}

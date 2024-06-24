@@ -31,5 +31,7 @@ urlpatterns = [
     path("api/tag/delete", views.delete_tag_and_definition, name="delete-tag-definition"),
 
     path("search", views.search_page, name="search-page"),
-    path("api/search", views.search_result, name="search-result")
+    path("api/search", views.search_result, name="search-result"),
+
+    path("about", views.about_page, name="about"),
 ]

@@ -731,6 +731,7 @@ class TagUserListView(LoginRequiredMixin, ListView):
         return Tag.objects.filter(adder_id=uid).annotate(paper_count=Count("paper")).order_by("name")
 
 
+@login_required()
 def delete_tag_and_definition(request):  # delete tag instance, for uniformity we add 'and_definition' to function name
     uid = request.session.get("uid")
     tid = request.POST.get("tid")
@@ -743,3 +744,7 @@ def delete_tag_and_definition(request):  # delete tag instance, for uniformity w
         return JsonResponse({"status": 1, "err_msg": err_msg})
     tag.delete()
     return JsonResponse({"status": 0})
+
+
+def about_page(request):
+    return render(request, "core/about.html")
