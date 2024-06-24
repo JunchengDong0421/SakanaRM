@@ -41,7 +41,7 @@
         .toggle-button {
             cursor: pointer;
             display: inline-block;
-            margin: 10px 0;
+            margin-bottom: 10px;
         }
 
         .disabled-checkbox {
@@ -138,7 +138,9 @@
             </tbody>
         </table>
     </div>
+{% endblock %}
 
+{% block scripts %}
     <script>
         $(document).ready(() => {
             var searchURL = "{% url 'core:search-result' %}";
@@ -172,6 +174,7 @@
                 untaggedBox.prop('disabled', false);
                 tagCheckbox.removeClass("disabled-checkbox");
                 untaggedBox.removeClass("disabled-checkbox");
+                tagCheckbox.parent().removeClass("disabled-label");
             });
 
             // grey out other checkboxes when untagged and exact match are selected at the same time

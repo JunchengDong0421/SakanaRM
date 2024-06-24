@@ -76,7 +76,9 @@
         <i style="color: red; font-size: large">Paper not ready yet. Please wait until it is fully uploaded or
             contact the administrator for help.</i>
     {% endif %}
+{% endblock %}
 
+{% block scripts %}
     <script>
         var addTagsURL = "{% url 'core:paper-add-tags' %}";
         var removeTagsURL = "{% url 'core:paper-remove-tags' %}";

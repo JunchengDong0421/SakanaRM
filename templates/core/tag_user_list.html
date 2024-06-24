@@ -36,7 +36,9 @@
     <br>
     <p id="err-msg" style="color: red"></p>
     <a id="back" href="#">Go Back</a><br>
+{% endblock %}
 
+{% block scripts %}
     <script>
         $(document).ready(() => {
             var deleteURL = "{% url 'core:delete-tag-definition' %}";

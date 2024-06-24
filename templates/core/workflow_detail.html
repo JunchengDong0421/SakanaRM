@@ -76,7 +76,9 @@
         <button id="rename">Rename</button>
         <p id="err-msg-4" style="color: red"></p>
     {% endif %}
+{% endblock %}
 
+{% block scripts %}
     <script>
         var pollURL = "{% url 'core:workflow-status' %}";
         var abortURL = "{% url 'core:abort-workflow' %}";

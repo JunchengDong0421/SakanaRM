@@ -35,7 +35,9 @@
     {% endif %}
     <br>
     <a id="back" href="#">Go Back</a><br>
+{% endblock %}
 
+{% block scripts %}
     <script>
         var restoreURL = "{% url 'core:restore-workflow' %}";
 
