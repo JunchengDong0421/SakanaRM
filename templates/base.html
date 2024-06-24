@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 
-
 <head>
     <meta charset="UTF-8">
 
@@ -12,7 +11,7 @@
     </title>
 
     {% load static %}
-        <link rel="shortcut icon" type="image/x-icon" href="{% static 'ico/favicon.ico' %}">
+    <link rel="shortcut icon" type="image/x-icon" href="{% static 'ico/favicon.ico' %}">
 
     {% block style %}
     {% endblock %}
@@ -20,15 +19,17 @@
 </head>
 
 <body>
-
-{% load static %}
-    <script src={% static "js/jquery-3.7.1.min.js" %}></script>
-
-{% block content %}
+    {% block content %}
     <h2> Replace with
         <span style="color: red">{% verbatim %} {% block content %} some content ... {% endblock %} {% endverbatim %}</span>
         in your template!</h2>
-{% endblock %}
+    {% endblock %}
+
+    <script src="https://code.jquery.com/jquery-3.7.1.slim.min.js" integrity="sha256-kmHvs0B+OpCW5GVHUNjv9rOmY0IvSIRcf7zGUDTDQM8=" crossorigin="anonymous"></script>
+
+    {% block script %}
+    {% endblock %}
+
 </body>
 
 </html>
