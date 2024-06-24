@@ -33,8 +33,6 @@
     {% else %}
         You have no archived workflows.
     {% endif %}
-    <br>
-    <a id="back" href="#">Go Back</a><br>
 {% endblock %}
 
 {% block scripts %}
@@ -42,16 +40,6 @@
         var restoreURL = "{% url 'core:restore-workflow' %}";
 
         $(document).ready(() => {
-            // go back or redirect to home link
-            $("#back").click(e => {
-                e.preventDefault();
-                if (window.history.length > 1) {
-                    window.history.back();
-                } else {
-                    window.location.href = "{% url 'core:index' %}";
-                }
-            });
-
             // Restore event
             $(".restore").on('click', function () {
                 if (!confirm("Are you sure to restore selected workflow?")) {
@@ -74,7 +62,7 @@
                         }
                     }
                 })
-            })
+            });
         })
     </script>
 

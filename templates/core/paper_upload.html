@@ -30,12 +30,8 @@
         <br><br>
         <button type="submit">Upload</button>
     </form>
-
     <p id="err-msg" style="color: red"></p>
     <p id="info" style="color: orangered"></p>
-
-    <br>
-    <a id="back" href="#">Go Back</a><br>
 {% endblock %}
 
 {% block scripts %}
@@ -79,16 +75,6 @@
                     }
                 });
                 $('#info').text('It may take a long time to spawn a workflow. Please wait...');
-            });
-
-            // go back or redirect to home link
-            $("#back").click(e => {
-                e.preventDefault();
-                if (window.history.length > 1) {
-                    window.history.back();
-                } else {
-                    window.location.href = "{% url 'core:index' %}";
-                }
             });
         })
     </script>

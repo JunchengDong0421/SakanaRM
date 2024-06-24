@@ -35,7 +35,6 @@
     {% endif %}
     <br>
     <p id="err-msg" style="color: red"></p>
-    <a id="back" href="#">Go Back</a><br>
 {% endblock %}
 
 {% block scripts %}
@@ -46,7 +45,7 @@
             // Update event
             $(".update-tag-link").click(function () {
                 var newURL = "{% url 'core:update-tag-definition-page' %}?tagname=" + $(this).data("tname");
-                window.open(newURL, "_blank");
+                window.open(newURL, "_self");
             })
 
             // Delete event
@@ -71,16 +70,6 @@
                         }
                     }
                 })
-            })
-
-            // go back or redirect to home link
-            $("#back").click(e => {
-                e.preventDefault();
-                if (window.history.length > 1) {
-                    window.history.back();
-                } else {
-                    window.location.href = "{% url 'core:index' %}";
-                }
             });
         })
     </script>

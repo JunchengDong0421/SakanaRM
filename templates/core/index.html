@@ -21,29 +21,29 @@
         <br><br><br>
         <div class="jump-container">
             <div class="workflow-links">
-                <a href="{% url 'core:upload-paper-page' %}" target="_blank">Upload new paper</a>
+                <a href="{% url 'core:upload-paper-page' %}">Upload new paper</a>
                 <br>
-                <a href="{% url 'core:add-tag-definition-page' %}" target="_blank">Add tag and definition</a>
+                <a href="{% url 'core:add-tag-definition-page' %}">Add tag and definition</a>
                 <br>
-                <a href="{% url 'core:update-tag-definition-page' %}" target="_blank">Update tag and definition</a>
+                <a href="{% url 'core:update-tag-definition-page' %}">Update tag and definition</a>
                 <br>
-                <a href="{% url 'core:process-paper-page' %}" target="_blank">Process existing paper</a>
+                <a href="{% url 'core:process-paper-page' %}">Process existing paper</a>
             </div>
             <div class="info-links">
-                <a href="{% url 'core:search-page' %}" target="_blank">Search</a>
+                <a href="{% url 'core:search-page' %}">Search</a>
                 <br>
-                <a href="{% url 'core:my-papers' request.session.uid %}" target="_blank">My papers</a>
+                <a href="{% url 'core:my-papers' request.session.uid %}">My papers</a>
                 <br>
-                <a href="{% url 'core:my-tags' request.session.uid %}" target="_blank">My tags</a>
+                <a href="{% url 'core:my-tags' request.session.uid %}">My tags</a>
                 <br>
-                <a href="{% url 'core:my-archived-workflows' request.session.uid %}" target="_blank">
+                <a href="{% url 'core:my-archived-workflows' request.session.uid %}">
                     Managed archived workflows
                 </a>
             </div>
         </div>
 
         <br><br><br>
-        <h2>My Workflows</h2> <a href="{% url 'core:my-workflows' request.session.uid %}" target="_blank">View All</a>
+        <h2>My Workflows</h2> <a href="{% url 'core:my-workflows' request.session.uid %}">View All</a>
         <hr>
         {% if workflows %}
             {% load custom_filters %}
@@ -69,7 +69,7 @@
                                 <td>{{ wf.get_stage_display }}</td>
                                 <td>{{ wf.get_status_display }}</td>
                                 <td>{{ wf.last_updated }}</td>
-                                <td><a href="{% url 'core:workflow-detail' wf.id %}" target="_blank">Go to Manage</a></td>
+                                <td><a href="{% url 'core:workflow-detail' wf.id %}">Go to Manage</a></td>
                             </tr>
                         {% endfor %}
                     </tbody>

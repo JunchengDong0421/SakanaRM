@@ -8,7 +8,13 @@
     {% load custom_filters %}
     <h2>WID: {{ workflow.id }}</h2>
     <h2>Name: {{ workflow.name }}</h2>
-    <h2>Title: {{ workflow|get_title }}</h2>
+    <h2>Paper:
+        {% if workflow.paper %}
+            <a href="{% url 'core:paper-detail' workflow.paper.id %}">{{ workflow.paper.title }}</a>
+        {% else %}
+            {{ workflow|get_title }}
+        {% endif %}
+    </h2>
     <h2>Type: {{ workflow.get_work_type_display }}</h2>
     <h2>Stage: {{ workflow.get_stage_display }}</h2>
     <h2>Status: {{ workflow.get_status_display }}</h2>
@@ -32,24 +38,6 @@
     </div>
     <br>
 
-    <a id="back" href="#">Go Back</a><br>
-    <a href="{% url 'core:index' %}" target="_blank">Homepage</a><br>
-    {% if not workflow.is_archived %}
-        <a href="{% url 'core:upload-paper-page' %}" target="_blank">Go to upload</a><br>
-        <a href="{% url 'core:add-tag-definition-page' %}" target="_blank">Go to add tags</a><br>
-        {% if workflow.status == completed %}
-            {% if workflow.work_type ==  upload %}
-                <a href="{% url 'core:process-paper-page' %}" target="_blank">Go to process</a><br>
-            {% endif %}
-            {% if workflow.paper %}
-                <a href="{% url 'core:paper-detail' workflow.paper.id %}" target="_blank">Paper detail page</a><br>
-            {% else %}
-                <h3 style="color: red">Something went wrong! Please contact the administrator</h3>
-            {% endif %}
-        {% endif %}
-    {% endif %}
-
-    <br>
     <h2><em>Actions</em></h2>
         <hr>
     {% if workflow.user.id != request.session.uid %}
@@ -190,16 +178,6 @@
                         }
                     }
                 })
-            })
-
-            // go back or redirect to home link
-            $("#back").click(e => {
-                e.preventDefault();
-                if (window.history.length > 1) {
-                    window.history.back();
-                } else {
-                    window.location.href = "{% url 'core:index' %}";
-                }
             });
         })
 

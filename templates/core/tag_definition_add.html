@@ -20,9 +20,6 @@
     </form>
     <p id="suc-msg" style="color: green"></p>
     <p id="err-msg" style="color: red"></p>
-
-    <br>
-    <a id="back" href="#">Go Back</a><br>
 {% endblock %}
 
 {% block scripts %}
@@ -54,16 +51,6 @@
                         }
                     }
                 });
-            });
-
-            // go back or redirect to home link
-            $("#back").click(e => {
-                e.preventDefault();
-                if (window.history.length > 1) {
-                    window.history.back();
-                } else {
-                    window.location.href = "{% url 'core:index' %}";
-                }
             });
         })
     </script>

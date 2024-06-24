@@ -47,11 +47,7 @@
         <br><br>
         <button type="submit">Process</button>
     </form>
-
     <p id="err-msg" style="color: red"></p>
-
-    <br>
-    <a id="back" href="#">Go Back</a><br>
 {% endblock %}
 
 {% block scripts %}
@@ -81,22 +77,12 @@
                             $('#err-msg').text('');
                             const wid = res.wid.toString();
                             const url = '{% url 'core:workflow-detail' 99999 %}'.replace('99999', wid);
-                            window.open(url);
+                            window.open(url, "_self");
                         } else {
                             $('#err-msg').text("Error: " + res.err_msg);
                         }
                     }
                 });
-            });
-
-            // go back or redirect to home link
-            $("#back").click(e => {
-                e.preventDefault();
-                if (window.history.length > 1) {
-                    window.history.back();
-                } else {
-                    window.location.href = "{% url 'core:index' %}";
-                }
             });
         })
     </script>
