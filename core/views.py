@@ -466,6 +466,29 @@ def restore_workflow(request):
 
 
 @login_required()
+def rename_workflow(request):
+    uid = request.session.get("uid")
+    wid = request.POST.get("wid")
+    if not wid:
+        err_msg = "Invalid request!"
+        return JsonResponse({"status": 1, "err_msg": err_msg})
+    try:
+        wid = int(wid)
+    except ValueError:
+        err_msg = "Illegal request parameter, please contact the administrator for help!"
+        return JsonResponse({"status": 1, "err_msg": err_msg})
+    workflow = Workflow.objects.filter(id=wid, user_id=uid).first()
+    if not workflow:
+        err_msg = "Workflow does not exist or you do not have access to it!"
+        return JsonResponse({"status": 1, "err_msg": err_msg})
+
+    new_name = request.POST.get("name")
+    workflow.name = new_name
+    workflow.save()
+    return JsonResponse({"status": 0})
+
+
+@login_required()
 def delete_paper(request):
     uid = request.session.get("uid")
     pid = request.POST.get("pid")

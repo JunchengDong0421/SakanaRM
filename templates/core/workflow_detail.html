@@ -63,6 +63,13 @@
             <button id="archive">Archive</button>
             <p id="err-msg-2" style="color: red"></p>
         {% endif %}
+        <hr>
+
+        <h3>Rename workflow</h3>
+        <label for="new-name">New name: </label><input id="new-name" type="text">
+        <br><br>
+        <button id="rename">Rename</button>
+        <p id="err-msg-4" style="color: red"></p>
     {% endif %}
 
     <script>
@@ -70,6 +77,7 @@
         var abortURL = "{% url 'core:abort-workflow' %}";
         var archiveURL = "{% url 'core:archive-workflow' %}";
         var restoreURL = "{% url 'core:restore-workflow' %}";
+        var renameURL = "{% url 'core:rename-workflow' %}";
 
         $(document).ready(() => {
             // Abort event
@@ -146,6 +154,36 @@
                     }
                 })
             });
+
+            // Rename event
+            $("#rename").click(() => {
+                var newName = $("#new-name").val();
+                if (newName.trim() === "") {
+                    if (!confirm("New name is empty, do you still wish to proceed?")) {
+                        return
+                    }
+                } else if (!confirm('Are you sure to rename workflow to "' + newName + '"?')) {
+                    return;
+                }
+                $.ajax({
+                    url: renameURL,
+                    type: 'POST',
+                    data: {
+                        "wid": '{{ workflow.id }}',
+                        "name": newName,
+                        "csrfmiddlewaretoken": '{{ csrf_token }}'
+                    },
+                    success: res => {
+                        if (res.status === 0) {
+                            $('#err-msg-4').text('');
+                            alert("Renamed workflow successfully!");
+                            location.reload();
+                        } else {
+                            $('#err-msg-4').text("Error: " + res.err_msg);
+                        }
+                    }
+                })
+            })
 
             // go back or redirect to home link
             $("#back").click(e => {

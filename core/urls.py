@@ -25,6 +25,7 @@ urlpatterns = [
     path("api/workflow/abort", views.abort_workflow, name="abort-workflow"),
     path("api/workflow/archive", views.archive_workflow, name="archive-workflow"),
     path("api/workflow/restore", views.restore_workflow, name="restore-workflow"),
+    path("api/workflow/rename", views.rename_workflow, name="rename-workflow"),
     path("api/tag/add", views.add_tag_and_definition, name="add-tag-definition"),
     path("api/tag/update", views.update_tag_and_definition, name="update-tag-definition"),
     path("api/tag/delete", views.delete_tag_and_definition, name="delete-tag-definition"),
