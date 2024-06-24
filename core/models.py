@@ -67,7 +67,8 @@ class Workflow(models.Model):
     id = models.BigAutoField(primary_key=True)
     name = models.CharField(max_length=100, default="Untitled Workflow")
     user = models.ForeignKey(SakanaUser, on_delete=models.CASCADE)
-    paper = models.ForeignKey(Paper, on_delete=models.CASCADE)  # delete all associating workflows when deleting a paper
+    # delete all associating workflows when deleting a paper, can be nullable
+    paper = models.ForeignKey(Paper, null=True, on_delete=models.CASCADE)
     work_type = models.IntegerField(choices=WorkTypeChoices.choices, default=WorkTypeChoices.OTHER)
     instructions = models.TextField()
     stage = models.IntegerField(choices=StageChoices.choices, default=StageChoices.S_START)
