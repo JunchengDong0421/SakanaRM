@@ -12,6 +12,7 @@
 
     {% load static %}
     <link rel="shortcut icon" type="image/x-icon" href="{% static 'ico/favicon.ico' %}">
+    <link rel="stylesheet" href="{% static 'css/navbar.css' %}">
 
     {% block style %}
     {% endblock %}
@@ -19,15 +20,32 @@
 </head>
 
 <body>
+    <div class="nav-bar">
+        <a href="{% url 'core:index' %}">Home</a>
+        {% if not request.user.is_authenticated %}
+            <a href="{% url 'accounts:login-page' %}">Login</a>
+            <a href="{% url 'accounts:register-page' %}">Register</a>
+        {% else %}
+            <a href="{% url 'core:upload-paper-page' %}">Upload Paper</a>
+            <a href="{% url 'core:process-paper-page' %}">Process Paper</a>
+            <a href="{% url 'core:add-tag-definition-page' %}">Add Tag</a>
+            <a href="{% url 'core:search-page' %}">Search</a>
+            <a href="{% url 'core:my-papers' request.session.uid %}">My Papers</a>
+            <a href="#">Tutorial</a>
+            <a href="{% url 'accounts:logout-page' %}">Logout</a>
+        {% endif %}
+    </div>
+
     {% block content %}
     <h2> Replace with
         <span style="color: red">{% verbatim %} {% block content %} some content ... {% endblock %} {% endverbatim %}</span>
-        in your template!</h2>
+        in your template!
+    </h2>
     {% endblock %}
 
-    <script src="https://code.jquery.com/jquery-3.7.1.slim.min.js" integrity="sha256-kmHvs0B+OpCW5GVHUNjv9rOmY0IvSIRcf7zGUDTDQM8=" crossorigin="anonymous"></script>
+    <script src={% static "js/jquery-3.7.1.min.js" %}></script>
 
-    {% block script %}
+    {% block scripts %}
     {% endblock %}
 
 </body>

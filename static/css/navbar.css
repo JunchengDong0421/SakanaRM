@@ -1,0 +1,19 @@
+.nav-bar {
+  background-color: lightgrey;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.nav-bar a {
+  float: left;
+  color: black;
+  text-align: center;
+  padding: 10px 15px;
+  text-decoration: none;
+  font-size: large;
+}
+
+.nav-bar a:hover {
+  background-color: darkgrey;
+  color: darkslategrey;
+}

@@ -1,9 +1,11 @@
-<html lang="en">
-<head>
-    <title>Confirm Logout</title>
-</head>
-<p>Are you sure you want to log out?</p>
-<a href={% url "accounts:logout-action" %}> Yes </a>
-<a href={% url "core:index" %}> No </a>
+{% extends 'base.html' %}
 
-</html>
+{% block title %}
+    Confirm Logout
+{% endblock %}
+
+{% block content %}
+    <p>Are you sure you want to log out?</p>
+    <a href={% url "accounts:logout-action" %}> Yes </a>
+    <a href={% url "core:index" %}> No </a>
+{% endblock %}
