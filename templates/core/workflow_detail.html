@@ -5,9 +5,10 @@
 {% endblock %}
 
 {% block content %}
+    {% load custom_filters %}
     <h2>WID: {{ workflow.id }}</h2>
     <h2>Name: {{ workflow.name }}</h2>
-    <h2>Title: {{ workflow.paper.title }}</h2>
+    <h2>Title: {{ workflow|get_title }}</h2>
     <h2>Type: {{ workflow.get_work_type_display }}</h2>
     <h2>Stage: {{ workflow.get_stage_display }}</h2>
     <h2>Status: {{ workflow.get_status_display }}</h2>
@@ -40,7 +41,11 @@
             {% if workflow.work_type ==  upload %}
                 <a href="{% url 'core:process-paper-page' %}" target="_blank">Go to process</a><br>
             {% endif %}
-            <a href="{% url 'core:paper-detail' workflow.paper.id %}" target="_blank">Paper detail page</a><br>
+            {% if workflow.paper %}
+                <a href="{% url 'core:paper-detail' workflow.paper.id %}" target="_blank">Paper detail page</a><br>
+            {% else %}
+                <h3 style="color: red">Something went wrong! Please contact the administrator</h3>
+            {% endif %}
         {% endif %}
     {% endif %}
 

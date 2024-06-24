@@ -46,6 +46,7 @@
         <h2>My Workflows</h2> <a href="{% url 'core:my-workflows' request.session.uid %}" target="_blank">View All</a>
         <hr>
         {% if workflows %}
+            {% load custom_filters %}
             <div class="table-container">
                 <table class="data-table">
                     <thead>
@@ -63,7 +64,7 @@
                         {% for wf in workflows %}
                             <tr>
                                 <td>{{ wf.name }}</td>
-                                <td>{{ wf.paper.title }}</td>
+                                <td>{{ wf|get_title }}</td>
                                 <td>{{ wf.get_work_type_display }}</td>
                                 <td>{{ wf.get_stage_display }}</td>
                                 <td>{{ wf.get_status_display }}</td>

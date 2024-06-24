@@ -33,8 +33,7 @@ def upload_paper_page(request):
 @login_required()
 def process_paper_page(request):
     uid = request.session.get("uid")
-    # only papers with valid filepath can be processed
-    papers = Paper.objects.filter(owner_id=uid).exclude(Q(file_path__isnull=True) | Q(file_path=""))
+    papers = Paper.objects.filter(owner_id=uid)
     tags = Tag.objects.all()
     return render(request, "core/paper_process.html", {"papers": papers, "tags": tags, "PROCESS": PROCESS})
 
@@ -56,8 +55,7 @@ class PaperUserListView(ListView):
 
     def get_queryset(self):
         uid = self.request.session.get("uid")
-        # only papers with valid filepath can be listed
-        return Paper.objects.filter(owner_id=uid).exclude(Q(file_path__isnull=True) | Q(file_path=""))
+        return Paper.objects.filter(owner_id=uid)
 
 
 class WorkflowDetailView(DetailView):
@@ -78,7 +76,7 @@ class WorkflowDetailView(DetailView):
 
 def start_workflow_task(request, wid, file_obj):
     workflow = Workflow.objects.filter(id=wid).first()
-    if not workflow:
+    if not workflow or workflow.status == ABORTED:
         return
     try:
         uid = request.session.get('uid')
@@ -86,22 +84,14 @@ def start_workflow_task(request, wid, file_obj):
 
         work_type = int(request.POST.get("type"))
         if work_type == UPLOAD:
-            paper = Paper.objects.filter(title=title, owner_id=uid).first()
-            if not paper:
-                return
-
-            # in case of caching, re-query
-            workflow = Workflow.objects.filter(id=wid).first()
-            if not workflow or workflow.status == ABORTED:
-                return
-            workflow.stage = S_UPLOADING
-            workflow.save()
-
             cdn_client = SakanaCDNClient()
             replace = not not request.POST.get("replace")
-            if not replace:
+            if not replace:  # upload new paper
                 file_path = cdn_client.store_paper(file_obj)
-            else:
+            else:  # replace existing paper
+                paper = workflow.paper
+                if not paper:
+                    return
                 filepath = paper.file_path
                 file_path = cdn_client.replace_paper(filepath, file_obj)
 
@@ -117,11 +107,15 @@ def start_workflow_task(request, wid, file_obj):
                     paper.delete()
                 return
             # otherwise continue
-            paper = Paper.objects.filter(title=title, owner_id=uid).first()
-            if not paper:  # if paper is deleted or altered during normal workflow execution
-                workflow.result = json.dumps(json.loads(workflow.result) | {"error": "paper is not available"})
-                workflow.status = FAILED
+            if not replace:  # upload new paper
+                paper = Paper(title=title, owner_id=uid)
+                paper.save()
+                workflow.paper = paper
                 workflow.save()
+            else:  # replace existing paper
+                paper = workflow.paper
+                if not paper:
+                    return
             paper.file_path = file_path
             paper.save()
 
@@ -130,8 +124,7 @@ def start_workflow_task(request, wid, file_obj):
             workflow.save()
 
         elif work_type == PROCESS:
-            pid = int(request.POST.get("pid"))
-            paper = Paper.objects.filter(id=pid, owner_id=uid).first()
+            paper = workflow.paper
             if not paper:
                 return
 
@@ -171,7 +164,7 @@ def start_workflow_task(request, wid, file_obj):
             workflow.save()
 
             # Task 2: tag paper (add matching tags, remove non-matching)
-            paper = Paper.objects.filter(id=pid, owner_id=uid).first()
+            paper = workflow.paper
             if not paper:
                 return
             original_tags = [t.name for t in paper.tags.all()]
@@ -214,10 +207,19 @@ def start_workflow_task(request, wid, file_obj):
 
 def handle_create_workflow(request):
     uid = request.session.get("uid")
+    # check pending count
     pending_workflow_count = Workflow.objects.filter(status=PENDING, user_id=uid).count()
     if pending_workflow_count >= PENDING_WORKFLOWS_LIMIT:
         err_msg = f"You can't have more than {PENDING_WORKFLOWS_LIMIT} workflows running at the same time. "
         return JsonResponse({"status": 1, "err_msg": err_msg})
+    # check name
+    name = request.POST.get("name")
+    if not name:  # when name is an empty string
+        name = "Untitled Workflow"
+    elif len(name) > (max_length := 100):  # if a name is provided and length exceeds max_length
+        err_msg = f"Workflow name exceeds maximum length of {max_length} characters!"
+        return JsonResponse({"status": 1, "err_msg": err_msg})
+
     file_obj = request.FILES.get("paper")
     work_type = request.POST.get("type")
     if not work_type:
@@ -236,18 +238,24 @@ def handle_create_workflow(request):
             return JsonResponse({"status": 1, "err_msg": err_msg})
         replace = not not request.POST.get("replace")
         paper = Paper.objects.filter(title=title, owner_id=uid).first()
-        if paper:
-            if not paper.file_path:
-                err_msg = "You are uploading the same paper, please wait for the upload to complete"
-                return JsonResponse({"status": 1, "err_msg": err_msg})
-            elif not replace:
+        if paper:  # replace existing paper
+            if not replace:
                 err_msg = "You have uploaded the same paper, check replace if you want to replace it"
                 return JsonResponse({"status": 1, "err_msg": err_msg})
-        if not paper:
-            paper = Paper(title=title, owner_id=uid)
-            paper.save()
-        pid = paper.id
-        instructions = f"paper {'(to replace)' if replace else ''}: {title}"
+            pid = paper.id
+            # user cannot upload and process the same paper at the same time
+            workflow = Workflow.objects.filter(user_id=uid, paper_id=pid, work_type__in=INCOMPATIBLE_WORK_TYPE,
+                                               status=PENDING).first()
+            if workflow:
+                err_msg = "You have a running workflow with the same paper. Abort it first or wait for it to complete"
+                return JsonResponse({"status": 1, "err_msg": err_msg})
+            instructions = f"paper (to replace): {title}"
+            workflow = Workflow(user_id=uid, paper_id=pid, name=name, work_type=work_type, instructions=instructions,
+                                stage=S_START, status=PENDING)
+        else:  # upload new paper
+            instructions = f"paper: {title}"
+            workflow = Workflow(user_id=uid, name=name, work_type=work_type, instructions=instructions, stage=S_START,
+                                status=PENDING)
     elif work_type == PROCESS:
         pid = request.POST.get("pid")
         if not pid:
@@ -258,14 +266,15 @@ def handle_create_workflow(request):
         except ValueError:
             err_msg = "Illegal request parameter, please contact the administrator for help!"
             return JsonResponse({"status": 1, "err_msg": err_msg})
+        # user cannot upload and process the same paper at the same time
+        workflow = Workflow.objects.filter(user_id=uid, paper_id=pid, work_type__in=INCOMPATIBLE_WORK_TYPE,
+                                           status=PENDING).first()
+        if workflow:
+            err_msg = "You have a running workflow with the same paper. Abort it first or wait for it to complete"
+            return JsonResponse({"status": 1, "err_msg": err_msg})
         paper = Paper.objects.filter(id=pid, owner_id=uid).first()
         if not paper:
             err_msg = "The paper you want to process does not exist or you do not have access to it, please re-select"
-            return JsonResponse({"status": 1, "err_msg": err_msg})
-        # cannot process paper that is being uploaded or failed the new upload
-        # also in case of some obscure bugs or malicious requests
-        if not paper.file_path:
-            err_msg = "Illegal request, please contact the administrator for help!"
             return JsonResponse({"status": 1, "err_msg": err_msg})
         tags = request.POST.getlist("tag-names")
         if not tags:
@@ -277,6 +286,8 @@ def handle_create_workflow(request):
                 err_msg = "Some selected tags do not exist!"
                 return JsonResponse({"status": 1, "err_msg": err_msg})
         instructions = f'tags: {", ".join(tags)}'
+        workflow = Workflow(user_id=uid, paper_id=pid, name=name, work_type=work_type, instructions=instructions,
+                            stage=S_START, status=PENDING)
     else:
         err_msg = "Illegal workflow creation!"
         return JsonResponse({"status": 1, "err_msg": err_msg})
@@ -285,22 +296,6 @@ def handle_create_workflow(request):
     # Of course, this could take a long time, so on the web page we inform user of this
     file_obj = BytesIO(file_obj.read()) if file_obj else None
 
-    name = request.POST.get("name")
-    if not name:  # when name is an empty string
-        name = "Untitled Workflow"
-    elif len(name) > (max_length := 100):  # if a name is provided and length exceeds max_length
-        err_msg = f"Workflow name exceeds maximum length of {max_length} characters!"
-        return JsonResponse({"status": 1, "err_msg": err_msg})
-
-    # user cannot upload and process the same paper at the same time
-    workflow = Workflow.objects.filter(user_id=uid, paper_id=pid, work_type__in=INCOMPATIBLE_WORK_TYPE,
-                                       status=PENDING).first()
-    if workflow:
-        err_msg = "You have a running workflow with the same paper. Abort it first or wait for it to complete"
-        return JsonResponse({"status": 1, "err_msg": err_msg})
-
-    workflow = Workflow(user_id=uid, paper_id=pid, name=name, work_type=work_type, instructions=instructions,
-                        stage=S_START, status=PENDING)
     workflow.save()
     wid = workflow.id
 
@@ -643,8 +638,7 @@ def paper_remove_tags(request):
 @login_required()
 def search_page(request):
     tags = Tag.objects.all()
-    # only papers with valid filepath can be listed
-    papers = Paper.objects.all().exclude(Q(file_path__isnull=True) | Q(file_path=""))
+    papers = Paper.objects.all()
     return render(request, "core/search.html", {"tags": tags, "papers": papers})
 
 
@@ -677,8 +671,8 @@ def search_result(request):
                     err_msg = "Some selected tags do not exist!"
                     return JsonResponse({"status": 1, "err_msg": err_msg})
 
-    # First filter papers with valid filepath
-    papers = Paper.objects.all().exclude(Q(file_path__isnull=True) | Q(file_path=""))
+    # First get all papers
+    papers = Paper.objects.all()
 
     # Next filter owner
     if owner == "me":
