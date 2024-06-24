@@ -271,7 +271,7 @@ def handle_create_workflow(request):
                 return JsonResponse({"status": 1, "err_msg": err_msg})
         instructions = f'tags: {", ".join(tags)}'
     else:
-        err_msg = "Illegal workflow creation"
+        err_msg = "Illegal workflow creation!"
         return JsonResponse({"status": 1, "err_msg": err_msg})
 
     # VERY IMPORTANT: file object might be closed after request complete, so we read all of it before sending response
@@ -281,6 +281,9 @@ def handle_create_workflow(request):
     name = request.POST.get("name")
     if not name:  # when name is an empty string
         name = "Untitled Workflow"
+    elif len(name) > (max_length := 100):  # if a name is provided and length exceeds max_length
+        err_msg = f"Workflow name exceeds maximum length of {max_length} characters!"
+        return JsonResponse({"status": 1, "err_msg": err_msg})
 
     # user cannot upload and process the same paper at the same time
     workflow = Workflow.objects.filter(user_id=uid, paper_id=pid, work_type__in=INCOMPATIBLE_WORK_TYPE,
@@ -377,6 +380,9 @@ def add_tag_and_definition(request):
     tag_name = request.POST.get("name")
     if not tag_name or not (processed_name := tag_name.replace(";", "").strip()):
         err_msg = "Please enter a valid tag name!"
+        return JsonResponse({"status": 1, "err_msg": err_msg})
+    if len(tag_name) > (max_length := 100):
+        err_msg = f"Tag name exceeds maximum length of {max_length} characters!"
         return JsonResponse({"status": 1, "err_msg": err_msg})
     uid = request.session.get("uid")
     tag = Tag.objects.filter(name=processed_name).first()
