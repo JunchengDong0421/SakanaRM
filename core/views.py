@@ -33,7 +33,8 @@ def upload_paper_page(request):
 @login_required()
 def process_paper_page(request):
     uid = request.session.get("uid")
-    papers = Paper.objects.filter(owner_id=uid)
+    # only papers with valid filepath can be processed
+    papers = Paper.objects.filter(owner_id=uid).exclude(Q(file_path__isnull=True) | Q(file_path=""))
     tags = Tag.objects.all()
     return render(request, "core/paper_process.html", {"papers": papers, "tags": tags, "PROCESS": PROCESS})
 
@@ -55,7 +56,8 @@ class PaperUserListView(ListView):
 
     def get_queryset(self):
         uid = self.request.session.get("uid")
-        return Paper.objects.filter(owner_id=uid)
+        # only papers with valid filepath can be listed
+        return Paper.objects.filter(owner_id=uid).exclude(Q(file_path__isnull=True) | Q(file_path=""))
 
 
 class WorkflowDetailView(DetailView):
@@ -259,6 +261,11 @@ def handle_create_workflow(request):
         paper = Paper.objects.filter(id=pid, owner_id=uid).first()
         if not paper:
             err_msg = "The paper you want to process does not exist or you do not have access to it, please re-select"
+            return JsonResponse({"status": 1, "err_msg": err_msg})
+        # cannot process paper that is being uploaded or failed the new upload
+        # also in case of some obscure bugs or malicious requests
+        if not paper.file_path:
+            err_msg = "Illegal request, please contact the administrator for help!"
             return JsonResponse({"status": 1, "err_msg": err_msg})
         tags = request.POST.getlist("tag-names")
         if not tags:
@@ -507,8 +514,8 @@ def delete_paper(request):
     if paper.workflow_set.filter(status=PENDING).count() > 0:  # if paper still being used by some running workflows
         err_msg = "Cannot delete paper while a workflow associated with it is running!"
         return JsonResponse({"status": 1, "err_msg": err_msg})
-    if not paper.file_path:  # in case of some obscure bugs
-        err_msg = "Illegal request parameter, please contact the administrator for help!"
+    if not paper.file_path:  # in case of some obscure bugs or malicious requests
+        err_msg = "Illegal request, please contact the administrator for help!"
         return JsonResponse({"status": 1, "err_msg": err_msg})
 
     try:
@@ -571,6 +578,11 @@ def paper_add_tags(request):
     if not paper:
         err_msg = "Paper does not exist or you do not have access to it!"
         return JsonResponse({"status": 1, "err_msg": err_msg})
+    # cannot add tags while paper is being uploaded or new upload failed
+    # also in case of some obscure bugs or malicious requests
+    if not paper.file_path:
+        err_msg = "Illegal request, please contact the administrator for help!"
+        return JsonResponse({"status": 1, "err_msg": err_msg})
     tag_ids = request.POST.getlist("tag-ids")
     if not tag_ids:
         err_msg = "Please select at least one tag to add!"
@@ -605,6 +617,11 @@ def paper_remove_tags(request):
     if not paper:
         err_msg = "Paper does not exist or you do not have access to it!"
         return JsonResponse({"status": 1, "err_msg": err_msg})
+    # cannot remove tags while paper is being uploaded or new upload failed
+    # also in case of some obscure bugs or malicious requests
+    if not paper.file_path:
+        err_msg = "Illegal request, please contact the administrator for help!"
+        return JsonResponse({"status": 1, "err_msg": err_msg})
     tag_ids = request.POST.getlist("tag-ids")
     if not tag_ids:
         err_msg = "Please select at least one tag to remove!"
@@ -626,7 +643,8 @@ def paper_remove_tags(request):
 @login_required()
 def search_page(request):
     tags = Tag.objects.all()
-    papers = Paper.objects.all()
+    # only papers with valid filepath can be listed
+    papers = Paper.objects.all().exclude(Q(file_path__isnull=True) | Q(file_path=""))
     return render(request, "core/search.html", {"tags": tags, "papers": papers})
 
 
@@ -659,8 +677,10 @@ def search_result(request):
                     err_msg = "Some selected tags do not exist!"
                     return JsonResponse({"status": 1, "err_msg": err_msg})
 
-    papers = Paper.objects.all()
-    # First filter owner
+    # First filter papers with valid filepath
+    papers = Paper.objects.all().exclude(Q(file_path__isnull=True) | Q(file_path=""))
+
+    # Next filter owner
     if owner == "me":
         papers = papers.filter(owner_id=uid)
     elif owner == "others":
