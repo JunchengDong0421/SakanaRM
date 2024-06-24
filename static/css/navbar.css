@@ -16,6 +16,14 @@
   font-size: large;
 }
 
+.nav-bar a.home {
+  color: white;
+}
+
+.nav-bar a.logout {
+  color: red;
+}
+
 .logo {
   height: 30px;
   border: 1px solid black;
@@ -24,7 +32,7 @@
 }
 
 .logo-name {
-  color: darkred;
+  color: darkviolet;
 }
 
 .nav-bar a:hover {

@@ -25,7 +25,7 @@
             <img class="logo" src="{% static 'img/sakanarm-light.svg' %}" alt="">
             <span class="logo-name">SakanaRM</span>
         </a>
-        <a href="{% url 'core:index' %}">Home</a>
+        <a class="home" href="{% url 'core:index' %}">Home</a>
         {% if not request.user.is_authenticated %}
             <a href="{% url 'accounts:login-page' %}">Login</a>
             <a href="{% url 'accounts:register-page' %}">Register</a>
@@ -36,7 +36,7 @@
             <a href="{% url 'core:search-page' %}">Search</a>
             <a href="{% url 'core:my-papers' request.session.uid %}">My Papers</a>
             <a href="#">Tutorial</a>
-            <a href="{% url 'accounts:logout-page' %}">Logout</a>
+            <a class="logout" href="{% url 'accounts:logout-page' %}">Logout</a>
         {% endif %}
     </div>
 
