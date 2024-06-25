@@ -1,0 +1,40 @@
+FROM python:3.9-slim as build
+
+WORKDIR /usr/src/SakanaRM
+
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+RUN pip install --upgrade pip
+
+COPY ./requirements.txt .
+RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/SakanaRM/wheels -r requirements.txt
+
+FROM python:3.9-slim
+
+RUN mkdir -p /home/SakanaRM
+
+RUN addgroup --system sknrm && adduser --system --group sknrm
+
+ENV HOME=/home/SakanaRM
+ENV APP_HOME=/home/SakanaRM/web
+RUN mkdir $APP_HOME
+RUN mkdir $APP_HOME/staticfiles
+WORKDIR $APP_HOME
+
+COPY --from=build /usr/src/SakanaRM/wheels /wheels
+COPY --from=build /usr/src/SakanaRM/requirements.txt .
+RUN pip install --upgrade pip
+RUN pip install --no-cache /wheels/*
+
+COPY ./entrypoint.prod.sh .
+RUN sed -i 's/\r$//g' $APP_HOME/entrypoint.prod.sh
+RUN chmod +x $APP_HOME/entrypoint.prod.sh
+
+COPY . $APP_HOME
+
+RUN chown -R sknrm:sknrm $APP_HOME
+
+USER sknrm
+
+ENTRYPOINT ["/home/SakanaRM/web/entrypoint.prod.sh"]
