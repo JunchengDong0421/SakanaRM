@@ -1,0 +1,20 @@
+services:
+  web:
+    build: 
+      context: ./SakanaRM
+      dockerfile: Dockerfile.prod
+    volumes:
+      - static_volume:/home/SakanaRM/web/staticfiles
+    expose:
+      - 8000
+  nginx:
+    build: ./nginx
+    ports:
+      - 80:80
+    volumes:
+      - static_volume:/home/SakanaRM/web/staticfiles
+    depends_on:
+      - web
+
+volumes:
+  static_volume:

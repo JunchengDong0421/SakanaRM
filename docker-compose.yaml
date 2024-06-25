@@ -1,0 +1,8 @@
+services:
+  web:
+    build: ./SakanaRM
+    volumes:
+      - ./SakanaRM/:/usr/src/SakanaRM/
+    ports:
+      - 8000:8000
+
