@@ -29,17 +29,22 @@ Added in Python 3.8:
   
 ## Todo List
 
-- [ ] **As of 26/06:**
+- [ ] **As of 03/07:**
+  - [ ] (p1) Global error handler and logger
+  - [ ] (p1) User space page
+  - [ ] (p1) link to paper and user space in search results
 
+- [ ] **As of 26/06:**
   - [x] (p0) My tags list page
   - [x] (p1) Add navigation bar
+  - [x] (p0) Finish containerization
   - [ ] (p1) Refactor enum fields
-  - [ ] (p1) Global error handler and logger
   - [ ] (p2) Tutorial video
 
 - [ ] **Features (optional):**
   - [ ] Google OAuth2
   - [ ] Use display name apart from username
+  - [ ] User upload avatars and config media files
 
 - [ ] **Readme Content:**
   - [ ] photo of system designs
