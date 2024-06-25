@@ -108,7 +108,7 @@ def start_workflow_task(request, wid, file_obj):
                 return
             # otherwise continue
             if not replace:  # upload new paper
-                paper = Paper(title=title, owner_id=uid)
+                paper = Paper(title=title, owner_id=uid, file_path=file_path)
                 paper.save()
                 workflow.paper = paper
                 workflow.save()
@@ -116,8 +116,8 @@ def start_workflow_task(request, wid, file_obj):
                 paper = workflow.paper
                 if not paper:
                     return
-            paper.file_path = file_path
-            paper.save()
+                paper.file_path = file_path
+                paper.save()
 
             workflow.stage = S_END
             workflow.status = COMPLETED
@@ -358,13 +358,11 @@ def abort_workflow(request):
     if status not in CAN_ABORT_STATUS:
         err_msg = f'You can not abort workflow with status "{status}"'
         return JsonResponse({"status": 1, "err_msg": err_msg})
-
-    paper = workflow.paper
-    # if workflow aborted before upload of new (otherwise there should be an old filepath) paper completed
-    if not paper.file_path:
-        workflow.paper.delete()
-        alert_msg = "It seems that you are aborting a workflow while paper upload is not completed. " \
-                    "This action deletes the workflow and you will now be redirected to homepage."
+    # in case of obscure bugs or malicious requests
+    if workflow.paper and not (paper := workflow.paper).file_path:
+        paper.delete()
+        alert_msg = "Something went wrong! The workflow will be deleted now and you will be redirected to homepage. " \
+                    "Please contact the administrator for help."
         return JsonResponse({"status": 1, "alert_msg": alert_msg})
     workflow.messages += "Manual abortion; "
     workflow.status = ABORTED
