@@ -10,7 +10,7 @@ class CDNConfigDev(BaseCDNConfig):
 
 
 class CDNConfigProd(BaseCDNConfig):
-    CDN_HOST = "http://cdn.sakanarm.com:5000"
+    CDN_HOST = "http://10.105.6.24:5000"
 
 
 def get_cdn_config():

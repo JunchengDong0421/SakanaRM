@@ -3,3 +3,4 @@ g4f==0.3.2.0
 PyPDF2==3.0.1
 requests==2.25.1
 gunicorn==22.0.0
+mysqlclient==2.1.0

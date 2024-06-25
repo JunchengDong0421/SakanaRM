@@ -7,6 +7,30 @@ services:
       - static_volume:/home/SakanaRM/web/staticfiles
     expose:
       - 8000
+    depends_on:
+      db:
+        condition: service_healthy
+  
+  db:
+    image: mariadb:latest
+    restart: always
+    volumes:
+      - db_data:/var/lib/mysql
+      - db_conf:/etc/mysql/conf.d
+    expose:
+      - 3306
+    environment:
+      MYSQL_ROOT_PASSWORD: ge85dih@
+      MYSQL_DATABASE: sakanarm_db
+      MYSQL_USER: sakanarm_user
+      MYSQL_PASSWORD: codex110#
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 3
+  
   nginx:
     build: ./nginx
     ports:
@@ -18,3 +42,5 @@ services:
 
 volumes:
   static_volume:
+  db_data:
+  db_conf:

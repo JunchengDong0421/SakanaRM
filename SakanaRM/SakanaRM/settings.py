@@ -76,8 +76,12 @@ WSGI_APPLICATION = "SakanaRM.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'sakanarm_db',
+        'USER': 'sakanarm_user',
+        'PASSWORD': 'codex110#',
+        'HOST': 'db',
+        'PORT': '3306',
     }
 }
 
