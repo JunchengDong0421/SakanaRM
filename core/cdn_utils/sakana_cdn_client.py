@@ -4,13 +4,13 @@ import requests
 
 from .abstract_cdn_client import AbstractCDNClient
 from .cdn_client_exception import CDNClientException
-from .config import CDNConfigDev
+from .config import get_cdn_config
 from .utils import random_filename
 
 
 class SakanaCDNClient(AbstractCDNClient):
     __instance = None
-    config = CDNConfigDev
+    config = get_cdn_config()
 
     def __new__(cls):
         if cls.__instance is None:

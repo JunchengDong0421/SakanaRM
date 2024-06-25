@@ -22,9 +22,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-27r-%*z2=nmeu4($p1@d--8&@1_=$cmv^4@_^h958_yiui9f5d"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 # Application definition
 
@@ -120,3 +120,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Used by @login_required decorator
 LOGIN_URL = "/login/"
+
+# Customized settings:
+# Configure CDN client environment
+CDN_CLIENT_ENV = "prod"
