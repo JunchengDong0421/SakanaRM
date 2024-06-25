@@ -35,6 +35,9 @@
                 <h3 style="color: yellowgreen">Tags kept: {{ result.kept_tags|join:"; " }}</h3>
             {% endif %}
         {% endif %}
+        {% if workflow.status == failed %}
+            <h3 style="color: red;">{{ result.error }}</h3>
+        {% endif %}
     </div>
     <br>
 

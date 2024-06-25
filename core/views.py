@@ -68,6 +68,7 @@ class WorkflowDetailView(DetailView):
             context["result"] = json.loads(workflow.result)
             context["pending"] = PENDING
             context["completed"] = COMPLETED
+            context["failed"] = FAILED
             context["upload"] = UPLOAD
             context["process"] = PROCESS
             context["can_abort_status"] = CAN_ABORT_STATUS
