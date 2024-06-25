@@ -13,7 +13,7 @@
     </style>
 {% endblock %}
 {% block content %}
-    {% if request.user.is_authenticated %}
+    {% if request.user.is_authenticated and not request.user.is_superuser %}
         <b>Hello, {{ request.user.get_username }}!</b>
         <br>
         <b>UID: {{ request.session.uid }}</b>
