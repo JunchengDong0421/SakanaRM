@@ -16,24 +16,29 @@ IV. System-level integration -> testing -> review -> optimization and loop…  &
 V. Final product (that fulfills the success metric)    &nbsp;&nbsp;&nbsp;&nbsp;         **by July 15, 2024**
 
 ## Features
+**Essential:** 
 
-- [ ] **Essential:**
-  - [x] Data storage for references/papers
-  - [x] Manage references (add, replace, delete, download)
-  - [x] Manage customizable tags (add, update, delete)
-  - [x] Match tags on references 
-  - [x] Query for references based on filters
-  - [ ] (99% done, ETA: 2 min) Integration with LLM
-  - [x] Flexible programming interfaces to switch between LLMs
-  - [x] Track progress of reference uploads and LLM
-  - [x] Productionization
-  - [ ] (40% done, ETA: 2 days) User documentation
-  - [ ] (20% done, ETA: 4 days) Developer documentation
-  - [ ] (80% done, ETA: 2 days) Usable (not so ugly) UI
+| Feature                         | Sub-Feature                            | Status            | ETA         |
+|---------------------------------|----------------------------------------|-------------------|-------------|
+| Store references                | PDF only                               | DONE              |             |
+| Manage references               | Add, replace, delete, download         | DONE              |             |
+| Manage customizable tags        | Add, update, delete                    | DONE              |             |
+| Match tags                      | On references                          | DONE              |             |
+| Query for references            | Based on filters                       | DONE              |             |
+| Integration with LLM            |                                        | IN PROGRESS (99%) | 26/06       |
+| Flexible programming interfaces | Switch between LLMs                    | DONE              |             |
+| Track progress                  | Reference uploads and LLM              | DONE              |             |
+| Productionization               |                                        | DONE              |             |
+| User documentation              |                                        | IN PROGRESS (40%) | 01/07       |
+| Developer documentation         |                                        | IN PROGRESS (20%) | 02/07       |
+| Usable UI                       | (not so ugly)                          | IN PROGRESS (80%) | 28/06       |
 
+**Optional:**                 
 
-- [ ] **Optional:**
-  - [ ] Integration with Google OAuth 2
+| Feature                         | Sub-Feature                            | Status            | ETA         |
+|---------------------------------|----------------------------------------|-------------------|-------------|
+| Integration with Google OAuth   |                                        | BACKLOG           |             |
+
 
 ## Installation
 ### Prerequisite
