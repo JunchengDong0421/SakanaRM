@@ -9,7 +9,7 @@ from .utils import random_filename
 
 class SakanaCDNClient(AbstractCDNClient):
     __instance = None
-    BASE_URL = "http://192.168.196.130:5000/files"
+    BASE_URL = "http://192.168.196.130:5000/files/"
 
     def __new__(cls):
         if cls.__instance is None:
