@@ -120,8 +120,3 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Used by @login_required decorator
 LOGIN_URL = "/login/"
-
-
-# Customized settings:
-# Configure CDN client environment
-CDN_CLIENT_ENV = "dev"

@@ -4,13 +4,12 @@ import requests
 
 from .abstract_cdn_client import AbstractCDNClient
 from .cdn_client_exception import CDNClientException
-from .config import get_cdn_config
 from .utils import random_filename
 
 
 class SakanaCDNClient(AbstractCDNClient):
     __instance = None
-    config = get_cdn_config()
+    BASE_URL = "http://192.168.196.130:5000/files"
 
     def __new__(cls):
         if cls.__instance is None:
@@ -21,7 +20,7 @@ class SakanaCDNClient(AbstractCDNClient):
         try:
             with fd:
                 filename = random_filename()
-                url = f"{self.config.CDN_HOST}{self.config.RESOURCE_REQUEST_PATH}{filename}"
+                url = f"{self.BASE_URL}{filename}"
                 files = {"file": (filename, fd)}
                 res = requests.post(url, files=files)
             json_res = res.json()
