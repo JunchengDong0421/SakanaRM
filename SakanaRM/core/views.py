@@ -13,7 +13,7 @@ from django.views.generic import DetailView, ListView
 from zoneinfo import ZoneInfo  # Python 3.9 or later only
 
 from .cdn_utils import SakanaCDNClient
-from .llm_utils import SimpleKeywordClient
+from .llm_utils import GPTClient, SimpleKeywordClient
 from .macros import *
 from .models import Paper, Tag, SakanaUser, Workflow
 
@@ -154,7 +154,7 @@ def start_workflow_task(request, wid, file_obj):
             for t in tags:
                 tag = Tag.objects.filter(name=t).first()
                 tags_dict[t] = tag.definition
-            llm_client = SimpleKeywordClient()
+            llm_client = GPTClient()
             matching_tags = llm_client.match_paper_on_tags(file_obj, tags)
 
             # in case of caching, re-query
