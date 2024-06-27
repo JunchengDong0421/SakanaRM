@@ -85,11 +85,4 @@
         <a href="{% url 'accounts:register-page' %}">Register</a>
         <br><br><br>
     {% endif %}
-    <br><br>
-
-
-    {% if err_msg %}
-        <p style="color: red"> Error: {{ err_msg }} </p>
-    {% endif %}
-
 {% endblock %}
