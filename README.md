@@ -170,10 +170,10 @@ To restart services:
 ### Pure Personal Use (not recommended)
 If you don't want to install or mess around with `docker`, plus you are using the server for yourself/with a few 
 trusted people only (meaning less load, fewer papers), then it makes sense to only run the services as Python 
-executables with Django and Flask's built-in development servers. Since the server doesn't run in a container 
+executables with Django and Flask's built-in development servers. Since the application doesn't run in a container 
 environment anymore, you can configure ***SakanaCDNClient*** to use "http://localhost:5000/files" as ***"BASE_URL"*** 
-if you run SakanaCDN on the same machine. Still, you need to **weight the risks** because the development servers are 
-**not particularly secure, stable, or efficient**.
+if you run SakanaCDN on the same machine. Still, you must **weigh the risks** because the development servers are 
+**not particularly secure, stable, or efficient** in their design.
 
 1. Remove all `gunicorn`, `mysqlclient`, `greenlet` and `gevent` dependencies from *SakanaRM/requirements.txt* and
 *SakanaCDN/requirements.txt*.
