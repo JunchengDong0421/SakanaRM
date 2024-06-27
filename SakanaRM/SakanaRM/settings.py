@@ -124,3 +124,64 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Used by @login_required decorator
 LOGIN_URL = "/login/"
+
+# Configure logging
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{asctime} [{levelname}] {module} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{asctime} [{levelname}] {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'accounts_file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': 'logs/accounts_info.log',
+            'formatter': 'verbose',
+        },
+        'core_file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': 'logs/core_info.log',
+            'formatter': 'verbose',
+        },
+        'error_file': {
+            'level': 'ERROR',
+            'class': 'logging.FileHandler',
+            'filename': 'logs/django_error.log',
+            'formatter': 'verbose',
+        },
+        # print INFO or higher messages to stderr
+        'console': {
+            'level': 'ERROR',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+    },
+    'loggers': {
+        # captures INFO or higher messages in accounts app
+        'accounts': {
+            'handlers': ['accounts_file', 'console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        # captures INFO or higher messages in core app
+        'core': {
+            'handlers': ['core_file', 'console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'django.request': {
+            'handlers': ['error_file', 'console'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+    },
+}

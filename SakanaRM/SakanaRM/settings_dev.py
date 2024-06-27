@@ -120,3 +120,70 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Used by @login_required decorator
 LOGIN_URL = "/login/"
+
+# Configure logging
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{asctime} [{levelname}] {module} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{asctime} [{levelname}] {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': 'django_debug.log',
+            'formatter': 'verbose',
+        },
+        'access_file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': 'django_access.log',
+            'formatter': 'simple',
+        },
+        'error_file': {
+            'level': 'ERROR',
+            'class': 'logging.FileHandler',
+            'filename': 'django_error.log',
+            'formatter': 'verbose',
+        },
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file', 'console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'django.request': {
+            'handlers': ['error_file', 'console'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        'accounts':  {
+            'handlers': ['file', 'console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'core': {
+            'handlers': ['file', 'console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+    'root': {
+        'handlers': ['access_file'],
+        'level': 'INFO',
+    },
+}

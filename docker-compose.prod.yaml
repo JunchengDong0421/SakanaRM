@@ -5,6 +5,7 @@ services:
       dockerfile: Dockerfile.prod
     volumes:
       - static_volume:/home/SakanaRM/web/staticfiles
+      - logs:/home/SakanaRM/web/logs
     expose:
       - 8000
     depends_on:
@@ -44,3 +45,4 @@ volumes:
   static_volume:
   db_data:
   db_conf:
+  logs:
