@@ -62,11 +62,20 @@ V. Final product (that fulfills the success metric)    &nbsp;&nbsp;&nbsp;&nbsp; 
 ## Installation
 ### Prerequisite
 - Python 3.9
-- Docker (Engine version 27.0.1) 
+- Docker (Engine version 27.0.1, Compose version 2.27.1)     
+
+**System requirements**: Windows not supported. Tested on Ubuntu 22.04. Hardware requirements not investigated and vary 
+on usage scenarios.
 
 **How to install Docker**: please follow the [official guide](https://docs.docker.com/engine/install/). 
-You can either install Docker Engine or Docker Desktop. Verify critical components are correctly installed by
-running commands such as `sudo docker compose version` etc.
+You can either install Docker Engine or Docker Desktop.    
+
+**Verify versions**:
+```
+python -V
+sudo docker -v
+sudo docker compose version
+```
 
 If you really want to use a Python interpreter version below 3.9, please find out the following patterns in source code 
 and refactor them:
@@ -158,12 +167,13 @@ To shut down services:
 To restart services:    
 `sudo docker compose restart`  
 
-### Pure Personal Use
+### Pure Personal Use (not recommended)
 If you don't want to install or mess around with `docker`, plus you are using the server for yourself/with a few 
 trusted people only (meaning less load, fewer papers), then it makes sense to only run the services as Python 
 executables with Django and Flask's built-in development servers. Since the server doesn't run in a container 
 environment anymore, you can configure ***SakanaCDNClient*** to use "http://localhost:5000/files" as ***"BASE_URL"*** 
-if you run SakanaCDN on the same machine. Still, you need to **weight the risks**.
+if you run SakanaCDN on the same machine. Still, you need to **weight the risks** because the development servers are 
+**not particularly secure, stable, or efficient**.
 
 1. Remove all `gunicorn`, `mysqlclient`, `greenlet` and `gevent` dependencies from *SakanaRM/requirements.txt* and
 *SakanaCDN/requirements.txt*.
@@ -287,6 +297,15 @@ MariaDB health check uses official example in [this link](https://mariadb.com/kb
 If the code or script for some reasons does not work anymore, please check for updates on official websites.
 
 ### Switch to Other Databases
+
+### Windows Support
+Since Gunicorn does not support Windows, you should use another WSGI server to run the WSGI application 
+(SakanaRM: Django, SakanaCDN: Flask) if you want to [deploy](https://flask.palletsprojects.com/en/2.3.x/deploying/) 
+the project on a Windows system. However, if you take the [Pure Personal Use](#pure-personal-use-not-recommended) 
+approach, then you don't have to consider this layer of deployment. But, Python is not 100% portable between platforms, 
+and that's why in *SakanaRM/core/views.py* a line in function *search_result* checks for os names because Windows and 
+Linux use different flags to remove zero padding in formatting datetime strings (see 
+[link](https://stackoverflow.com/questions/9525944/python-datetime-formatting-without-zero-padding/42709606#42709606)).
 
 ### Abandon the CDN Approach
 As mentioned above that the server does not require a real CDN service to fully function. Considering the personas 
