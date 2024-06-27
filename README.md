@@ -16,22 +16,41 @@ IV. System-level integration -> testing -> review -> optimization and loop…  &
 V. Final product (that fulfills the success metric)    &nbsp;&nbsp;&nbsp;&nbsp;         **by July 15, 2024**
 
 ## Features
-**Essential:** 
+**Essential:**
 
-| Feature                         | Sub-Feature                            | Status            | ETA         |
-|---------------------------------|----------------------------------------|-------------------|-------------|
-| Store references                | PDF only                               | DONE              |             |
-| Manage references               | Add, replace, delete, download         | DONE              |             |
-| Manage customizable tags        | Add, update, delete                    | DONE              |             |
-| Match tags                      | On references                          | DONE              |             |
-| Query for references            | Based on filters                       | DONE              |             |
-| Integration with LLM            |                                        | IN PROGRESS (99%) | 26/06       |
-| Flexible programming interfaces | Switch between LLMs                    | DONE              |             |
-| Track progress                  | Reference uploads and LLM              | DONE              |             |
-| Productionization               |                                        | DONE              |             |
-| User documentation              |                                        | IN PROGRESS (40%) | 01/07       |
-| Developer documentation         |                                        | IN PROGRESS (20%) | 02/07       |
-| Usable UI                       | (not so ugly)                          | IN PROGRESS (80%) | 28/06       |
+| Feature                         | Sub-Feature                                              | Status      | ETA   |
+|---------------------------------|----------------------------------------------------------|-------------|-------|
+| Store references                | PDF only                                                 | DONE        |       |
+| Manage references               | Add, replace, delete, download                           | DONE        |       |
+| Manage customizable tags        | Add, update, delete                                      | DONE        |       |
+| Match tags                      | On references                                            | DONE        |       |
+| Query for references            | Based on filters                                         | DONE        |       |
+| Integration with LLM            |                                                          |             |       |
+|                                 | Stand-alone client                                       | DONE        |       |
+|                                 | Integration into views                                   | DONE        |       |
+| Flexible programming interfaces |                                                          |             |       |
+|                                 | Switch between LLMs                                      | DONE        |       |
+|                                 | Switch between CDNs                                      | DONE        |       |
+| Track progress                  |                                                          |             |       |
+|                                 | Track reference uploads                                  | DONE        |       |
+|                                 | Track LLM processing                                     | DONE        |       |
+| Productionization               |                                                          |             |       |
+|                                 | Docker-related files                                     | DONE        |       |
+|                                 | Deployment with Gunicorn, MariaDB, Nginx                 | DONE        |       |
+| User documentation              |                                                          |             |       |
+|                                 | Installation                                             | DONE        |       |
+|                                 | Configuration                                            | DONE        |       |
+|                                 | Usage                                                    | IN PROGRESS | 30/06 |
+|                                 | Important notices                                        | IN PROGRESS | 02/07 |
+|                                 | Tutorial video                                           | BACKLOG     | 09/07 |
+| Developer documentation         |                                                          |             |       |
+|                                 | Preface (project structure, some basics)                 | DONE        |       |
+|                                 | Advanced deployment (settings, custom clients, database) | IN PROGRESS | 01/07 |
+|                                 | Miscellaneous                                            | IN PROGRESS | 02/07 |
+|                                 | Simple API reference                                     | BACKLOG     | 09/07 |
+| Usable UI                       |                                                          |             |       |
+|                                 | Basic layout                                             | DONE        |       |
+|                                 | Beautified page (apply quick solutions)                  | IN PROGRESS | 02/07 |
 
 **Optional:**                 
 
