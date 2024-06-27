@@ -25,14 +25,15 @@ class GPTClient(AbstractLLMClient):
             matching_tags = []
 
             messages = []
-            init_query = f'Please read the following research paper content first and prepare to answer some questions ' \
-                         f'based on the it. Part 1:{slices[0]}'
+            init_query = f'Please read the following research paper content first and prepare to answer some ' \
+                         f'questions based on the it. Part 1:{slices[0]}'
             messages.append({"role": "user", "content": init_query})
             messages.append({"role": "assistant", "content": "Please continue."})
             for i, s in enumerate(slices[1:]):
                 query = f'Part {i + 2}: {s}'
                 messages.append({"role": "user", "content": query})
                 messages.append({"role": "assistant", "content": "Please continue."})
+            # Note that "tags" is a dictionary
             tag_names = [n for n in tags.keys()]
             questions = [d for d in tags.values()]
             init_tag_query = f'Above is the full paper. Please ignore any links in it. ' \
@@ -53,7 +54,8 @@ class GPTClient(AbstractLLMClient):
                 time.sleep(1)  # avoid too frequent requests to API
                 tag_query = f'Question 2: {d}'
                 messages.append({"role": "user", "content": tag_query})
-                response = client.chat.completions.create(model="gpt-3.5-turbo", messages=messages, temperature=temperature)
+                response = client.chat.completions.create(model="gpt-3.5-turbo", messages=messages,
+                                                          temperature=temperature)
                 choice = response.choices[0].message.content
                 if 'yes' in choice.lower():
                     matching_tags.append(n)
