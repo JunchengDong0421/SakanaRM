@@ -31,7 +31,7 @@
 {% block scripts %}
     <script>
         $(document).ready(() => {
-            // detect file name
+            // Detect file name
             $("#paper").on("change", () => {
                 const fileInput = $('#paper');
                 if (fileInput[0].files.length > 0) {
@@ -41,7 +41,7 @@
                 }
             });
 
-            // ajax submit form
+            // Upload paper
             $('#upload-form').submit(e => {
                 e.preventDefault();
                 const form = $('#upload-form');
@@ -70,6 +70,9 @@
                 });
                 $('#info').text('It may take a long time to spawn a workflow. Please wait...');
             });
+
+            // Highlight navigation block
+            $("#upload-nav").addClass('active-nav');
         })
     </script>
 

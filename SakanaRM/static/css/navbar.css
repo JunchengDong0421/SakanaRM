@@ -20,11 +20,11 @@
   font-size: large;
 }
 
-.nav-bar a.home {
+.nav-bar a#home-nav {
   color: white;
 }
 
-.nav-bar .logout {
+.nav-bar #logout {
   color: red;
 }
 
@@ -36,12 +36,16 @@
 }
 
 .logo-name {
-  color: darkorange;
+  color: darkviolet;
 }
 
-.nav-bar .logout:hover,
+.nav-bar #logout:hover,
 .nav-bar a:hover {
   background-color: darkgrey;
   color: darkslategrey;
   cursor: pointer;
+}
+
+.active-nav {
+  background: coral;
 }

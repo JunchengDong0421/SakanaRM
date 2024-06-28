@@ -82,3 +82,11 @@
         <br><br><br>
     {% endif %}
 {% endblock %}
+{% block scripts %}
+    <script>
+        $(document).ready(() => {
+            // Highlight navigation block
+            $("#home-nav").addClass('active-nav');
+        })
+    </script>
+{% endblock %}

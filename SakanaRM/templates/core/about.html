@@ -43,13 +43,17 @@
 {% block scripts %}
     <script>
         $(document).ready(() => {
+            // Get repo stars
             $.ajax({
                 url: "https://api.github.com/repos/JunchengDong0421/SakanaRM",
                 type: "GET",
                 success: res => {
                     $(".git-stars").text('Stars: ' + res.stargazers_count);
                 }
-            })
+            });
+
+            // Highlight navigation block
+            $("#about-nav").addClass('active-nav');
         })
     </script>
 {% endblock %}

@@ -53,7 +53,7 @@
 {% block scripts %}
     <script>
         $(document).ready(() => {
-            // ajax submit form
+            // Process paper
             $('#process-form').submit(e => {
                 e.preventDefault();
                 var checkedTags = $('input[name="tag-names"]:checked').map(function () {
@@ -84,6 +84,9 @@
                     }
                 });
             });
+
+            // Highlight navigation block
+            $("#process-nav").addClass('active-nav');
         })
     </script>
 

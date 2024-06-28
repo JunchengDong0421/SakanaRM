@@ -34,3 +34,12 @@
         No papers matched.
     {% endif %}
 {% endblock %}
+
+{% block scripts %}
+    <script>
+        $(document).ready(() => {
+            // Highlight navigation block
+            $("#papers-nav").addClass('active-nav');
+        })
+    </script>
+{% endblock %}

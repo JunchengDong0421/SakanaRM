@@ -25,7 +25,7 @@
 {% block scripts %}
     <script>
         $(document).ready(() => {
-            // ajax submit form
+            // Add tag
             $('#tag-form').submit(e => {
                 e.preventDefault();
                 if (!confirm("Are you sure to create this new tag?")) {
@@ -52,6 +52,9 @@
                     }
                 });
             });
+
+            // Highlight navigation block
+            $("#tag-nav").addClass('active-nav');
         })
     </script>
 {% endblock %}
