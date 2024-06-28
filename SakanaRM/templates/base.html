@@ -40,12 +40,14 @@
         {% endif %}
     </div>
 
-    {% block content %}
-    <h2> Replace with
-        <span style="color: red">{% verbatim %} {% block content %} some content ... {% endblock %} {% endverbatim %}</span>
-        in your template!
-    </h2>
-    {% endblock %}
+    <div class="page-content">
+        {% block content %}
+            <h2> Replace with
+                <span style="color: red">{% verbatim %} {% block content %} some content ... {% endblock %}
+                    {% endverbatim %}</span> in your template!
+            </h2>
+        {% endblock %}
+    </div>
 
     <script src={% static "js/jquery-3.7.1.min.js" %}></script>
 
