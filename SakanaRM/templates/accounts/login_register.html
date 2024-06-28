@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+{% block title %} SakanaRM - Login/Register {% endblock %}
+{% block style %}
+    <style>
+        .main-container {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+        .container {
+            width: 300px;
+            background-color: white;
+            padding: 10px 20px 20px 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .tabs {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 10px;
+            cursor: pointer;
+        }
+        .tab.active {
+            font-weight: bold;
+            border-bottom: 2px solid #007BFF;
+        }
+        .form-container {
+            display: none;
+        }
+        .form-container.active {
+            display: block;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        input {
+            margin-bottom: 10px;
+            padding: 8px;
+            font-size: 14px;
+        }
+        button {
+            padding: 10px;
+            font-size: 16px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .nav-bar {
+            margin-bottom: 0;
+        }
+    </style>
+{% endblock %}
+{% block content %}
+    <div class="main-container">
+        <div class="container">
+            <div class="tabs">
+                <div class="tab active" id="login-tab">Login</div>
+                <div class="tab" id="register-tab">Register</div>
+            </div>
+
+            <!-- Login Form -->
+            <div class="form-container active" id="login-form">
+                <form action="{% url 'accounts:login-action' %}" method="POST" id="loginForm">
+                    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                    <input type="text" name="username" placeholder="Username" required>
+                    <input type="password" name="password" placeholder="Password" required>
+                    <button type="submit">Login</button>
+                </form>
+                <p style="color: red" id="err-msg-1"></p>
+                <p style="color: green" id="suc-msg-1"></p>
+            </div>
+
+            <!-- Registration Form -->
+            <div class="form-container" id="register-form">
+                <form action="{% url 'accounts:register-action' %}" method="POST" id="registerForm">
+                    <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                    <input type="text" name="username" placeholder="Username" required>
+                    <input type="password" name="password" placeholder="Password" required>
+                    <input type="email" name="email" placeholder="Email (optional)">
+                    <input type="text" name="first-name" placeholder="First Name (optional)">
+                    <input type="text" name="last-name" placeholder="Last Name (optional)">
+                    <button type="submit">Register</button>
+                </form>
+                <p style="color: red" id="err-msg-2"></p>
+                <p style="color: green" id="suc-msg-2"></p>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        $(document).ready(function() {
+            $('#login-tab').on('click', function() {
+                $('#login-form').addClass('active');
+                $('#register-form').removeClass('active');
+                $('#login-tab').addClass('active');
+                $('#register-tab').removeClass('active');
+            });
+
+            $('#register-tab').on('click', function() {
+                $('#register-form').addClass('active');
+                $('#login-form').removeClass('active');
+                $('#register-tab').addClass('active');
+                $('#login-tab').removeClass('active');
+            });
+
+            $('#loginForm').on('submit', function(e) {
+                e.preventDefault();
+                $.ajax({
+                    url: $(this).attr('action'),
+                    type: $(this).attr('method'),
+                    data: $(this).serialize(),
+                    success: res => {
+                        if (res.status === 0) {
+                            $("#err-msg-1").text('');
+                            $("#suc-msg-1").text('Login successful! Refresh to redirect...')
+                            location.reload();
+                        } else {
+                            $("#err-msg-1").text(res.err_msg);
+                            $("#suc-msg-1").text('');
+                        }
+                    }
+                });
+            });
+
+            $('#registerForm').on('submit', function(e) {
+                e.preventDefault();
+                $.ajax({
+                    url: $(this).attr('action'),
+                    type: $(this).attr('method'),
+                    data: $(this).serialize(),
+                    success: res => {
+                        if (res.status === 0) {
+                            $("#err-msg-2").text('');
+                            $("#suc-msg-2").text('Registration successful! Refresh to redirect...')
+                            location.reload();
+                        } else {
+                            $("#err-msg-2").text(res.err_msg);
+                            $("#suc-msg-2").text('');
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+{% endblock %}

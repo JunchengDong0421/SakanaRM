@@ -14,11 +14,8 @@
 {% endblock %}
 {% block content %}
     {% if request.user.is_authenticated and not request.user.is_superuser %}
-        <b>Hello, {{ request.user.get_username }}!</b>
-        <br>
-        <b>UID: {{ request.session.uid }}</b>
-        <a href="{% url 'accounts:logout-page' %}">Logout</a>
-        <br><br><br>
+        <h2>Hello, <i>{{ request.user.get_username }}</i></h2>
+        <br><br>
         <div class="jump-container">
             <div class="workflow-links">
                 <a href="{% url 'core:upload-paper-page' %}">Upload new paper</a>
@@ -81,8 +78,7 @@
 
     {% else %}
         <b>You are not logged in!</b>
-        <a href="{% url 'accounts:login-page' %}">Login</a>
-        <a href="{% url 'accounts:register-page' %}">Register</a>
+        <a href="{% url 'accounts:login-register-page' %}">Login/Register</a>
         <br><br><br>
     {% endif %}
 {% endblock %}
