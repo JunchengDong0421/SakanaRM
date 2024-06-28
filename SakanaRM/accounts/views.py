@@ -50,5 +50,4 @@ def do_register(request):
     user = create_sakana_user(auth_user)
     # Immediately log user in on successful registration
     sakana_login(request, user)
-    # Request to create a RMUser as well
     return redirect("/")
