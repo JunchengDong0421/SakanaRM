@@ -21,11 +21,13 @@ jobs:
       uses: actions/setup-python@v3
       with:
         python-version: ${{ matrix.python-version }}
+    - name: Set up working directory
+      run: |
+        cd SakanaRM
     - name: Install Dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
     - name: Run Tests
       run: |
-        cd SakanaRM
         python manage.py test --settings=SakanaRM.settings_dev
