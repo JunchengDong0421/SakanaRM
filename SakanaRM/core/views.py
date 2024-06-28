@@ -48,7 +48,7 @@ class PaperDetailView(DetailView):
         return context
 
 
-class PaperUserListView(ListView):
+class PaperUserListView(LoginRequiredMixin, ListView):
     model = SakanaUser  # in the url, we want uid as parameter, not pid
     paginate_by = 10
     template_name = "core/paper_user_list.html"
@@ -155,7 +155,7 @@ def start_workflow_task(request, wid, file_obj):
                 tag = Tag.objects.filter(name=t).first()
                 tags_dict[t] = tag.definition
             llm_client = GPTClient()
-            matching_tags = llm_client.match_paper_on_tags(file_obj, tags)
+            matching_tags = llm_client.match_paper_on_tags(file_obj, tags_dict)
 
             # in case of caching, re-query
             workflow = Workflow.objects.filter(id=wid).first()
@@ -206,6 +206,7 @@ def start_workflow_task(request, wid, file_obj):
         workflow.save()
 
 
+@login_required()
 def handle_create_workflow(request):
     uid = request.session.get("uid")
     # check pending count
