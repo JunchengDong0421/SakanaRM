@@ -19,14 +19,8 @@
             <input type="text" name="name" placeholder="Untitled Workflow"/>
         </label>
         <br><br>
-        <label>Type:
-            <select name="type">
-                {#                <option value="upload_process">upload and process</option>#}
-                <option value="{{ UPLOAD }}">upload</option>
-            </select>
-        </label>
-        <br><br>
-        <label>Replace (if any): <input type="checkbox" name="replace" value="true"></label>
+        <input type="hidden" name="type" value="{{ UPLOAD }}">
+        <label>Replace (if paper exists): <input type="checkbox" name="replace" value="true"></label>
         <br><br>
         <button type="submit">Upload</button>
     </form>
