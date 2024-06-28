@@ -4,7 +4,7 @@
   margin-bottom: 10px;
 }
 
-.nav-bar a {
+.nav-bar a, .nav-bar div {
   display: flex;
   align-items: center;
   height: 30px;
@@ -20,7 +20,7 @@
   color: white;
 }
 
-.nav-bar a.logout {
+.nav-bar .logout {
   color: red;
 }
 
@@ -35,7 +35,9 @@
   color: darkorange;
 }
 
+.nav-bar .logout:hover,
 .nav-bar a:hover {
   background-color: darkgrey;
   color: darkslategrey;
+  cursor: pointer;
 }

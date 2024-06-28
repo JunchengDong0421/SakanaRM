@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.http import HttpResponse
 from django.shortcuts import redirect, render
 
 from .utils import create_sakana_user, sakana_authenticate, sakana_login, sakana_logout
@@ -8,12 +9,6 @@ def display_login_page(request):
     if request.user.is_authenticated:
         return redirect("/")
     return render(request, "accounts/login.html")
-
-
-def display_logout_page(request):
-    if not request.user.is_authenticated:
-        return redirect("/")
-    return render(request, "accounts/logout.html")
 
 
 def display_register_page(request):
@@ -35,7 +30,7 @@ def do_login(request):
 
 def do_logout(request):
     sakana_logout(request)
-    return redirect("/")
+    return HttpResponse(status=204)
 
 
 def do_register(request):
