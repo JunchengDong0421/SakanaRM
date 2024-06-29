@@ -1,5 +1,5 @@
-.page-content {
-  padding: 0 150px;
+body {
+  margin: 0;
 }
 
 .nav-bar {
@@ -22,6 +22,10 @@
 
 .nav-bar a#home-nav {
   color: white;
+}
+
+.nav-bar a#auth-nav {
+  color: teal;
 }
 
 .nav-bar #logout {
@@ -48,4 +52,8 @@
 
 .active-nav {
   background: coral;
+}
+
+.page-content {
+  padding: 0 150px;
 }
