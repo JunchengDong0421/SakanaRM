@@ -14,8 +14,18 @@ from zoneinfo import ZoneInfo  # Python 3.9 or later only
 
 from .cdn_utils import SakanaCDNClient
 from .llm_utils import GPTClient, SimpleKeywordClient
-from .macros import *
 from .models import Paper, Tag, SakanaUser, Workflow
+
+# incompatible work types
+INCOMPATIBLE_WORK_TYPE = (Workflow.WorkTypeChoices.UPLOAD, Workflow.WorkTypeChoices.PROCESS)
+# statuses - end polling
+END_POLLING_STATUS = (Workflow.StatusChoices.COMPLETED, Workflow.StatusChoices.FAILED, Workflow.StatusChoices.ABORTED)
+# statuses - can abort
+CAN_ABORT_STATUS = (Workflow.StatusChoices.PENDING,)
+# statuses - can archive
+CAN_ARCHIVE_STATUS = (Workflow.StatusChoices.COMPLETED, Workflow.StatusChoices.FAILED, Workflow.StatusChoices.ABORTED)
+# threshold of the number of pending workflows
+PENDING_WORKFLOWS_LIMIT = 5
 
 
 def home_page(request):
@@ -27,7 +37,7 @@ def home_page(request):
 
 @login_required()
 def upload_paper_page(request):
-    return render(request, "core/paper_upload.html", {"UPLOAD": UPLOAD})
+    return render(request, "core/paper_upload.html", {"UPLOAD": Workflow.WorkTypeChoices.UPLOAD})
 
 
 @login_required()
@@ -35,7 +45,8 @@ def process_paper_page(request):
     uid = request.session.get("uid")
     papers = Paper.objects.filter(owner_id=uid)
     tags = Tag.objects.all()
-    return render(request, "core/paper_process.html", {"papers": papers, "tags": tags, "PROCESS": PROCESS})
+    return render(request, "core/paper_process.html",
+                  {"papers": papers, "tags": tags, "PROCESS": Workflow.WorkTypeChoices.PROCESS})
 
 
 class PaperDetailView(DetailView):
@@ -66,25 +77,28 @@ class WorkflowDetailView(DetailView):
         workflow = Workflow.objects.filter(id=self.kwargs['pk']).first()
         if workflow:
             context["result"] = json.loads(workflow.result)
-            context["pending"] = PENDING
-            context["completed"] = COMPLETED
-            context["failed"] = FAILED
-            context["upload"] = UPLOAD
-            context["process"] = PROCESS
+            context["pending"] = Workflow.StatusChoices.PENDING
+            context["completed"] = Workflow.StatusChoices.COMPLETED
+            context["failed"] = Workflow.StatusChoices.FAILED
+            context["upload"] = Workflow.WorkTypeChoices.UPLOAD
+            context["process"] = Workflow.WorkTypeChoices.PROCESS
             context["can_abort_status"] = CAN_ABORT_STATUS
         return context
 
 
 def start_workflow_task(request, wid, file_obj):
     workflow = Workflow.objects.filter(id=wid).first()
-    if not workflow or workflow.status == ABORTED:
+    if not workflow or workflow.status == Workflow.StatusChoices.ABORTED:
         return
     try:
         uid = request.session.get('uid')
         title = request.POST.get("title")
 
         work_type = int(request.POST.get("type"))
-        if work_type == UPLOAD:
+        if work_type == Workflow.WorkTypeChoices.UPLOAD:
+            workflow.stage = Workflow.StageChoices.S_UPLOADING
+            workflow.save()
+
             cdn_client = SakanaCDNClient()
             replace = not not request.POST.get("replace")
             if not replace:  # upload new paper
@@ -99,7 +113,7 @@ def start_workflow_task(request, wid, file_obj):
             # in case of caching, re-query
             workflow = Workflow.objects.filter(id=wid).first()
             # if workflow is aborted or deleted (not allowed for users)
-            if not workflow or workflow.status == ABORTED:
+            if not workflow or workflow.status == Workflow.StatusChoices.ABORTED:
                 _ = cdn_client.delete_paper(file_path)  # delete new paper
                 paper = Paper.objects.filter(title=title, owner_id=uid).first()
                 if not paper:  # if paper is deleted
@@ -120,20 +134,20 @@ def start_workflow_task(request, wid, file_obj):
                 paper.file_path = file_path
                 paper.save()
 
-            workflow.stage = S_END
-            workflow.status = COMPLETED
+            workflow.stage = Workflow.StageChoices.S_END
+            workflow.status = Workflow.StatusChoices.COMPLETED
             workflow.save()
 
-        elif work_type == PROCESS:
+        elif work_type == Workflow.WorkTypeChoices.PROCESS:
             paper = workflow.paper
             if not paper:
                 return
 
             # in case of caching, re-query
             workflow = Workflow.objects.filter(id=wid).first()
-            if not workflow or workflow.status == ABORTED:
+            if not workflow or workflow.status == Workflow.StatusChoices.ABORTED:
                 return
-            workflow.stage = S_PROCESSING_0
+            workflow.stage = Workflow.StageChoices.S_PROCESSING_0
             workflow.save()
 
             # Task 0: retrieve paper
@@ -143,9 +157,9 @@ def start_workflow_task(request, wid, file_obj):
 
             # in case of caching, re-query
             workflow = Workflow.objects.filter(id=wid).first()
-            if not workflow or workflow.status == ABORTED:
+            if not workflow or workflow.status == Workflow.StatusChoices.ABORTED:
                 return
-            workflow.stage = S_PROCESSING_1
+            workflow.stage = Workflow.StageChoices.S_PROCESSING_1
             workflow.save()
 
             # Task 1: read and process paper
@@ -159,9 +173,9 @@ def start_workflow_task(request, wid, file_obj):
 
             # in case of caching, re-query
             workflow = Workflow.objects.filter(id=wid).first()
-            if not workflow or workflow.status == ABORTED:
+            if not workflow or workflow.status == Workflow.StatusChoices.ABORTED:
                 return
-            workflow.stage = S_PROCESSING_2
+            workflow.stage = Workflow.StageChoices.S_PROCESSING_2
             workflow.save()
 
             # Task 2: tag paper (add matching tags, remove non-matching)
@@ -189,10 +203,10 @@ def start_workflow_task(request, wid, file_obj):
 
             # in case of caching, re-query
             workflow = Workflow.objects.filter(id=wid).first()
-            if not workflow or workflow.status == ABORTED:
+            if not workflow or workflow.status == Workflow.StatusChoices.ABORTED:
                 return
-            workflow.stage = S_END
-            workflow.status = COMPLETED
+            workflow.stage = Workflow.StageChoices.S_END
+            workflow.status = Workflow.StatusChoices.COMPLETED
             workflow.result = json.dumps(json.loads(workflow.result) | {"added_tags": added_tags,
                                                                         "removed_tags": removed_tags,
                                                                         "kept_tags": kept_tags})
@@ -201,7 +215,7 @@ def start_workflow_task(request, wid, file_obj):
         else:  # illegal work type parameter
             return
     except Exception as e:
-        workflow.status = FAILED
+        workflow.status = Workflow.StatusChoices.FAILED
         workflow.result = json.dumps(json.loads(workflow.result) | {"error": str(e)})
         workflow.save()
 
@@ -210,7 +224,7 @@ def start_workflow_task(request, wid, file_obj):
 def handle_create_workflow(request):
     uid = request.session.get("uid")
     # check pending count
-    pending_workflow_count = Workflow.objects.filter(status=PENDING, user_id=uid).count()
+    pending_workflow_count = Workflow.objects.filter(status=Workflow.StatusChoices.PENDING, user_id=uid).count()
     if pending_workflow_count >= PENDING_WORKFLOWS_LIMIT:
         err_msg = f"You can't have more than {PENDING_WORKFLOWS_LIMIT} workflows running at the same time. "
         return JsonResponse({"status": 1, "err_msg": err_msg})
@@ -233,7 +247,7 @@ def handle_create_workflow(request):
         err_msg = "Illegal request parameter, please contact the administrator for help!"
         return JsonResponse({"status": 1, "err_msg": err_msg})
 
-    if work_type == UPLOAD:
+    if work_type == Workflow.WorkTypeChoices.UPLOAD:
         title = request.POST.get("title")
         if not (file_obj and title):
             err_msg = "Please select a paper to upload and give a title!"
@@ -247,18 +261,18 @@ def handle_create_workflow(request):
             pid = paper.id
             # user cannot upload and process the same paper at the same time
             workflow = Workflow.objects.filter(user_id=uid, paper_id=pid, work_type__in=INCOMPATIBLE_WORK_TYPE,
-                                               status=PENDING).first()
+                                               status=Workflow.StatusChoices.PENDING).first()
             if workflow:
                 err_msg = "You have a running workflow with the same paper. Abort it first or wait for it to complete"
                 return JsonResponse({"status": 1, "err_msg": err_msg})
             instructions = f"paper (to replace): {title}"
             workflow = Workflow(user_id=uid, paper_id=pid, name=name, work_type=work_type, instructions=instructions,
-                                stage=S_START, status=PENDING)
+                                stage=Workflow.StageChoices.S_START, status=Workflow.StatusChoices.PENDING)
         else:  # upload new paper
             instructions = f"paper: {title}"
-            workflow = Workflow(user_id=uid, name=name, work_type=work_type, instructions=instructions, stage=S_START,
-                                status=PENDING)
-    elif work_type == PROCESS:
+            workflow = Workflow(user_id=uid, name=name, work_type=work_type, instructions=instructions,
+                                stage=Workflow.StageChoices.S_START, status=Workflow.StatusChoices.PENDING)
+    elif work_type == Workflow.WorkTypeChoices.PROCESS:
         pid = request.POST.get("pid")
         if not pid:
             err_msg = "Invalid request!"
@@ -270,7 +284,7 @@ def handle_create_workflow(request):
             return JsonResponse({"status": 1, "err_msg": err_msg})
         # user cannot upload and process the same paper at the same time
         workflow = Workflow.objects.filter(user_id=uid, paper_id=pid, work_type__in=INCOMPATIBLE_WORK_TYPE,
-                                           status=PENDING).first()
+                                           status=Workflow.StatusChoices.PENDING).first()
         if workflow:
             err_msg = "You have a running workflow with the same paper. Abort it first or wait for it to complete"
             return JsonResponse({"status": 1, "err_msg": err_msg})
@@ -289,7 +303,7 @@ def handle_create_workflow(request):
                 return JsonResponse({"status": 1, "err_msg": err_msg})
         instructions = f'tags: {", ".join(tags)}'
         workflow = Workflow(user_id=uid, paper_id=pid, name=name, work_type=work_type, instructions=instructions,
-                            stage=S_START, status=PENDING)
+                            stage=Workflow.StageChoices.S_START, status=Workflow.StatusChoices.PENDING)
     else:
         err_msg = "Illegal workflow creation!"
         return JsonResponse({"status": 1, "err_msg": err_msg})
@@ -355,7 +369,7 @@ def abort_workflow(request):
         err_msg = "Workflow does not exist or you do not have access to it!"
         return JsonResponse({"status": 1, "err_msg": err_msg})
     status = workflow.status
-    if status == ABORTED:
+    if status == Workflow.StatusChoices.ABORTED:
         return JsonResponse({"status": 0})
     if status not in CAN_ABORT_STATUS:
         err_msg = f'You can not abort workflow with status "{status}"'
@@ -367,7 +381,7 @@ def abort_workflow(request):
                     "Please contact the administrator for help."
         return JsonResponse({"status": 1, "alert_msg": alert_msg})
     workflow.messages += "Manual abortion; "
-    workflow.status = ABORTED
+    workflow.status = Workflow.StatusChoices.ABORTED
     workflow.save()
     return JsonResponse({"status": 0})
 
@@ -506,7 +520,8 @@ def delete_paper(request):
     if not paper:
         err_msg = "Paper does not exist or you do not have access to it!"
         return JsonResponse({"status": 1, "err_msg": err_msg})
-    if paper.workflow_set.filter(status=PENDING).count() > 0:  # if paper still being used by some running workflows
+    if paper.workflow_set.filter(
+            status=Workflow.StatusChoices.PENDING).count() > 0:  # if paper still being used by some running workflows
         err_msg = "Cannot delete paper while a workflow associated with it is running!"
         return JsonResponse({"status": 1, "err_msg": err_msg})
     if not paper.file_path:  # in case of some obscure bugs or malicious requests
