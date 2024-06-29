@@ -28,6 +28,8 @@
         </a>
         <a id="home-nav" href="{% url 'core:index' %}">Home</a>
         {% if request.user.is_superuser or not request.user.is_authenticated %}
+            <a id="search-nav" href="{% url 'core:search-page' %}">Public Search</a>
+            <a id="tutorial-nav" href="#">Tutorial</a>
             <a id="auth-nav" href="{% url 'accounts:login-register-page' %}">Login/Register</a>
         {% else %}
             <a id="upload-nav" href="{% url 'core:upload-paper-page' %}">Upload Paper</a>

@@ -635,14 +635,12 @@ def paper_remove_tags(request):
     return JsonResponse({"status": 0})
 
 
-@login_required()
 def search_page(request):
     tags = Tag.objects.all()
     papers = Paper.objects.all()
     return render(request, "core/search.html", {"tags": tags, "papers": papers})
 
 
-@login_required()
 def search_result(request):
     uid = request.session.get("uid")
     partial_title = request.POST.get("title")
@@ -654,6 +652,9 @@ def search_result(request):
     legal_match_types = ("exact", "inclusive", "union")
     if owner not in legal_owners:
         err_msg = "Illegal request parameter, please contact the administrator for help!"
+        return JsonResponse({"status": 1, "err_msg": err_msg})
+    if not uid and owner != "anyone":
+        err_msg = "Please log in first!"
         return JsonResponse({"status": 1, "err_msg": err_msg})
     if tags:
         if match_type not in legal_match_types:
@@ -675,10 +676,11 @@ def search_result(request):
     papers = Paper.objects.all()
 
     # Next filter owner
-    if owner == "me":
-        papers = papers.filter(owner_id=uid)
-    elif owner == "others":
-        papers = papers.exclude(owner_id=uid)
+    if uid:
+        if owner == "me":
+            papers = papers.filter(owner_id=uid)
+        elif owner == "others":
+            papers = papers.exclude(owner_id=uid)
 
     # Then filter title
     if partial_title:

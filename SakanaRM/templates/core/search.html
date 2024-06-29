@@ -71,14 +71,16 @@
             <input type="radio" name="owner-filter" value="anyone" checked>
             Anyone
         </label>
-        <label>
-            <input type="radio" name="owner-filter" value="me">
-            Me
-        </label>
-        <label>
-            <input type="radio" name="owner-filter" value="others">
-            Others
-        </label>
+        {% if request.user.is_authenticated and not request.user.is_superuser %}
+            <label>
+                <input type="radio" name="owner-filter" value="me">
+                Me
+            </label>
+            <label>
+                <input type="radio" name="owner-filter" value="others">
+                Others
+            </label>
+        {% endif %}
         <br><br>
 
         <b>Select tags:</b> <label>&#x1F50E;&#xFE0F;<input id="search-bar" type="search"></label>
