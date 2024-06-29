@@ -151,7 +151,8 @@
 
             // Delete event
             $("#delete").click(() => {
-                if (!confirm("Are you sure to delete paper? WARNING: This operation is not invertible!")) {
+                if (!confirm("Are you sure to delete paper? WARNING: This operation is not invertible! Related " +
+                    "workflow histories will also be deleted!")) {
                     return
                 }
                 $.ajax({
