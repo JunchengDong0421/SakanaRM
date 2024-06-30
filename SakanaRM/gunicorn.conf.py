@@ -3,3 +3,4 @@ worker_class = "gevent"
 
 accesslog = "access.log"
 errorlog = "error.log"
+loglevel = "debug"
