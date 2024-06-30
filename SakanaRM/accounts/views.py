@@ -1,8 +1,12 @@
+import logging
+
 from django.contrib.auth.models import User
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 
 from .utils import create_sakana_user, sakana_authenticate, sakana_login, sakana_logout
+
+logger = logging.getLogger(__name__)
 
 
 def display_login_register_page(request):
@@ -41,7 +45,8 @@ def do_register(request):
         # Create auth User entry
         auth_user = User.objects.create_user(username=username, password=password, email=email,
                                              first_name=first_name, last_name=last_name)
-    except:
+    except Exception as e:
+        logger.error(f"Registration failed: {repr(e)}")
         err_msg = "Username cannot be empty and cannot exceed 150 characters; password cannot exceed 128 " \
                   "characters or too short or insecure; email cannot exceed 254 characters and must be valid;" \
                   "first name and last name cannot exceed 150 characters!"

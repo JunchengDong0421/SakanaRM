@@ -1,4 +1,5 @@
 import json
+import logging
 import threading
 from io import BytesIO
 from os import name as os_name
@@ -26,6 +27,8 @@ CAN_ABORT_STATUS = (Workflow.StatusChoices.PENDING,)
 CAN_ARCHIVE_STATUS = (Workflow.StatusChoices.COMPLETED, Workflow.StatusChoices.FAILED, Workflow.StatusChoices.ABORTED)
 # threshold of the number of pending workflows
 PENDING_WORKFLOWS_LIMIT = 5
+
+logger = logging.getLogger(__name__)
 
 
 def home_page(request):
@@ -215,6 +218,7 @@ def start_workflow_task(request, wid, file_obj):
         else:  # illegal work type parameter
             return
     except Exception as e:
+        logger.error(repr(e))
         workflow.status = Workflow.StatusChoices.FAILED
         workflow.result = json.dumps(json.loads(workflow.result) | {"error": str(e)})
         workflow.save()
@@ -534,6 +538,7 @@ def delete_paper(request):
         paper.delete()
         return JsonResponse({"status": 0})
     except Exception as e:
+        logger.error(repr(e))
         return JsonResponse({"status": 1, "err_msg": str(e)})
 
 
