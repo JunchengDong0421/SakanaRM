@@ -158,7 +158,7 @@ LOGGING = {
             'filename': 'logs/django_error.log',
             'formatter': 'verbose',
         },
-        # print INFO or higher messages to stderr
+        # print ERROR or higher messages to stderr
         'console': {
             'level': 'ERROR',
             'class': 'logging.StreamHandler',
