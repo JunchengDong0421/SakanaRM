@@ -40,7 +40,7 @@ V. Final product (that fulfills the success metric)    &nbsp;&nbsp;&nbsp;&nbsp; 
 | User documentation              |                                                          |             |       |
 |                                 | Installation                                             | DONE        |       |
 |                                 | Configuration                                            | DONE        |       |
-|                                 | Usage                                                    | IN PROGRESS | 30/06 |
+|                                 | Usage                                                    | DONE        |       |
 |                                 | Important notices                                        | IN PROGRESS | 02/07 |
 |                                 | Tutorial video                                           | BACKLOG     | 09/07 |
 | Developer documentation         |                                                          |             |       |
@@ -100,29 +100,33 @@ papers to be stored or open another terminal tab (store on same machine) and:
 `cd SakanaCDN/`
 
 ## Configuration
-For the server to work as expected, you need to at least configure the CDN client correctly. You can also [custom your 
-own clients](#how-to-custom-llm-and-cdn-clients).
+The system interacts with two external services to work: a "CDN" service, which handles papers upload, replacement, 
+deletion, download; and a LLM service, which offers basic chat completion capabilities. Clients for communicating with 
+these services are required. You would need to at least configure the provided CDN client correctly for the system to 
+work as expected. It is also possible to [custom your own clients](#how-to-custom-llm-and-cdn-clients).
 
 ### CDN Client
-Within the scope of the project, you don't have to register a real CDN service to use the server, what is needed is just
-a simple server that implements APIs to store, replace, get, delete papers. The bundled ***SakanaCDNClient*** is used 
+Within the scope of the project, you don't have to register a real CDN service to use the system, what is needed is just
+a simple service that implements APIs to store, replace, get, delete papers. The bundled ***SakanaCDNClient*** is used 
 to communicate with the service offered by [SakanaCDN](https://github.com/JunchengDong0421/SakanaCDN).
 
 
-**The default CDN client is ***SakanaCDNClient*****. To configure ***SakanaCDNClient***, 
-go to *SakanaRM/core/cdn_utils/sakana_cdn_client.py*, and look for the class attribute ***"BASE_URL"***. Change the 
-host IP and port to the actual IP and port which your SakanaCDN service binds to, for example, if you are running 
-SakanaCDN on a machine with IP 201.153.35.66 and port 5001, change the value to "http://201.153.35.66:5001/files".    
+**The default CDN client** is *****SakanaCDNClient*****. Go to *SakanaRM/core/cdn_utils/sakana_cdn_client.py*, and 
+look for the class attribute ***"BASE_URL"***. Change the host IP and port to the actual IP and port which your 
+SakanaCDN service binds to, for example, if you are running SakanaCDN on a machine with IP 201.153.35.66 and port 5001, 
+change the value to "http://201.153.35.66:5001/files".    
 **IMPORTANT**: DO NOT use a loopback address (`localhost`, `127.0.0.1`) if SakanaRM runs in container because routing 
 is managed by Docker network. See [Networking in Compose](https://docs.docker.com/compose/networking/) for details.
 
 ### LLM Client
 The project bundles two classes of client to use for paper processing: ***GPTClient*** and ***SimpleKeywordClient***.
-The former integrates GPT (provider You.com) by [gpt4free](https://github.com/xtekky/gpt4free), and the latter simply
-match tag names with words in the paper.    
+The former integrates with GPT (provider You.com :x: Currently blocker by Cloudflare :x:) by [gpt4free](https://github.com/xtekky/gpt4free), while the latter 
+simply matches tag names with words in the paper and makes no external calls.    
 
-**The default CDN client is ***GPTClient*****. You don't need to specifically configure anything. However, to use 
-***SimpleKeywordClient***, go to *SakanaRM/core/views.py*, add a line of import if not existent: `from .llm_utils import 
+**The default CDN client** is *****GPTClient*****. Go to *SakanaRM/core/llm_utils/gpt_client.py*, and look for the 
+class attribute ***"PAPER_SLICE_LENGTH"*** and ***"MODEL_TEMPERATURE"***. Modify how long paper is sliced into parts 
+for transmission and temperature of the model by setting corresponding values, or just skip this step. To use the 
+alternative ***SimpleKeywordClient***, go to *SakanaRM/core/views.py*, add a line of import if not existent: `from .llm_utils import 
 SimpleKeywordClient`, then find and replace all `GPTClient()` to `SimpleKeywordClient()` in code.
 
 ### Database
@@ -140,7 +144,7 @@ a SQLite3 instance in one service. If you want to use other databases, see
 `sudo docker compose up --build`
 4. Start SakanaRM services (current directory is *SakanaRM/*):    
 `sudo docker compose -f docker-compose.prod.yaml up --build`
-5. Visit http://\<your_server_ip\>. Done!    
+5. Visit *http://\<your_server_ip\>*. Done!    
 
 
 To shut down services:    
@@ -151,16 +155,18 @@ To restart services:
 ### Development Environment
 **Note**: After all containers are down, you might see some auto-generated files (log files, db file) in the source code 
 directory. You can use them for debugging purposes. DO NOT DELETE these files as they persist data within the 
-containers, but instead add them to your version control's ignored files (e.g., *.gitignore*).
+containers, but instead add them to your version control's ignored files (e.g., *.gitignore*). Also, only the web 
+service with a default SQLite database is configured. If you think a separate database service is absolutely needed, 
+feel free to add it and change the settings of the Django application.
 
 1. Make sure docker daemon process is running:    
 `sudo dockerd`
-2. Check that port `80` and `5000` on target machine are not occupied: please Google for solutions.
+2. Check that port `8000` and `5000` on target machine are not occupied: please Google for solutions.
 3. Start your CDN services first, if SakanaCDN (current directory is *SakanaCDN/*):    
 `sudo docker compose up --build`
 4. Start SakanaRM services (current directory is *SakanaRM/*):    
 `sudo docker compose up --build`
-5. Visit http://\<your_server_ip\>. Done!    
+5. Visit *http://\<your_server_ip\>:8000*. Done!    
 
 To shut down services:    
 `sudo docker compose down`    
@@ -195,10 +201,22 @@ pip install -r requirements.txt
 python manage.py migrate
 python manage.py runserver 0.0.0.0:80 --settings=SakanaRM.settings_dev
 ```
-5. Visit http://localhost. Done!    
+5. Visit *http://localhost*. Done!    
 
 ## User Guide
-To learn about how to use the website, please watch the [tutorial video]().
+To learn about how to use the website, please watch the [tutorial video]() made by the author.
+
+### Admin Sites and Superuser
+Django offers a powerful admin interface for superusers/staffs to easily manage the models in the system. Always append
+`--settings=SakanaRM.settings_dev` to each command if you are using the development settings.
+- To create a superuser, add the environment variables `DJANGO_SUPERUSER_PASSWORD`, `DJANGO_SUPERUSER_USERNAME`, 
+`DJANGO_SUPERUSER_EMAIL` to the *"web"* service in *docker-compose.prod.yaml* and *docker-compose.yaml*. Then, run 
+`sudo docker compose exec web python manage.py createsuperuser --noinput ` when services are up. For [Pure Personal 
+Use](#pure-personal-use-not-recommended), simply run `python manage.py createsuperuser --settings=SakanaRM.settings_dev` 
+after database is set up and follow the prompts. 
+- To visit the admin sites, go to *http://<your_server_ip>/admin* and log in as a superuser. 
+- To [customize admin sites](https://docs.djangoproject.com/en/4.2/ref/contrib/admin/), add your code to *"admin.py"* 
+inside every app's directory (*SakanaRM/accounts/*, *SakanaRM/core/*).
 
 ### Some Important Notices
 - Paper titles are NOT unique if uploader is different, but for the same uploader, papers should have unique, non-empty 
@@ -209,18 +227,19 @@ system;
 completes;
 
 ## Developer's Guide
-**Note:** Whenever you make any changes to your data models (in any *models.py*) or add new applications to 
-**INSTALLED_APPS** (in *SakanaRM/SakanaRM/settings.py*), you should **manually** run the following code in the app 
-root (*SakanaRM/* directory):    
-`python manage.py makemigrations`    
+**Note:** Whenever you make any changes to your data models (in any *models.py*) or add new applications to **INSTALLED
+_APPS** (in *SakanaRM/SakanaRM/settings_dev.py*), you should **manually** run the following code in the app root 
+(*SakanaRM/* directory):    
+`python manage.py makemigrations --settings=SakanaRM.settings_dev`    
 and don't forget to **add the generated files** to your version control so that migrations can be applied in 
-docker entrypoint.
+docker entrypoint. You can try to [squash migrations
+](https://docs.djangoproject.com/en/5.0/topics/migrations/#migration-squashing) if there are too many of them.
 
 ### Preface
 SakanaRM is developed under the [Django](https://www.djangoproject.com/) framework, and mostly follows standard 
 practices and conventions. To learn more about basics like project structure, please refer to the [official 
-documentation](https://docs.djangoproject.com/en/4.2/) or follow this 
-[tutorial](https://developer.mozilla.org/en-US/docs/Learn/Server-side/Django/Tutorial_local_library_website).
+documentation](https://docs.djangoproject.com/en/4.2/) or follow the [MDN
+tutorial](https://developer.mozilla.org/en-US/docs/Learn/Server-side/Django/Tutorial_local_library_website).
 
 SakanaRM started from the 
 [default project template](https://docs.djangoproject.com/en/5.0/ref/django-admin/#django-admin-startproject) and 
@@ -276,13 +295,42 @@ application level through Django's middlewares (or even more fine-grained, at ea
 and you want to parse client host header in application server. `$http_host` will include the port number if it was 
 part of the client's request.
 
+### Testing
+With Django's testing framework, it is relatively straightforward to write unit tests and integration tests 
+(interactions between modules). Always append `--settings=SakanaRM.settings_dev` to each command if you are using the 
+development settings.
+- To [write tests](https://docs.djangoproject.com/en/4.2/topics/testing/), add test cases to *"tests.py"* inside every 
+app's directory (*SakanaRM/accounts/*, *SakanaRM/core/*).
+- To run tests, run `sudo docker compose exec web python manage.py test --noinput ` when services are up. For [Pure 
+Personal Use](#pure-personal-use-not-recommended), simply run `python manage.py test --settings=SakanaRM.settings_dev` 
+after database is set up and follow the prompts. 
+- It is recommended to configure a new environment for testing, which is something the project can improve on. See 
+[Potential Improvements](#workflow-model--potential-improvements) Part III.
+
 ### SSL/HTTPS
 The server is NOT configured to establish secure links. To set up HTTPS, Google for solutions then follow 
-[Django official documentation](https://docs.djangoproject.com/en/5.0/topics/security/#ssl-https).
+[Django's official documentation](https://docs.djangoproject.com/en/5.0/topics/security/#ssl-https).
 
 ### How to Custom LLM and CDN Clients
 
-### Use Docker Compose Commands:
+### Configure Logging
+Only logs of Django and Gunicorn are manually configured and persisted in this project. For Nginx, access the logs 
+located at */var/log/nginx* inside the container when it is running. Log rotations are not implemented at all. 
+To make it work, please Google for solutions. Feel free to change log levels or log more information to suit your 
+needs! To log messages in a file, first import the logging module: `import logging`, then get logger in this file: `
+logger = logging.getLogger(__name__)`, finally log messages in different levels: `logger.<level>(<msg>)`.
+
+**Development**: logs are located in app root (*SakanaRM/*)    
+- `django_access.log`, `django_debug.log`, `django_error.log`: Django logs (of all info-level events; all debug-level 
+events; unhandled exceptions during handling of a request)
+- `access.log`, `error.log`: Gunicorn logs (of all HTTP requests processed; all debug-level events)
+
+**Production**: logs are located inside *"logs"* folder under app root (*SakanaRM/logs*)
+- `accounts_info.log`, `core_info.log`, `django_error.log` Django logs (of all info-level events in app *accounts*; 
+all info-level events in app *core*; unhandled exceptions during handling of a request)
+- `access.log`, `error.log`: Gunicorn logs (of all HTTP requests processed; all debug-level events)
+
+### Useful Docker Compose Commands:
 **Note**: always add `-f docker-compose.prod.yaml` if working with production services.
 
 `sudo docker compose logs`: Displays logs for all services defined in the *docker-compose.yaml* file.    
@@ -293,7 +341,7 @@ The server is NOT configured to establish secure links. To set up HTTPS, Google 
 
 ### Docker-related Files
 #### healthcheck.sh
-MariaDB health check uses official example in [this link](https://mariadb.com/kb/en/using-healthcheck-sh/). 
+The database service uses MariaDB's [official script](https://mariadb.com/kb/en/using-healthcheck-sh/) for health check. 
 If the code or script for some reasons does not work anymore, please check for updates on official websites.
 
 ### Switch to Other Databases
@@ -311,14 +359,53 @@ Linux use different flags to remove zero padding in formatting datetime strings 
 As mentioned above that the server does not require a real CDN service to fully function. Considering the personas 
 of users, it is probably better to store papers on the same machine as the server and manage them as media files by 
 Django, rather than creating another service to store and get the files. If you are interested in refactoring the code, 
-feel free to do so.
+feel free to do so and even send a pull request.
 
 ### Workflow Model & Potential Improvements
-**Part I**: The *Workflow* model is designed to preserve the status of upload and process tasks. Use another model or 
-programming logic to improve.
+**Part I**: The *Workflow* model is designed to preserve the status of upload and perform tasks. It is mapped to a 
+software thread according to its design (see Part II). However, the execution flow of *Workflow* an instance is somewhat 
+client-controlled (specifically, abortion), which is not the case for threads executing the tasks (because neither 
+information about them is stored nor their statuses checked), and this makes writing code harder since you have to 
+check the current state of the workflow frequently during a task execution.
+*To improve*: find a way to manage the threads' execution effectively; or design another model and/or use a different 
+programming logic.
 
-**Part II**: Use [Celery](https://docs.celeryq.dev/en/stable/) instead of multithreading to perform tasks to improve.
+**Part II**: The fields `instructions` (brief information about the task, used in workflow detail page), `messages` (
+not really used) and `` of Workflow instances are obvious at all. The initial design blueprint is that, user can not
+only create standard upload and process workflows as is the case right now, but also can submit a description file to 
+customize their own workflows, something like CI/CD pipelines. However, this idea was not implemented in the end.    
+*To improve*: design another model or make the idea really work.
 
+**Part III**: Since *Workflow*'s tasks are mostly I/O-bound (network calls, db transactions, file I/O), 
+they are programmed, for simplicity, to be executed in threads using Python's 
+[threading](https://docs.python.org/3/library/threading.html) module. However, this is not the most efficient way 
+because the execution of the calling thread is still blocked.    
+*To improve*: use [ThreadPoolExecutor](https://docs.python.org/3/library/concurrent.futures.html#threadpoolexecutor) or 
+ [event driven programming](https://docs.python.org/3/library/asyncio.html#module-asyncio), or even better, 
+[Celery](https://docs.celeryq.dev/en/stable/) to perform concurrent tasks instead of multithreading.
+
+**Part IV**: The Django application server uses two setting files for different environments which makes some commands 
+slightly more complicated and log files location different. Also, a new environment (for example, testing) might require 
+a new setting file to be added which just complicates matters.    
+*To improve*: take the approach of [smartly utilizing environment 
+variables](https://testdriven.io/blog/dockerizing-django-with-postgres-gunicorn-and-nginx/#docker).
+
+**Part V**: The result of many requests are determined by the `status` field in the Json response rather than the HTTP
+status code. As a consequence, responses of failed requests would also carry the HTTP 200 code and be considered 
+"success" by JQuery Ajax, so that part of JavaScript code in this project is written in a dedicated manner.    
+*To improve*: add status code to every view function return, refactor JQuery Ajax code to handle failed requests in 
+"error" and remove corresponding part from "success".
+
+**Part VI**: Some HTML tables are included in the web pages. It makes sense to make all of them sortable to provide a 
+better user experience.    
+*To improve*: [make HTML tables 
+sortable](https://webdesign.tutsplus.com/how-to-create-a-sortable-html-table-with-javascript--cms-92993t) in project
+templates.
+
+**Part VII**: The frontend was developed in a haste. The only library used is [JQuery](https://jquery.com/) for DOM 
+manipulation. Not very beautiful, not responsive at all.    
+*To improve*: use a frontend framework like [React](https://react.dev/) or a CSS framework like [Tailwind 
+CSS](https://tailwindcss.com/).
 
 ## Simple API Reference
 ### Accounts:
