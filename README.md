@@ -120,14 +120,15 @@ is managed by Docker network. See [Networking in Compose](https://docs.docker.co
 
 ### LLM Client
 The project bundles two classes of client to use for paper processing: ***GPTClient*** and ***SimpleKeywordClient***.
-The former integrates with GPT (provider You.com :x: Currently blocker by Cloudflare :x:) by [gpt4free](https://github.com/xtekky/gpt4free), while the latter 
-simply matches tag names with words in the paper and makes no external calls.    
+The former integrates with GPT (provider You.com :x: Currently blocked by Cloudflare :x:) by [gpt4free
+](https://github.com/xtekky/gpt4free), while the latter simply matches tag names with words in the paper and makes no 
+external calls.    
 
 **The default CDN client** is *****GPTClient*****. Go to *SakanaRM/core/llm_utils/gpt_client.py*, and look for the 
 class attribute ***"PAPER_SLICE_LENGTH"*** and ***"MODEL_TEMPERATURE"***. Modify how long paper is sliced into parts 
-for transmission and temperature of the model by setting corresponding values, or just skip this step. To use the 
-alternative ***SimpleKeywordClient***, go to *SakanaRM/core/views.py*, add a line of import if not existent: `from .llm_utils import 
-SimpleKeywordClient`, then find and replace all `GPTClient()` to `SimpleKeywordClient()` in code.
+for transmission and the temperature of the model by setting corresponding values, or just skip this step. To use the 
+alternative ***SimpleKeywordClient***, go to *SakanaRM/core/views.py*, add a line of import if not existent: 
+`from .llm_utils import SimpleKeywordClient`, then find and replace all `GPTClient()` to `SimpleKeywordClient()` in code.
 
 ### Database
 By default, the production server uses MariaDB that runs as a separate service, the development server creates and runs
@@ -222,9 +223,15 @@ inside every app's directory (*SakanaRM/accounts/*, *SakanaRM/core/*).
 - Paper titles are NOT unique if uploader is different, but for the same uploader, papers should have unique, non-empty 
 titles;
 - Tag names are unique. Semicolons, trailing and leading spaces in tag names are not allowed and would be removed by 
-system;
-- A new paper that is being uploaded does not appear in "My Papers" nor has a detail page until the upload successfully 
-completes;
+the system;
+- You can only abort a workflow when it is pending, whereas the condition for archiving it is the total opposite;
+- You cannot delete a workflow. If you don't want the workflow to appear on your home page, archive it;
+- Deleting paper will also result in deletion of all corresponding workflows;
+- Manual tagging is available on a paper's detail page;
+- A new paper that is being uploaded does not appear in "My Papers" nor has a detail page until the upload workflow 
+successfully completes;
+- Among match types, "exact" means tags selected match exactly those of a paper, "inclusion" means tags selected match 
+a subset of those of a paper, and "union" means tags selected match one of those of a paper;
 
 ## Developer's Guide
 **Note:** Whenever you make any changes to your data models (in any *models.py*) or add new applications to **INSTALLED
@@ -282,16 +289,18 @@ For detailed explanation, please visit
 
 #### Gunicorn:
 (in *SakanaRM/gunicorn.conf.py*)    
-**worker_class**: there are many [types of worker processes](https://docs.gunicorn.org/en/stable/design.html#design) to
+***worker_class***: there are many [types of worker processes](https://docs.gunicorn.org/en/stable/design.html#design) to
 specify. Since the server makes many outgoing requests to external APIs, it is more beneficial to use a type of 
-asynchronous worker.
+asynchronous worker.    
+***loglevel***: set the level of error log, which contains events related to the application and internal processes. 
+Does not have anything to do with access log where all HTTP requests processed by the server are logged down.
 
 #### Nginx:
 (in *nginx/nginx.conf*)    
-**client_max_body_size**: the maximum size of the client request body allowed. If exceeds, server responds with "413 
+***client_max_body_size***: the maximum size of the client request body allowed. If exceeds, server responds with "413 
 Request Entity Too Large". Mostly useful for restricting file upload size. Can also be done by filtering requests at
 application level through Django's middlewares (or even more fine-grained, at each view function).    
-**proxy_set_header Host**: use `$http_host` instead of `$host`, if your web server does not run on port `80` or `443` 
+***proxy_set_header Host***: use `$http_host` instead of `$host`, if your web server does not run on port `80` or `443` 
 and you want to parse client host header in application server. `$http_host` will include the port number if it was 
 part of the client's request.
 
@@ -306,6 +315,12 @@ Personal Use](#pure-personal-use-not-recommended), simply run `python manage.py 
 after database is set up and follow the prompts. 
 - It is recommended to configure a new environment for testing, which is something the project can improve on. See 
 [Potential Improvements](#workflow-model--potential-improvements) Part III.
+
+### CI/CD
+The CI/CD platform used for this project is GitHub Actions, and pipelines are only created for the main branch 
+(*"origin/master"*). To make full use of GitHub Actions, configure testing correctly and add more tests. Do not forget 
+to fork the repository first. Every time after a push is made, check that all Actions workflows pass. If you want to 
+modify or add any workflows, go to the folder *.github/workflows* and check out the *.yml* files there.
 
 ### SSL/HTTPS
 The server is NOT configured to establish secure links. To set up HTTPS, Google for solutions then follow 
@@ -338,6 +353,7 @@ all info-level events in app *core*; unhandled exceptions during handling of a r
 `sudo docker compose exec <service_name> <command>`: Runs a command in a running service container.    
 `sudo docker volume ls`: Lists all Docker volumes.    
 `sudo docker volume inspect <volume_name>`: Display detailed information on a volume    
+`sudo docker system df`: Show Docker disk usage.    
 
 ### Docker-related Files
 #### healthcheck.sh
