@@ -2,8 +2,8 @@ FROM python:3.9-slim AS build
 
 WORKDIR /usr/src/SakanaRM
 
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
 # Add following lines to avoid errors during "pip install mysqlclient"
 RUN apt-get update \
