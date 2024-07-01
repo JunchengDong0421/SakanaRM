@@ -45,7 +45,7 @@ V. Final product (that fulfills the success metric)    &nbsp;&nbsp;&nbsp;&nbsp; 
 |                                 | Tutorial video                                           | BACKLOG     | 09/07 |
 | Developer documentation         |                                                          |             |       |
 |                                 | Preface (project structure, some basics)                 | DONE        |       |
-|                                 | Advanced deployment (settings, custom clients, database) | IN PROGRESS | 01/07 |
+|                                 | Advanced deployment (settings, custom clients, database) | DONE        |       |
 |                                 | Miscellaneous                                            | IN PROGRESS | 02/07 |
 |                                 | Simple API reference                                     | BACKLOG     | 09/07 |
 | Usable UI                       |                                                          |             |       |
@@ -120,9 +120,9 @@ is managed by Docker network. See [Networking in Compose](https://docs.docker.co
 
 ### LLM Client
 The project bundles two classes of client to use for paper processing: ***GPTClient*** and ***SimpleKeywordClient***.
-The former integrates with GPT (provider You.com :x: Currently blocked by Cloudflare :x:) by [gpt4free
-](https://github.com/xtekky/gpt4free), while the latter simply matches tag names with words in the paper and makes no 
-external calls.    
+The former integrates with GPT (provider You.com :x: Currently blocked by Cloudflare :x:) by 
+[gpt4free](https://github.com/xtekky/gpt4free), while the latter simply matches tag names with words in the paper and 
+makes no external calls.    
 
 **The default CDN client** is *****GPTClient*****. Go to *SakanaRM/core/llm_utils/gpt_client.py*, and look for the 
 class attribute ***"PAPER_SLICE_LENGTH"*** and ***"MODEL_TEMPERATURE"***. Modify how long paper is sliced into parts 
@@ -141,11 +141,12 @@ a SQLite3 instance in one service. If you want to use other databases, see
 1. Make sure docker daemon process is running:    
 `sudo dockerd`
 2. Check that port `80` and `5000` on target machine are not occupied: please Google for solutions.
-3. Start your CDN services first, if SakanaCDN (current directory is *SakanaCDN/*):    
+3. Go to *SakanaRM/SakanaRM/settings.py*, change the ***SECRET_KEY*** variable to a different random string.
+4. Start your CDN services first, if SakanaCDN (current directory is *SakanaCDN/*):    
 `sudo docker compose up --build`
-4. Start SakanaRM services (current directory is *SakanaRM/*):    
+5. Start SakanaRM services (current directory is *SakanaRM/*):    
 `sudo docker compose -f docker-compose.prod.yaml up --build`
-5. Visit *http://\<your_server_ip\>*. Done!    
+6. Visit *http://\<your_server_ip\>*. Done!    
 
 
 To shut down services:    
@@ -239,8 +240,9 @@ _APPS** (in *SakanaRM/SakanaRM/settings_dev.py*), you should **manually** run th
 (*SakanaRM/* directory):    
 `python manage.py makemigrations --settings=SakanaRM.settings_dev`    
 and don't forget to **add the generated files** to your version control so that migrations can be applied in 
-docker entrypoint. You can try to [squash migrations
-](https://docs.djangoproject.com/en/5.0/topics/migrations/#migration-squashing) if there are too many of them.
+docker entrypoint. You can try to 
+[squash migrations](https://docs.djangoproject.com/en/4.2/topics/migrations/#migration-squashing) if there are too 
+many of them.
 
 ### Preface
 SakanaRM is developed under the [Django](https://www.djangoproject.com/) framework, and mostly follows standard 
@@ -249,7 +251,7 @@ documentation](https://docs.djangoproject.com/en/4.2/) or follow the [MDN
 tutorial](https://developer.mozilla.org/en-US/docs/Learn/Server-side/Django/Tutorial_local_library_website).
 
 SakanaRM started from the 
-[default project template](https://docs.djangoproject.com/en/5.0/ref/django-admin/#django-admin-startproject) and 
+[default project template](https://docs.djangoproject.com/en/4.2/ref/django-admin/#django-admin-startproject) and 
 contains two custom apps:
 - accounts: functionalities around user authentication and custom model SakanaUser
 - core: core functionalities, including integration with LLM    
@@ -285,7 +287,7 @@ and *nginx.conf*.
 directory.    
 
 For detailed explanation, please visit 
-[official documentation (on static files)](https://docs.djangoproject.com/en/5.0/howto/static-files/).
+[official documentation (on static files)](https://docs.djangoproject.com/en/4.2/howto/static-files/).
 
 #### Gunicorn:
 (in *SakanaRM/gunicorn.conf.py*)    
@@ -302,7 +304,10 @@ Request Entity Too Large". Mostly useful for restricting file upload size. Can a
 application level through Django's middlewares (or even more fine-grained, at each view function).    
 ***proxy_set_header Host***: use `$http_host` instead of `$host`, if your web server does not run on port `80` or `443` 
 and you want to parse client host header in application server. `$http_host` will include the port number if it was 
-part of the client's request.
+part of the client's request.    
+***allow & deny***: allow requests only from certain IP addresses. You can place the directives under the "server" block 
+to restrict access across the site, or only apply restrictions on certain locations under the "location" blocks. 
+Wildcard matching not supported by you can use CIDR donation to allow or deny a range of IP addresses.
 
 ### Testing
 With Django's testing framework, it is relatively straightforward to write unit tests and integration tests 
@@ -324,9 +329,29 @@ modify or add any workflows, go to the folder *.github/workflows* and check out 
 
 ### SSL/HTTPS
 The server is NOT configured to establish secure links. To set up HTTPS, Google for solutions then follow 
-[Django's official documentation](https://docs.djangoproject.com/en/5.0/topics/security/#ssl-https).
+[Django's official documentation](https://docs.djangoproject.com/en/4.2/topics/security/#ssl-https).
 
 ### How to Custom LLM and CDN Clients
+To custom your own clients, follow the below steps (remember always to use relative imports):
+1. Go to the corresponding utils folder (*SakanaRM/core/xxx_utils/*).
+2. Create a *.py* file with the name of your client.
+3. Edit the file, first add a line that imports the corresponding abstract class: `from .abstract_xxx_client 
+import AbstractXXXClient`.
+4. Then, create your own client class, the class must inherit from the abstract class and implement all abstract 
+methods of the base class. Make sure you understand the meaning of function parameters and do not override their types! 
+For example, `paper` is a readable I/O object, and `tags` is a dictionary of tag items with keys being tag names and 
+values being tag definitions etc. 
+5. Go to the corresponding *\__init__.py* file (*SakanaRM/core/xxx_utils/\__init__.py*).
+6. Edit the file, add a line of import: `from .your_client_name.py import YourClient`.
+7. Go to *SakanaRM/core/views.py*.
+8. Add a line of import: `from .xxx_utils import YourClient`, find and replace all `OriginalClient()` (original client 
+instances) to `YourClient()` in the code.
+9. Test if your clients are working fine.    
+
+**Note**: CDN clients need to generate a random filename and request to store the paper as that particular filename. You
+can use the function *"random_filename"* in *SakanaRM/core/cdn_utils/utils.py* to make up the filename. For sending
+requests, you are recommended to use the library [Requests](https://requests.readthedocs.io/en/latest/) or the advanced 
+version [Requests-HTML](https://requests.readthedocs.io/projects/requests-html/en/latest/).
 
 ### Configure Logging
 Only logs of Django and Gunicorn are manually configured and persisted in this project. For Nginx, access the logs 
@@ -348,27 +373,53 @@ all info-level events in app *core*; unhandled exceptions during handling of a r
 ### Useful Docker Compose Commands:
 **Note**: always add `-f docker-compose.prod.yaml` if working with production services.
 
-`sudo docker compose logs`: Displays logs for all services defined in the *docker-compose.yaml* file.    
-`sudo docker compose ps`: Lists the status of all services defined in the *docker-compose.yaml* file.    
-`sudo docker compose exec <service_name> <command>`: Runs a command in a running service container.    
-`sudo docker volume ls`: Lists all Docker volumes.    
-`sudo docker volume inspect <volume_name>`: Display detailed information on a volume    
-`sudo docker system df`: Show Docker disk usage.    
+`sudo docker compose logs`: displays logs for all services defined in the *docker-compose.yaml* file.    
+`sudo docker compose ps`: lists the status of all services defined in the *docker-compose.yaml* file.    
+`sudo docker compose exec <service_name> <command>`: runs a command in a running service container.    
+`sudo docker volume ls`: lists all Docker volumes.    
+`sudo docker volume inspect <volume_name>`: display detailed information on a volume.    
+`sudo docker system df`: show Docker disk usage.    
 
 ### Docker-related Files
-#### healthcheck.sh
-The database service uses MariaDB's [official script](https://mariadb.com/kb/en/using-healthcheck-sh/) for health check. 
-If the code or script for some reasons does not work anymore, please check for updates on official websites.
+`docker-compose.prod.yaml`, `docker-compose.yaml`: files that describe the services    
+`Dockerfile.prod`, `Dockerfile`: files that specify how images are built, see [Multi-stage 
+Build](https://docs.docker.com/build/guide/multi-stage/)    
+`entrypoint.prod.sh`, `entrypoint.sh`: scripts to execute inside a container whenever it starts up    
+`healthcheck.sh`: the database service uses MariaDB's [official script](https://mariadb.com/kb/en/using-healthcheck-sh/) 
+for health check. If the code or script for some reasons does not work anymore, please check for updates on official 
+websites.
 
 ### Switch to Other Databases
+The databases chosen for the project are MariaDB (production) and SQLite3 (development). To configure to use another 
+database, follow the steps below:
+1. In `docker-compose.prod.yaml`, change image used by `db` service and environment variables to set up the database
+correctly.
+2. In `settings.py`, change the values in the `DATABASES` variable, make sure they match the values of the environment 
+variables in step 1.
+3. In `requirements.txt`, add driver dependencies if any is needed, for example, MariaDB needs the *"mysqlclient"* 
+library to connect to.
+
+### Firewall & Security
+It is recommended to configure a firewall to enforce access control policies on network traffics. You can do that 
+with the web server. See [Important Settings - Nginx](#nginx). Just in case, you should always set up an OS level 
+firewall on the host machine. For example, [Ubuntu UFW](https://ubuntu.com/server/docs/firewalls), 
+[Windows Firewall](https://learn.microsoft.com/en-us/windows/security/operating-system-security/network-security/windows-firewall/tools)
+etc.    
+
+Django features several security middlewares and mechanisms to protect against common attacks on web applications. See 
+[Security in Django](https://docs.djangoproject.com/en/4.2/topics/security/) for details. That's, for example, why you 
+should include the field `csrfmiddlewaretoken` with the value `{{ csrf_token }}` (in templates) whenever you post data 
+to the server. It's also important to set a different secret key for use in production and keep it secret (i.e., do not 
+push it to your public repository). But for database service environment variables, it is fine to leave them as is 
+because the service is not exposed to the outside of the container.
 
 ### Windows Support
 Since Gunicorn does not support Windows, you should use another WSGI server to run the WSGI application 
 (SakanaRM: Django, SakanaCDN: Flask) if you want to [deploy](https://flask.palletsprojects.com/en/2.3.x/deploying/) 
-the project on a Windows system. However, if you take the [Pure Personal Use](#pure-personal-use-not-recommended) 
-approach, then you don't have to consider this layer of deployment. But, Python is not 100% portable between platforms, 
-and that's why in *SakanaRM/core/views.py* a line in function *search_result* checks for os names because Windows and 
-Linux use different flags to remove zero padding in formatting datetime strings (see 
+the system on a Windows system. However, if you take the [Pure Personal Use](#pure-personal-use-not-recommended) 
+approach, then you don't have to consider this layer of deployment. But, note that Python is not 100% portable between 
+platforms. That's why in *SakanaRM/core/views.py*, a line in function *search_result* checks for os names because 
+Windows and Linux use different flags to remove zero padding in formatting datetime strings (see 
 [link](https://stackoverflow.com/questions/9525944/python-datetime-formatting-without-zero-padding/42709606#42709606)).
 
 ### Abandon the CDN Approach
@@ -397,14 +448,14 @@ they are programmed, for simplicity, to be executed in threads using Python's
 [threading](https://docs.python.org/3/library/threading.html) module. However, this is not the most efficient way 
 because the execution of the calling thread is still blocked.    
 *To improve*: use [ThreadPoolExecutor](https://docs.python.org/3/library/concurrent.futures.html#threadpoolexecutor) or 
- [event driven programming](https://docs.python.org/3/library/asyncio.html#module-asyncio), or even better, 
+[event driven programming](https://docs.python.org/3/library/asyncio.html#module-asyncio), or even better, 
 [Celery](https://docs.celeryq.dev/en/stable/) to perform concurrent tasks instead of multithreading.
 
 **Part IV**: The Django application server uses two setting files for different environments which makes some commands 
 slightly more complicated and log files location different. Also, a new environment (for example, testing) might require 
 a new setting file to be added which just complicates matters.    
-*To improve*: take the approach of [smartly utilizing environment 
-variables](https://testdriven.io/blog/dockerizing-django-with-postgres-gunicorn-and-nginx/#docker).
+*To improve*: take the approach of
+[smartly utilizing environment variables](https://testdriven.io/blog/dockerizing-django-with-postgres-gunicorn-and-nginx/#docker).
 
 **Part V**: The result of many requests are determined by the `status` field in the Json response rather than the HTTP
 status code. As a consequence, responses of failed requests would also carry the HTTP 200 code and be considered 
@@ -414,14 +465,13 @@ status code. As a consequence, responses of failed requests would also carry the
 
 **Part VI**: Some HTML tables are included in the web pages. It makes sense to make all of them sortable to provide a 
 better user experience.    
-*To improve*: [make HTML tables 
-sortable](https://webdesign.tutsplus.com/how-to-create-a-sortable-html-table-with-javascript--cms-92993t) in project
-templates.
+*To improve*: [make HTML tables sortable](https://webdesign.tutsplus.com/how-to-create-a-sortable-html-table-with-javascript--cms-92993t) 
+in project templates.
 
 **Part VII**: The frontend was developed in a haste. The only library used is [JQuery](https://jquery.com/) for DOM 
 manipulation. Not very beautiful, not responsive at all.    
-*To improve*: use a frontend framework like [React](https://react.dev/) or a CSS framework like [Tailwind 
-CSS](https://tailwindcss.com/).
+*To improve*: use a frontend framework like [React](https://react.dev/) or a CSS framework like 
+[Tailwind CSS](https://tailwindcss.com/).
 
 ## Simple API Reference
 ### Accounts:
