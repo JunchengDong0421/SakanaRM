@@ -15,7 +15,9 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Build the Docker image
-      run: docker build ./SakanaRM --file Dockerfile.prod --tag sakanarm:version1.0
+      run: |
+        cd SakanaRM
+        docker build . --file Dockerfile.prod --tag sakanarm:version1.0
     - name: Run image
       run: docker run -d sakanarm:version1.0
     - name: Run tests
