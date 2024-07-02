@@ -27,7 +27,7 @@
 {% block content %}
     <h2>PID: {{ paper.id }}</h2>
     <h2>Title: {{ paper.title }}</h2>
-    <h2>Owner: {{ paper.owner }}</h2>
+    <h2>Owner: {{ paper.owner.display_name }}</h2>
     <h2>Tags:
         {% for tag in paper.tags.all %}
             <p style="color: grey"> #{{ tag.name }} &nbsp;&nbsp; </p>

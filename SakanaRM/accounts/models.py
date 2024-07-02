@@ -10,4 +10,4 @@ class SakanaUser(models.Model):
     display_name = models.CharField(max_length=150, unique=True)
 
     def __str__(self):
-        return f"<SakanaUser uid={self.id} username={self.auth_user.get_username()}>"
+        return f"<SakanaUser uid={self.id} username={self.display_name}>"

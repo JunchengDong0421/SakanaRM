@@ -410,7 +410,7 @@ def add_tag_and_definition(request):
     # if tag already exists
     if tag:
         if tag.adder_id != uid:  # adder is other user
-            err_msg = f'Tag added by somebody else. Please contact "{tag.adder.auth_user.username}" via ' \
+            err_msg = f'Tag added by somebody else. Please contact "{tag.adder.display_name}" via ' \
                       f'{tag.adder.auth_user.email}.'
             return JsonResponse({"status": 1, "err_msg": err_msg})
         # adder is current user
@@ -735,7 +735,7 @@ def search_result(request):
             "id": p.id,
             "title": p.title,
             "tags": ", ".join(list(p.tags.all().values_list('name', flat=True))),
-            "owner": p.owner.auth_user.username,
+            "owner_name": p.owner.display_name,
             "last_modified": p.last_modified.astimezone(ZoneInfo(settings.TIME_ZONE)).strftime(format_option)
             .replace('PM', 'p.m.').replace('AM', 'a.m.')
         } for p in papers
