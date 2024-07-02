@@ -3,8 +3,8 @@ from django.contrib.auth import authenticate, login, logout
 from .models import SakanaUser
 
 
-def create_sakana_user(auth_user):  # create SakanaUser from User
-    user = SakanaUser(auth_user=auth_user)
+def create_sakana_user(auth_user, display_name):  # create SakanaUser from User
+    user = SakanaUser(auth_user=auth_user, display_name=display_name)
     user.save()
     return user
 

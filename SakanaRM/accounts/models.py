@@ -7,6 +7,7 @@ class SakanaUser(models.Model):
 
     id = models.BigAutoField(primary_key=True)
     auth_user = models.OneToOneField(User, on_delete=models.CASCADE)
+    display_name = models.CharField(max_length=150, unique=True)
 
     def __str__(self):
         return f"<SakanaUser uid={self.id} username={self.auth_user.get_username()}>"
