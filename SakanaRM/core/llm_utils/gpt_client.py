@@ -1,7 +1,6 @@
 import math
 import time
 
-from g4f.Provider import You
 from g4f.client import Client
 
 from .abstract_llm_client import AbstractLLMClient
@@ -41,7 +40,7 @@ class GPTClient(AbstractLLMClient):
                              f'Question 1: {questions[0]}'
             messages.append({"role": "user", "content": init_tag_query})
 
-            client = Client(provider=You)
+            client = Client()
 
             temperature = self.MODEL_TEMPERATURE
             response = client.chat.completions.create(model="gpt-3.5-turbo", messages=messages, temperature=temperature)
