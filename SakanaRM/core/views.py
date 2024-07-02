@@ -411,10 +411,10 @@ def add_tag_and_definition(request):
     if tag:
         if tag.adder_id != uid:  # adder is other user
             err_msg = f'Tag added by somebody else. Please contact "{tag.adder.auth_user.username}" via ' \
-                      f'{tag.adder.auth_user.email}'
+                      f'{tag.adder.auth_user.email}.'
             return JsonResponse({"status": 1, "err_msg": err_msg})
         # adder is current user
-        err_msg = "You have added the same tag, please go to update definition page"
+        err_msg = "You have added the same tag!"
         return JsonResponse({"status": 1, "err_msg": err_msg})
     # else
     tag = Tag(name=processed_name, definition=definition, adder_id=uid)
