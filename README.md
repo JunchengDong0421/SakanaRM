@@ -41,16 +41,16 @@ V. Final product (that fulfills the success metric)    &nbsp;&nbsp;&nbsp;&nbsp; 
 |                                 | Installation                                             | DONE        |       |
 |                                 | Configuration                                            | DONE        |       |
 |                                 | Usage                                                    | DONE        |       |
-|                                 | Important notices                                        | IN PROGRESS | 02/07 |
+|                                 | Important notices                                        | DONE        |       |
 |                                 | Tutorial video                                           | BACKLOG     | 09/07 |
 | Developer documentation         |                                                          |             |       |
 |                                 | Preface (project structure, some basics)                 | DONE        |       |
 |                                 | Advanced deployment (settings, custom clients, database) | DONE        |       |
-|                                 | Miscellaneous                                            | IN PROGRESS | 02/07 |
+|                                 | Miscellaneous                                            | DONE        |       |
 |                                 | Simple API reference                                     | BACKLOG     | 09/07 |
 | Usable UI                       |                                                          |             |       |
 |                                 | Basic layout                                             | DONE        |       |
-|                                 | Beautified page (apply quick solutions)                  | IN PROGRESS | 02/07 |
+|                                 | Beautified page (apply quick solutions)                  | IN PROGRESS | 05/07 |
 
 **Optional:**                 
 
@@ -120,15 +120,15 @@ is managed by Docker network. See [Networking in Compose](https://docs.docker.co
 
 ### LLM Client
 The project bundles two classes of client to use for paper processing: ***GPTClient*** and ***SimpleKeywordClient***.
-The former integrates with GPT (provider You.com :x: Currently blocked by Cloudflare :x:) by 
-[gpt4free](https://github.com/xtekky/gpt4free), while the latter simply matches tag names with words in the paper and 
-makes no external calls.    
+The former integrates with GPT client by [gpt4free](https://github.com/xtekky/gpt4free), while the latter simply 
+matches tag names with words in the paper and makes no external calls.    
 
 **The default CDN client** is *****GPTClient*****. Go to *SakanaRM/core/llm_utils/gpt_client.py*, and look for the 
-class attribute ***"PAPER_SLICE_LENGTH"*** and ***"MODEL_TEMPERATURE"***. Modify how long paper is sliced into parts 
-for transmission and the temperature of the model by setting corresponding values, or just skip this step. To use the 
-alternative ***SimpleKeywordClient***, go to *SakanaRM/core/views.py*, add a line of import if not existent: 
-`from .llm_utils import SimpleKeywordClient`, then find and replace all `GPTClient()` to `SimpleKeywordClient()` in code.
+class attribute ***"PAPER_SLICE_LENGTH"***, ***"MODEL"*** and ***"TEMPERATURE"***. Modify how long paper is sliced into 
+parts for transmission, the model used and the temperature of the model by setting corresponding values, or just accept 
+the default value and skip this step. To use the alternative ***SimpleKeywordClient***, go to *SakanaRM/core/views.py*, 
+add a line of import if non-existent: `from .llm_utils import SimpleKeywordClient`, then find and replace all 
+`GPTClient()` to `SimpleKeywordClient()` in code.
 
 ### Database
 By default, the production server uses MariaDB that runs as a separate service, the development server creates and runs
@@ -233,6 +233,8 @@ the system;
 successfully completes;
 - Among match types, "exact" means tags selected match exactly those of a paper, "inclusion" means tags selected match 
 a subset of those of a paper, and "union" means tags selected match one of those of a paper;
+- The display name is the identity of a user shown to others, and it is unique with a maximum length of 150 characters;
+- Length limits (unit: characters): username: 150, password: 128, email: 254, first name: 150, last name: 150;
 
 ## Developer's Guide
 **Note:** Whenever you make any changes to your data models (in any *models.py*) or add new applications to **INSTALLED
@@ -412,6 +414,12 @@ should include the field `csrfmiddlewaretoken` with the value `{{ csrf_token }}`
 to the server. It's also important to set a different secret key for use in production and keep it secret (i.e., do not 
 push it to your public repository). But for database service environment variables, it is fine to leave them as is 
 because the service is not exposed to the outside of the container.
+
+### About LLM Providers
+To access LLM APIs, the project uses the [gpt4free](https://github.com/xtekky/gpt4free) package. As a developer, you 
+should always use the latest version of the package in the development environment to test if it is still usable 
+anymore, and make sure all dependencies are noted down in *requirements.txt*. If you do not specify a provider in the 
+client, then it will automatically select available ones to use. 
 
 ### Windows Support
 Since Gunicorn does not support Windows, you should use another WSGI server to run the WSGI application 
