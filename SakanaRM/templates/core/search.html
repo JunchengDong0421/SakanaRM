@@ -49,8 +49,13 @@
             opacity: 0.5;
             color: #ccc;
         }
+
         .disabled-label {
             color: #ccc;
+        }
+
+        .hidden-tag {
+            display: none;
         }
     </style>
 {% endblock %}
@@ -87,10 +92,10 @@
         <br><br>
         <div class="scrollable-checkboxes" id="t-filter">
             <label><input type="checkbox" id="untagged-checkbox" name="tags-filter"
-                          value="-1"><i>untagged</i></label>
+                          value="-1" data-name="untagged"><i>untagged</i></label>
             {% for t in tags %}
                 <label><input type="checkbox" class="tag-checkbox" name="tags-filter"
-                              value="{{ t.id }}">{{ t.name }}</label>
+                              value="{{ t.id }}" data-name="{{ t.name }}">{{ t.name }}</label>
             {% endfor %}
         </div>
         <br>
@@ -147,6 +152,19 @@
         $(document).ready(() => {
             var searchURL = "{% url 'core:search-result' %}";
             var errMsg = $("#err-msg");
+
+            // Search bar
+            $('#search-bar').on('input', function() {
+                var searchTerm = $(this).val().toLowerCase();
+                $('#t-filter label').each(function() {
+                    var dataName = $(this).find('input').data('name').toLowerCase();
+                    if (dataName.includes(searchTerm)) {
+                        $(this).removeClass('hidden-tag');
+                    } else {
+                        $(this).addClass('hidden-tag');
+                    }
+                });
+            });
 
             // Toggle filters button
             $("#toggle-filters").click(function () {
