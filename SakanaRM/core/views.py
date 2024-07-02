@@ -695,18 +695,7 @@ def search_result(request):
     # First get all papers
     papers = Paper.objects.all()
 
-    # Next filter owner
-    if uid:
-        if owner == "me":
-            papers = papers.filter(owner_id=uid)
-        elif owner == "others":
-            papers = papers.exclude(owner_id=uid)
-
-    # Then filter title
-    if partial_title:
-        papers = papers.filter(title__icontains=partial_title)  # case insensitive
-
-    # Lastly filter tags and match type
+    # Then filter tags and match type
     if tags:
         if match_type == "exact":
             if "-1" in tags:
@@ -725,6 +714,17 @@ def search_result(request):
             if "-1" in tags:
                 papers |= Paper.objects.filter(tags__isnull=True)  # add untagged papers back, filter all paper objects
             papers = papers.distinct()
+
+    # Next filter owner
+    if uid:
+        if owner == "me":
+            papers = papers.filter(owner_id=uid)
+        elif owner == "others":
+            papers = papers.exclude(owner_id=uid)
+
+    # Finally filter title
+    if partial_title:
+        papers = papers.filter(title__icontains=partial_title)  # case insensitive
 
     # Different platforms (registered as: 'posix', 'nt' or 'java') use different flags to remove zero padding
     format_option = '%B %-d, %-Y, %-I:%M %p' if os_name == "posix" else '%B %#d, %#Y, %#I:%M %p' if os_name == "nt" \
