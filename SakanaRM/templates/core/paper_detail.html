@@ -21,6 +21,10 @@
             width: 33.33%;
             box-sizing: border-box;
         }
+
+        .hidden-tag {
+            display: none;
+        }
     </style>
 {% endblock %}
 
@@ -41,20 +45,24 @@
         <a href="{{ paper.file_path }}?asattachment=1"><button id="download">Download</button></a>
         <hr>
         {% if paper.owner.id == request.session.uid %}
-            <h3>Add (merge) tags to paper</h3>
+            <h3>Add (merge) tags to paper &nbsp;&nbsp;
+                <label>&#x1F50E;&#xFE0F;<input id="search-bar-add" type="search"></label></h3>
             <div class="scrollable-checkboxes" id="add-tags-box">
                 {% for t in tags %}
-                    <label><input type="checkbox" name="tag-ids" value="{{ t.id }}">{{ t.name }}</label>
+                    <label><input type="checkbox" name="tag-ids" value="{{ t.id }}" data-name="{{ t.name }}">
+                        {{ t.name }}</label>
                 {% endfor %}
             </div>
             <button id="add-tags">Add</button>
             <p id="err-msg-1" style="color: red"></p>
             <hr>
 
-            <h3>Remove tags from paper</h3>
+            <h3>Remove tags from paper &nbsp;&nbsp;
+                <label>&#x1F50E;&#xFE0F;<input id="search-bar-remove" type="search"></label></h3>
             <div class="scrollable-checkboxes" id="remove-tags-box">
                 {% for t in paper.tags.all %}
-                    <label><input type="checkbox" name="tag-ids" value="{{ t.id }}">{{ t.name }}</label>
+                    <label><input type="checkbox" name="tag-ids" value="{{ t.id }}" data-name="{{ t.name }}">
+                        {{ t.name }}</label>
                 {% endfor %}
             </div>
             <button id="remove-tags">Remove</button>
@@ -79,15 +87,30 @@
         var deleteURL = "{% url 'core:delete-paper' %}";
 
         $(document).ready(() => {
-            // Show tag names on input
-            $('#tags').on("change", () => {
-                const input = $('#tags').val();
-                if (input.length > 0) {
-                    const splitValues = input.split(';').map(value => value.trim());
-                    $("#confirm").text("Confirmation: " + splitValues.join(', '));
-                } else {
-                    $("#confirm").text("");
-                }
+            // Search bar (add tags)
+            $('#search-bar-add').on('input', function() {
+                var searchTerm = $(this).val().toLowerCase();
+                $('#add-tags-box label').each(function() {
+                    var dataName = $(this).find('input').data('name').toLowerCase();
+                    if (dataName.includes(searchTerm)) {
+                        $(this).removeClass('hidden-tag');
+                    } else {
+                        $(this).addClass('hidden-tag');
+                    }
+                });
+            });
+
+            // Search bar (remove tags)
+            $('#search-bar-remove').on('input', function() {
+                var searchTerm = $(this).val().toLowerCase();
+                $('#remove-tags-box label').each(function() {
+                    var dataName = $(this).find('input').data('name').toLowerCase();
+                    if (dataName.includes(searchTerm)) {
+                        $(this).removeClass('hidden-tag');
+                    } else {
+                        $(this).addClass('hidden-tag');
+                    }
+                });
             });
 
             // Add tags event
