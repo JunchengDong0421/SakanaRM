@@ -1,12 +1,11 @@
 {% extends 'base.html' %}
 
 {% block title %}
-    Workflow Detail - {{ workflow.id }}
+    Workflow Detail - {{ workflow.name }}
 {% endblock %}
 
 {% block content %}
     {% load custom_filters %}
-    <h2>WID: {{ workflow.id }}</h2>
     <h2>Name: {{ workflow.name }}</h2>
     <h2>Paper:
         {% if workflow.paper %}
@@ -19,13 +18,13 @@
     <h2>Stage: {{ workflow.get_stage_display }}</h2>
     <h2>Status: {{ workflow.get_status_display }}</h2>
     <div class="wf-info">
-        {% if workflow.work_type == upload%}
+        {% if workflow.work_type == upload %}
             {% if workflow.status == pending %}
                 <h3 style="color: darkblue">Uploading {{ workflow.instructions }}</h3>
             {% elif workflow.status == completed %}
                 <h3 style="color: darkblue">Uploaded {{ workflow.instructions }}</h3>
             {% endif %}
-        {% elif workflow.work_type == process%}
+        {% elif workflow.work_type == process %}
             {% if workflow.status == pending %}
                 <h3 style="color: darkblue">Processing with {{ workflow.instructions }}</h3>
             {% elif workflow.status == completed %}

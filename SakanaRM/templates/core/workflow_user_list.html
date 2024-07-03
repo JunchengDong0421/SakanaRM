@@ -4,12 +4,45 @@
     My Workflows
 {% endblock %}
 
+{% block style %}
+    <style>
+        table, th, td {
+            border: 1px solid black;
+        }
+    </style>
+{% endblock %}
+
 {% block content %}
+    {% load custom_filters %}
     {% if page_obj %}
-        {% for workflow in page_obj %}
-            {{ workflow.name }} | {{ workflow.get_status_display }} |
-            <a href="{% url 'core:workflow-detail' workflow.id %}" target="_blank">Go to manage</a> <br>
-        {% endfor %}
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Paper</th>
+                        <th>Work Type</th>
+                        <th>Stage</th>
+                        <th>Status</th>
+                        <th>Last Updated</th>
+                        <th>manage</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for wf in page_obj %}
+                        <tr>
+                            <td>{{ wf.name }}</td>
+                            <td>{{ wf|get_title }}</td>
+                            <td>{{ wf.get_work_type_display }}</td>
+                            <td>{{ wf.get_stage_display }}</td>
+                            <td>{{ wf.get_status_display }}</td>
+                            <td>{{ wf.last_updated }}</td>
+                            <td><a href="{% url 'core:workflow-detail' wf.id %}">Go to Manage</a></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
         <br><br><br>
         <div class="pagination">
             <span class="step-links">

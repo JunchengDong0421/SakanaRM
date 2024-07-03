@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block title %}
-    Paper Detail - {{ paper.id }}
+    Paper Detail - {{ paper.title }}
 {% endblock %}
 
 {% block style %}
@@ -25,12 +25,11 @@
 {% endblock %}
 
 {% block content %}
-    <h2>PID: {{ paper.id }}</h2>
     <h2>Title: {{ paper.title }}</h2>
     <h2>Owner: {{ paper.owner.display_name }}</h2>
     <h2>Tags:
         {% for tag in paper.tags.all %}
-            <p style="color: grey"> #{{ tag.name }} &nbsp;&nbsp; </p>
+            <span style="color: grey"> #{{ tag.name }}; &nbsp;</span>
         {% endfor %}
     </h2>
     <br>

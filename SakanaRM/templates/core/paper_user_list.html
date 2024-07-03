@@ -4,13 +4,39 @@
     My Papers
 {% endblock %}
 
+{% block style %}
+    <style>
+        table, th, td {
+            border: 1px solid black;
+        }
+    </style>
+{% endblock %}
+
 {% block content %}
     {% load custom_filters %}
     {% if page_obj %}
-        {% for paper in page_obj %}
-            {{ paper.title }} | {{ paper|join_tags:", " }} |
-            <a href="{% url 'core:paper-detail' paper.id %}" target="_blank">Go to manage</a> <br>
-        {% endfor %}
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Tags</th>
+                        <th>Last Updated</th>
+                        <th>manage</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for paper in page_obj %}
+                        <tr>
+                            <td>{{ paper.title }}</td>
+                            <td>{{ paper|join_tags:", " }}</td>
+                            <td>{{ paper.last_modified }}</td>
+                            <td><a href="{% url 'core:paper-detail' paper.id %}">Go to manage</a></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
         <br><br><br>
         <div class="pagination">
             <span class="step-links">

@@ -4,13 +4,39 @@
     My Tags
 {% endblock %}
 
+{% block style %}
+    <style>
+        table, th, td {
+            border: 1px solid black;
+        }
+    </style>
+{% endblock %}
+
 {% block content %}
     {% if page_obj %}
-        {% for tag in page_obj %}
-            {{ tag.name }} | {{ tag.definition }} | {{ tag.paper_count }}
-            | <button class="update-tag-link" data-tname="{{ tag.name }}">update</button>
-            <button class="delete-tag" data-tid="{{ tag.id }}">delete</button>  <br>
-        {% endfor %}
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Definition</th>
+                        <th>Paper Count</th>
+                        <th>manage</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for tag in page_obj %}
+                        <tr>
+                            <td>{{ tag.name }}</td>
+                            <td>{{ tag.definition }}</td>
+                            <td>{{ tag.paper_count }}</td>
+                            <td><button class="update-tag-link" data-tname="{{ tag.name }}">update</button> |
+                                <button class="delete-tag" data-tid="{{ tag.id }}">delete</button></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
         <br><br><br>
         <div class="pagination">
             <span class="step-links">
