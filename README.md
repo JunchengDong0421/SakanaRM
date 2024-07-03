@@ -237,9 +237,9 @@ a subset of those of a paper, and "union" means tags selected match one of those
 - Length limits (unit: characters): username: 150, password: 128, email: 254, first name: 150, last name: 150;
 
 ## Developer's Guide
-**Note:** Whenever you make any changes to your data models (in any *models.py*) or add new applications to **INSTALLED
-_APPS** (in *SakanaRM/SakanaRM/settings_dev.py*), you should **manually** run the following code in the app root 
-(*SakanaRM/* directory):    
+**Note:** Whenever you make any changes to your data models (in any *models.py*) or add new applications to 
+**INSTALLED_APPS** (in *SakanaRM/SakanaRM/settings_dev.py*), you should **manually** run the following code in the app 
+root (*SakanaRM/* directory):    
 `python manage.py makemigrations --settings=SakanaRM.settings_dev`    
 and don't forget to **add the generated files** to your version control so that migrations can be applied in 
 docker entrypoint. You can try to 
@@ -453,11 +453,10 @@ customize their own workflows, something like CI/CD pipelines. However, this ide
 
 **Part III**: Since *Workflow*'s tasks are mostly I/O-bound (network calls, db transactions, file I/O), 
 they are programmed, for simplicity, to be executed in threads using Python's 
-[threading](https://docs.python.org/3/library/threading.html) module. However, this is not the most efficient way 
-because the execution of the calling thread is still blocked.    
-*To improve*: use [ThreadPoolExecutor](https://docs.python.org/3/library/concurrent.futures.html#threadpoolexecutor) or 
-[event driven programming](https://docs.python.org/3/library/asyncio.html#module-asyncio), or even better, 
-[Celery](https://docs.celeryq.dev/en/stable/) to perform concurrent tasks instead of multithreading.
+[ThreadPoolExecutor](https://docs.python.org/3/library/concurrent.futures.html#threadpoolexecutor). However, this is 
+not the most efficient way because it requires the use of multiple operating system threads.    
+*To improve*: use [event driven programming](https://docs.python.org/3/library/asyncio.html#module-asyncio), or even 
+better, [Celery](https://docs.celeryq.dev/en/stable/) to perform concurrent tasks instead of multithreading.
 
 **Part IV**: The Django application server uses two setting files for different environments which makes some commands 
 slightly more complicated and log files location different. Also, a new environment (for example, testing) might require 
