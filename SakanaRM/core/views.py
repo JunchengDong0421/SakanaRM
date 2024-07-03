@@ -1,6 +1,7 @@
 import json
 import logging
 import threading
+from concurrent.futures import ThreadPoolExecutor
 from io import BytesIO
 from os import name as os_name
 
@@ -27,6 +28,8 @@ CAN_ABORT_STATUS = (Workflow.StatusChoices.PENDING,)
 CAN_ARCHIVE_STATUS = (Workflow.StatusChoices.COMPLETED, Workflow.StatusChoices.FAILED, Workflow.StatusChoices.ABORTED)
 # threshold of the number of pending workflows
 PENDING_WORKFLOWS_LIMIT = 5
+
+executor = ThreadPoolExecutor()
 
 logger = logging.getLogger(__name__)
 
@@ -319,9 +322,8 @@ def handle_create_workflow(request):
     workflow.save()
     wid = workflow.id
 
-    thread = threading.Thread(target=start_workflow_task, args=[request, wid, file_obj], daemon=True)
-    thread.start()
-    workflow.messages = f"Thread id {thread.ident}; "
+    executor.submit(start_workflow_task, request, wid, file_obj)
+    
     workflow.save()
     return JsonResponse({"status": 0, "wid": wid})
 

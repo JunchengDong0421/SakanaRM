@@ -17,7 +17,6 @@ services:
     restart: always
     volumes:
       - db_data:/var/lib/mysql
-      - db_conf:/etc/mysql/conf.d
     expose:
       - 3306
     environment:
@@ -44,5 +43,4 @@ services:
 volumes:
   static_volume:
   db_data:
-  db_conf:
   logs:
