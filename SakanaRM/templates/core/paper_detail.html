@@ -133,7 +133,6 @@
                     success: res => {
                         if (res.status === 0) {
                             $('#err-msg-1').text('');
-                            alert("Added selected tags successfully!");
                             location.reload();
                         } else {
                             $('#err-msg-1').text("Error: " + res.err_msg);
@@ -162,7 +161,6 @@
                     success: res => {
                         if (res.status === 0) {
                             $('#err-msg-3').text('');
-                            alert("Removed selected tags successfully!");
                             location.reload();
                         } else {
                             $('#err-msg-3').text("Error: " + res.err_msg);
@@ -188,7 +186,6 @@
                         $("#del-info").text('');
                         if (res.status === 0) {
                             $('#err-msg-2').text('');
-                            alert("Deleted paper successfully!");
                             location.href = "{% url 'core:index' %}";
                         } else {
                             $('#err-msg-2').text("Error: " + res.err_msg);

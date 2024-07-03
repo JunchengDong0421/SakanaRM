@@ -89,7 +89,6 @@
                     success: res => {
                         if (res.status === 0) {
                             $("#err-msg").text('');
-                            alert("Deleted tag successfully!");
                             location.reload();
                         } else {
                             $("#err-msg").text("Error: " + res.err_msg);
