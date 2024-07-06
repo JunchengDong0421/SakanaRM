@@ -5,4 +5,4 @@ class StorageClientException(Exception):
         self.message = message
 
     def __str__(self):
-        return f"CDN Error: {self.message}. Please try again later or contact the administrator for help"
+        return f"Storage Service Error: {self.message}. Please try again later or contact the administrator for help"
