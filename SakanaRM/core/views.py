@@ -323,8 +323,7 @@ def handle_create_workflow(request):
     wid = workflow.id
 
     executor.submit(start_workflow_task, request, wid, file_obj)
-    
-    workflow.save()
+
     return JsonResponse({"status": 0, "wid": wid})
 
 
@@ -671,7 +670,7 @@ def search_result(request):
     tags = request.POST.getlist("tags")  # list of ids of tags, -1 if untagged
 
     legal_owners = ("anyone", "me", "others")
-    legal_match_types = ("exact", "inclusive", "union")
+    legal_match_types = ("inclusive", "union")
     if owner not in legal_owners:
         err_msg = "Illegal request parameter, please contact the administrator for help!"
         return JsonResponse({"status": 1, "err_msg": err_msg})
@@ -699,19 +698,11 @@ def search_result(request):
 
     # Then filter tags and match type
     if tags:
-        if match_type == "exact":
-            if "-1" in tags:
-                papers = papers.filter(tags__isnull=True)
-            else:
-                papers = papers.annotate(
-                    num_tags=Count('tags', filter=Q(tags__id__in=tags)),
-                    total_tags=Count('tags')
-                ).filter(num_tags=len(tags), total_tags=len(tags))
-        elif match_type == "inclusive":
+        if match_type == "inclusive":
             papers = papers.annotate(
                 num_tags=Count('tags', filter=Q(tags__id__in=tags))
             ).filter(num_tags=len(tags) if "-1" not in tags else len(tags) - 1)
-        else:
+        elif match_type == "union":
             papers = papers.filter(tags__id__in=tags)  # exclude papers without tags
             if "-1" in tags:
                 papers |= Paper.objects.filter(tags__isnull=True)  # add untagged papers back, filter all paper objects

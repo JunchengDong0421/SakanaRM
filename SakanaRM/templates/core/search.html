@@ -44,16 +44,6 @@
             margin-bottom: 10px;
         }
 
-        .disabled-checkbox {
-            pointer-events: none;
-            opacity: 0.5;
-            color: #ccc;
-        }
-
-        .disabled-label {
-            color: #ccc;
-        }
-
         .hidden-tag {
             display: none;
         }
@@ -100,18 +90,14 @@
         </div>
         <br>
 
-        <label>
-            <b>Match type: </b>
-            <input type="radio" class="match-filter" name="match-filter" value="exact" id="exact">
-            Exact match
-        </label>
+        <b>Match type: </b>
         <label>
             <input type="radio" class="match-filter" name="match-filter" value="inclusive">
-            Inclusive match
+            Contains at least all selected tags
         </label>
         <label>
             <input type="radio" class="match-filter" name="match-filter" value="union">
-            Union
+            Contains one of the selected tags
         </label>
         <br><br>
         <button id="search">Search</button>
@@ -171,10 +157,10 @@
                 var filtersContainer = $("#filters-container");
                 if (filtersContainer.hasClass("collapsed")) {
                     filtersContainer.removeClass("collapsed").addClass("expanded");
-                    $("#toggle-filters").html("&#x25B2; <i>(click to collapse)</i>"); // Up arrow
+                    $("#toggle-filters").html("&#x25B2; <i>(click to collapse)</i>");  // Up arrow
                 } else {
                     filtersContainer.removeClass("expanded").addClass("collapsed");
-                    $("#toggle-filters").html("&#x25BC; <i>(click to expand)</i>"); // Down arrow
+                    $("#toggle-filters").html("&#x25BC; <i>(click to expand)</i>");  // Down arrow
                 }
             });
 
@@ -182,52 +168,13 @@
             $("#reset").click(function () {
                 var tagCheckbox = $(".tag-checkbox");
                 var untaggedBox = $("#untagged-checkbox");
-                $("#title-filter").val(""); // Clear title filter input
-                $("input[name='owner-filter'][value='anyone']").prop('checked', true); // Set 'anyone' radio checked
-                $("input[name='tags-filter']").prop('checked', false); // Uncheck all tags filter checkboxes
-                $("input[name='match-filter']").prop('checked', false); // Uncheck all match type radios
-                $("#search").val(""); // Clear search input for tags
-                errMsg.text(""); // Clear error message
-
-                // Re-enable all checkboxes
-                tagCheckbox.prop('disabled', false);
-                untaggedBox.prop('disabled', false);
-                tagCheckbox.removeClass("disabled-checkbox");
-                untaggedBox.removeClass("disabled-checkbox");
-                tagCheckbox.parent().removeClass("disabled-label");
-            });
-
-            // Grey out other checkboxes when untagged and exact match are selected at the same time
-            $(".match-filter").change(function () {
-                var tagCheckbox = $(".tag-checkbox");
-                var exactChecked = $("#exact").prop('checked');
-                var untaggedChecked = $("#untagged-checkbox").prop('checked');
-
-                if (exactChecked && untaggedChecked) {
-                    tagCheckbox.not("#untagged-checkbox").prop('disabled', true);
-                    tagCheckbox.not("#untagged-checkbox").addClass("disabled-checkbox");
-                    tagCheckbox.not("#untagged-checkbox").parent().addClass("disabled-label");
-                } else {
-                    tagCheckbox.prop('disabled', false);
-                    tagCheckbox.removeClass("disabled-checkbox");
-                    tagCheckbox.parent().removeClass("disabled-label");
-                }
-            });
-
-            $("#untagged-checkbox").change(function () {
-                var tagCheckbox = $(".tag-checkbox");
-                var exactChecked = $("#exact").prop('checked');
-                var untaggedChecked = $(this).prop('checked');
-
-                if (exactChecked && untaggedChecked) {
-                    tagCheckbox.not("#untagged-checkbox").prop('disabled', true);
-                    tagCheckbox.not("#untagged-checkbox").addClass("disabled-checkbox");
-                    tagCheckbox.not("#untagged-checkbox").parent().addClass("disabled-label");
-                } else {
-                    tagCheckbox.prop('disabled', false);
-                    tagCheckbox.removeClass("disabled-checkbox");
-                    tagCheckbox.parent().removeClass("disabled-label");
-                }
+                $('#title-filter').val('');  // Clear title filter input
+                $("input[name='owner-filter'][value='anyone']").prop('checked', true);  // Set 'anyone' radio checked
+                $("input[name='tags-filter']").prop('checked', false);  // Uncheck all tags filter checkboxes
+                $("input[name='match-filter']").prop('checked', false);  // Uncheck all match type radios
+                $('#search-bar').val('');  // Clear search input for tags
+                $('#t-filter label').removeClass('hidden-tag');  // Show all hidden checkboxes
+                errMsg.text("");  // Clear error message
             });
 
             // Filter event (search and update table)
