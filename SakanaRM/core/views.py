@@ -92,21 +92,20 @@ class WorkflowDetailView(DetailView):
         return context
 
 
-def start_workflow_task(request, wid, file_obj):
+def start_workflow_task(uid, wid, post_params, file_obj):
     workflow = Workflow.objects.filter(id=wid).first()
     if not workflow or workflow.status == Workflow.StatusChoices.ABORTED:
         return
     try:
-        uid = request.session.get('uid')
-        title = request.POST.get("title")
+        title = post_params.get("title")
 
-        work_type = int(request.POST.get("type"))
+        work_type = int(post_params.get("type"))
         if work_type == Workflow.WorkTypeChoices.UPLOAD:
             workflow.stage = Workflow.StageChoices.S_UPLOADING
             workflow.save()
 
             storage_client = SakanaStorageClient()
-            replace = not not request.POST.get("replace")
+            replace = not not post_params.get("replace")
             if not replace:  # upload new paper
                 file_path = storage_client.store_paper(file_obj)
             else:  # replace existing paper
@@ -169,7 +168,7 @@ def start_workflow_task(request, wid, file_obj):
             workflow.save()
 
             # Task 1: read and process paper
-            tags = request.POST.getlist("tag-names")
+            tags = post_params.getlist("tag-names")
             tags_dict = {}  # key: tag name, value: definition
             for t in tags:
                 tag = Tag.objects.filter(name=t).first()
@@ -321,8 +320,9 @@ def handle_create_workflow(request):
 
     workflow.save()
     wid = workflow.id
+    post_params = request.POST
 
-    executor.submit(start_workflow_task, request, wid, file_obj)
+    executor.submit(start_workflow_task, uid, wid, post_params, file_obj)
     
     workflow.save()
     return JsonResponse({"status": 0, "wid": wid})
