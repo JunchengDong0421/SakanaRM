@@ -14,7 +14,7 @@ from django.shortcuts import render
 from django.views.generic import DetailView, ListView
 from zoneinfo import ZoneInfo  # Python 3.9 or later only
 
-from .cdn_utils import SakanaCDNClient
+from .storage_utils import SakanaStorageClient
 from .llm_utils import GPTClient, SimpleKeywordClient
 from .models import Paper, Tag, SakanaUser, Workflow
 
@@ -105,22 +105,22 @@ def start_workflow_task(request, wid, file_obj):
             workflow.stage = Workflow.StageChoices.S_UPLOADING
             workflow.save()
 
-            cdn_client = SakanaCDNClient()
+            storage_client = SakanaStorageClient()
             replace = not not request.POST.get("replace")
             if not replace:  # upload new paper
-                file_path = cdn_client.store_paper(file_obj)
+                file_path = storage_client.store_paper(file_obj)
             else:  # replace existing paper
                 paper = workflow.paper
                 if not paper:
                     return
                 filepath = paper.file_path
-                file_path = cdn_client.replace_paper(filepath, file_obj)
+                file_path = storage_client.replace_paper(filepath, file_obj)
 
             # in case of caching, re-query
             workflow = Workflow.objects.filter(id=wid).first()
             # if workflow is aborted or deleted (not allowed for users)
             if not workflow or workflow.status == Workflow.StatusChoices.ABORTED:
-                _ = cdn_client.delete_paper(file_path)  # delete new paper
+                _ = storage_client.delete_paper(file_path)  # delete new paper
                 paper = Paper.objects.filter(title=title, owner_id=uid).first()
                 if not paper:  # if paper is deleted
                     return
@@ -158,8 +158,8 @@ def start_workflow_task(request, wid, file_obj):
 
             # Task 0: retrieve paper
             file_path = paper.file_path
-            cdn_client = SakanaCDNClient()
-            file_obj = cdn_client.request_for_paper(file_path)
+            storage_client = SakanaStorageClient()
+            file_obj = storage_client.request_for_paper(file_path)
 
             # in case of caching, re-query
             workflow = Workflow.objects.filter(id=wid).first()
@@ -535,8 +535,8 @@ def delete_paper(request):
         return JsonResponse({"status": 1, "err_msg": err_msg})
 
     try:
-        cdn_client = SakanaCDNClient()
-        _ = cdn_client.delete_paper(paper.file_path)
+        storage_client = SakanaStorageClient()
+        _ = storage_client.delete_paper(paper.file_path)
         paper.delete()
         return JsonResponse({"status": 0})
     except Exception as e:

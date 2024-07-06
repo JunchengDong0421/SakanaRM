@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 
-class AbstractCDNClient(ABC):
+class AbstractStorageClient(ABC):
 
     @abstractmethod
     def store_paper(self, paper):

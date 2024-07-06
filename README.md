@@ -30,7 +30,7 @@ V. Final product (that fulfills the success metric)    &nbsp;&nbsp;&nbsp;&nbsp; 
 |                                 | Integration into views                                   | DONE        |       |
 | Flexible programming interfaces |                                                          |             |       |
 |                                 | Switch between LLMs                                      | DONE        |       |
-|                                 | Switch between CDNs                                      | DONE        |       |
+|                                 | Switch between storage services                    | DONE        |       |
 | Track progress                  |                                                          |             |       |
 |                                 | Track reference uploads                                  | DONE        |       |
 |                                 | Track LLM processing                                     | DONE        |       |
@@ -92,29 +92,29 @@ Added in Python 3.8:
 2. Set working directory to project root (where *README.md* is located):    
 `cd SakanaRM/`    
 
-If used with [SakanaCDN](https://github.com/JunchengDong0421/SakanaCDN), go to another machine where you want uploaded 
-papers to be stored or open another terminal tab (store on same machine) and:
-3. Clone SakanaCDN repository:    
-`git clone git@github.com:JunchengDong0421/SakanaCDN.git`
+If used with [SakanaStorage](https://github.com/JunchengDong0421/SakanaStorage) (recommended), go to another machine 
+where you want uploaded papers to be stored or open another terminal tab (store on same machine) and:
+3. Clone SakanaStorage repository:    
+`git clone git@github.com:JunchengDong0421/SakanaStorage.git`
 4. Set working directory to project root (where *README.md* is located):    
-`cd SakanaCDN/`
+`cd SakanaStorage/`
 
 ## Configuration
-The system interacts with two external services to work: a "CDN" service, which handles papers upload, replacement, 
-deletion, download; and a LLM service, which offers basic chat completion capabilities. Clients for communicating with 
-these services are required. You would need to at least configure the provided CDN client correctly for the system to 
-work as expected. It is also possible to [custom your own clients](#how-to-custom-llm-and-cdn-clients).
+The system interacts with two external services to work: a paper storage service, which handles papers upload, 
+replacement, deletion, download; and a LLM service, which offers basic chat completion capabilities. Clients for 
+communicating with these services are required. You would need to at least configure the provided Storage client 
+correctly for the system to work as expected. It is also possible to 
+[custom your own clients](#how-to-custom-llm-and-storage-clients).
 
-### CDN Client
-Within the scope of the project, you don't have to register a real CDN service to use the system, what is needed is just
-a simple service that implements APIs to store, replace, get, delete papers. The bundled ***SakanaCDNClient*** is used 
-to communicate with the service offered by [SakanaCDN](https://github.com/JunchengDong0421/SakanaCDN).
+### Storage Client
+Within the scope of the project, for the paper storage service, you only need a simple service that implements APIs to 
+store, replace, get, delete papers. The bundled ***SakanaStorageClient*** is used to communicate with the recommended 
+service offered by [SakanaStorage](https://github.com/JunchengDong0421/SakanaStorage).
 
-
-**The default CDN client** is *****SakanaCDNClient*****. Go to *SakanaRM/core/cdn_utils/sakana_cdn_client.py*, and 
-look for the class attribute ***"BASE_URL"***. Change the host IP and port to the actual IP and port which your 
-SakanaCDN service binds to, for example, if you are running SakanaCDN on a machine with IP 201.153.35.66 and port 5001, 
-change the value to "http://201.153.35.66:5001/files".    
+**The default Storage client** is *****SakanaStorageClient*****. Go to *SakanaRM/core/storage_utils/sakana_storage_client.py*, 
+and look for the class attribute ***"BASE_URL"***. Change the host IP and port to the actual IP and port which your 
+SakanaStorage service binds to, for example, if you are running SakanaStorage on a machine with IP 201.153.35.66 and 
+port 5001, change the value to "http://201.153.35.66:5001/files".    
 **IMPORTANT**: DO NOT use a loopback address (`localhost`, `127.0.0.1`) if SakanaRM runs in container because routing 
 is managed by Docker network. See [Networking in Compose](https://docs.docker.com/compose/networking/) for details.
 
@@ -123,7 +123,7 @@ The project bundles two classes of client to use for paper processing: ***GPTCli
 The former integrates with GPT client by [gpt4free](https://github.com/xtekky/gpt4free), while the latter simply 
 matches tag names with words in the paper and makes no external calls.    
 
-**The default CDN client** is *****GPTClient*****. Go to *SakanaRM/core/llm_utils/gpt_client.py*, and look for the 
+**The default LLM client** is *****GPTClient*****. Go to *SakanaRM/core/llm_utils/gpt_client.py*, and look for the 
 class attribute ***"PAPER_SLICE_LENGTH"***, ***"MODEL"*** and ***"TEMPERATURE"***. Modify how long paper is sliced into 
 parts for transmission, the model used and the temperature of the model by setting corresponding values, or just accept 
 the default value and skip this step. To use the alternative ***SimpleKeywordClient***, go to *SakanaRM/core/views.py*, 
@@ -142,7 +142,7 @@ a SQLite3 instance in one service. If you want to use other databases, see
 `sudo dockerd`
 2. Check that port `80` and `5000` on target machine are not occupied: please Google for solutions.
 3. Go to *SakanaRM/SakanaRM/settings.py*, change the ***SECRET_KEY*** variable to a different random string.
-4. Start your CDN services first, if SakanaCDN (current directory is *SakanaCDN/*):    
+4. Start your Storage services first, if SakanaStorage (current directory is *SakanaStorage/*):    
 `sudo docker compose up --build`
 5. Start SakanaRM services (current directory is *SakanaRM/*):    
 `sudo docker compose -f docker-compose.prod.yaml up --build`
@@ -164,7 +164,7 @@ feel free to add it and change the settings of the Django application.
 1. Make sure docker daemon process is running:    
 `sudo dockerd`
 2. Check that port `8000` and `5000` on target machine are not occupied: please Google for solutions.
-3. Start your CDN services first, if SakanaCDN (current directory is *SakanaCDN/*):    
+3. Start your Storage services first, if SakanaStorage (current directory is *SakanaStorage/*):    
 `sudo docker compose up --build`
 4. Start SakanaRM services (current directory is *SakanaRM/*):    
 `sudo docker compose up --build`
@@ -179,24 +179,24 @@ To restart services:
 If you don't want to install or mess around with `docker`, plus you are using the server for yourself/with a few 
 trusted people only (meaning less load, fewer papers), then it makes sense to only run the services as Python 
 executables with Django and Flask's built-in development servers. Since the application doesn't run in a container 
-environment anymore, you can configure ***SakanaCDNClient*** to use "http://localhost:5000/files" as ***"BASE_URL"*** 
-if you run SakanaCDN on the same machine. Still, you must **weigh the risks** because the development servers are 
+environment anymore, you can configure ***SakanaStorageClient*** to use "http://localhost:5000/files" as ***"BASE_URL"*** 
+if you run SakanaStorage on the same machine. Still, you must **weigh the risks** because the development servers are 
 **not particularly secure, stable, or efficient** in their design.
 
 1. Remove all `gunicorn`, `mysqlclient`, `greenlet` and `gevent` dependencies from *SakanaRM/requirements.txt* and
-*SakanaCDN/requirements.txt*.
+*SakanaStorage/requirements.txt*.
 2. Install dependencies:    
 ```
 # For SakanaRM
 cd SakanaRM/
 pip install -r requirements.txt
 
-# For SakanaCDN
-cd SakanaCDN/
+# For SakanaStorage
+cd SakanaStorage/
 pip install -r requirements.txt
 ```
 3. Check that port `80` and `5000` on target machine are not occupied: please Google for solutions.
-4. Start SakanaCDN server (now you should be in the same directory as *"app.py"*):    
+4. Start SakanaStorage server (now you should be in the same directory as *"app.py"*):    
 `python -m flask run --host=0.0.0.0 --port=5000`
 5. Start SakanaRM server (now you should be in the same directory as *"manage.py"*):    
 ```
@@ -235,6 +235,7 @@ successfully completes;
 a subset of those of a paper, and "union" means tags selected match one of those of a paper;
 - The display name is the identity of a user shown to others, and it is unique with a maximum length of 150 characters;
 - Length limits (unit: characters): username: 150, password: 128, email: 254, first name: 150, last name: 150;
+- It is possible to have at most 5 pending workflows at the same time, but only one is allowed for one paper;
 
 ## Developer's Guide
 **Note:** Whenever you make any changes to your data models (in any *models.py*) or add new applications to 
@@ -333,7 +334,7 @@ modify or add any workflows, go to the folder *.github/workflows* and check out 
 The server is NOT configured to establish secure links. To set up HTTPS, Google for solutions then follow 
 [Django's official documentation](https://docs.djangoproject.com/en/4.2/topics/security/#ssl-https).
 
-### How to Custom LLM and CDN Clients
+### How to Custom LLM and Storage Clients
 To custom your own clients, follow the below steps (remember always to use relative imports):
 1. Go to the corresponding utils folder (*SakanaRM/core/xxx_utils/*).
 2. Create a *.py* file with the name of your client.
@@ -350,8 +351,8 @@ values being tag definitions etc.
 instances) to `YourClient()` in the code.
 9. Test if your clients are working fine.    
 
-**Note**: CDN clients need to generate a random filename and request to store the paper as that particular filename. You
-can use the function *"random_filename"* in *SakanaRM/core/cdn_utils/utils.py* to make up the filename. For sending
+**Note**: Storage clients need to generate a random filename and request to store the paper as that particular filename. You
+can use the function *"random_filename"* in *SakanaRM/core/storage_utils/utils.py* to make up the filename. For sending
 requests, you are recommended to use the library [Requests](https://requests.readthedocs.io/en/latest/) or the advanced 
 version [Requests-HTML](https://requests.readthedocs.io/projects/requests-html/en/latest/).
 
@@ -423,18 +424,17 @@ client, then it will automatically select available ones to use.
 
 ### Windows Support
 Since Gunicorn does not support Windows, you should use another WSGI server to run the WSGI application 
-(SakanaRM: Django, SakanaCDN: Flask) if you want to [deploy](https://flask.palletsprojects.com/en/2.3.x/deploying/) 
+(SakanaRM: Django, SakanaStorage: Flask) if you want to [deploy](https://flask.palletsprojects.com/en/2.3.x/deploying/) 
 the system on a Windows system. However, if you take the [Pure Personal Use](#pure-personal-use-not-recommended) 
 approach, then you don't have to consider this layer of deployment. But, note that Python is not 100% portable between 
 platforms. That's why in *SakanaRM/core/views.py*, a line in function *search_result* checks for os names because 
 Windows and Linux use different flags to remove zero padding in formatting datetime strings (see 
 [link](https://stackoverflow.com/questions/9525944/python-datetime-formatting-without-zero-padding/42709606#42709606)).
 
-### Abandon the CDN Approach
-As mentioned above that the server does not require a real CDN service to fully function. Considering the personas 
-of users, it is probably better to store papers on the same machine as the server and manage them as media files by 
-Django, rather than creating another service to store and get the files. If you are interested in refactoring the code, 
-feel free to do so and even send a pull request.
+### Abandon the Paper Storage Approach
+Arguably, it is better to store papers on the same machine as the server and manage them as media files by Django, 
+rather than creating another service to store and get the files, since the paper storage service adds another layer of 
+complexity. If you are interested in refactoring the code, feel free to do so and even send a pull request.
 
 ### Workflow Model & Potential Improvements
 **Part I**: The *Workflow* model is designed to preserve the status of upload and perform tasks. It is mapped to a 

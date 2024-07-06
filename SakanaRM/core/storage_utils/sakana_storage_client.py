@@ -2,12 +2,12 @@ from io import BytesIO
 
 import requests
 
-from .abstract_cdn_client import AbstractCDNClient
-from .cdn_client_exception import CDNClientException
+from .abstract_storage_client import AbstractStorageClient
+from .storage_client_exception import StorageClientException
 from .utils import random_filename
 
 
-class SakanaCDNClient(AbstractCDNClient):
+class SakanaStorageClient(AbstractStorageClient):
     __instance = None
     BASE_URL = "http://192.168.196.130:5000/files/"
 
@@ -31,7 +31,7 @@ class SakanaCDNClient(AbstractCDNClient):
             return filepath
         except Exception as e:
             # wrap, raise error and catch in core/views.py
-            raise CDNClientException(str(e))
+            raise StorageClientException(str(e))
 
     def request_for_paper(self, filepath):
         try:
@@ -43,7 +43,7 @@ class SakanaCDNClient(AbstractCDNClient):
             fd = BytesIO(res.content)
             return fd
         except Exception as e:
-            raise CDNClientException(str(e))
+            raise StorageClientException(str(e))
 
     def delete_paper(self, filepath):
         try:
@@ -55,7 +55,7 @@ class SakanaCDNClient(AbstractCDNClient):
             filepath = json_res['filepath']
             return filepath
         except Exception as e:
-            raise CDNClientException(str(e))
+            raise StorageClientException(str(e))
 
     def replace_paper(self, filepath, new_fd):
         try:
@@ -70,4 +70,4 @@ class SakanaCDNClient(AbstractCDNClient):
             new_filepath = json_res['filepath']
             return new_filepath
         except Exception as e:
-            raise CDNClientException(str(e))
+            raise StorageClientException(str(e))
