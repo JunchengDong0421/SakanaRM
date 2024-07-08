@@ -14,6 +14,7 @@
 
 {% block content %}
     {% if page_obj %}
+        <div style="font-size: larger; font-weight: bold; margin-bottom: 10px;">List of my tags:</div>
         <div class="table-container">
             <table class="data-table">
                 <thead>
@@ -57,7 +58,7 @@
         </div>
 
     {% else %}
-        No papers matched.
+        No tags matched.
     {% endif %}
     <br>
     <p id="err-msg" style="color: red"></p>
