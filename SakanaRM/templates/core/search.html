@@ -115,7 +115,7 @@
                     <th>Tags</th>
                     <th>Owner</th>
                     <th>Last Updated</th>
-                    <th>manage</th>
+                    <th>view</th>
                 </tr>
             </thead>
             <tbody id="results-body">
@@ -125,7 +125,7 @@
                         <td>{{ p|join_tags:", " }}</td>
                         <td>{{ p.owner.display_name }}</td>
                         <td>{{ p.last_modified }}</td>
-                        <td><a href="{% url 'core:paper-detail' p.id %}" target="_blank">Go to Manage</a></td>
+                        <td><a href="{% url 'core:paper-detail' p.id %}" target="_blank">View Paper</a></td>
                     </tr>
                 {% endfor %}
             </tbody>
@@ -216,13 +216,15 @@
                             var resultsBody = $("#results-body");
                             resultsBody.empty();
                             res.papers.forEach(p => {
+                                var pid = p.id;
+                                var paperURL = "{% url 'core:paper-detail' 999 %}".replace("999", pid);
                                 var newRow = `
                                     <tr>
                                         <td>${p.title}</td>
                                         <td>${p.tags}</td>
                                         <td>${p.owner_name}</td>
                                         <td>${p.last_modified}</td>
-                                        <td><a href="/core/paper-detail/${p.id}" target="_blank">Go to Manage</a></td>
+                                        <td><a href=${paperURL} target="_blank">View Paper</a></td>
                                     </tr>
                                 `;
                                 resultsBody.append(newRow);
