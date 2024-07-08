@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Tutorial
+{% endblock %}
+
+{% block style %}
+    <style>
+        iframe {
+            width: 1120px;
+            height: 630px;
+            margin-top: 10px;
+        }
+
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .text-box {
+            font-size: larger;
+            margin-top: 30px;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="main-container">
+        <iframe src="https://drive.google.com/file/d/1i_EVkl1SV-YMpXrvWHcQWKE8J6MwqWzt/preview"
+                allow="autoplay; fullscreen"></iframe>
+        <div class="text-box">Link:
+            <a href="https://drive.google.com/file/d/1i_EVkl1SV-YMpXrvWHcQWKE8J6MwqWzt/view?usp=sharing">
+            https://drive.google.com/file/d/1i_EVkl1SV-YMpXrvWHcQWKE8J6MwqWzt/view?usp=sharing</a>
+            <br><br><i>If the video or the link does not work anymore, please contact the administrator!</i></div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        $(document).ready(() => {
+            // Highlight navigation block
+            $("#tutorial-nav").addClass('active-nav');
+        })
+    </script>
+{% endblock %}

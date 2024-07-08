@@ -34,4 +34,5 @@ urlpatterns = [
     path("api/search", views.search_result, name="search-result"),
 
     path("about", views.about_page, name="about"),
+    path("tutorial", views.tutorial_page, name="tutorial"),
 ]

@@ -763,3 +763,7 @@ def delete_tag_and_definition(request):  # delete tag instance, for uniformity w
 
 def about_page(request):
     return render(request, "core/about.html")
+
+
+def tutorial_page(request):
+    return render(request, "core/tutorial.html")

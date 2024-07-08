@@ -37,7 +37,7 @@
             <a id="tag-nav" href="{% url 'core:add-tag-definition-page' %}">Add Tag</a>
             <a id="search-nav" href="{% url 'core:search-page' %}">Search</a>
             <a id="papers-nav" href="{% url 'core:my-papers' request.session.uid %}">My Papers</a>
-            <a id="tutorial-nav" href="#">Tutorial</a>
+            <a id="tutorial-nav" href="{% url 'core:tutorial' %}">Tutorial</a>
             <div id="logout">Logout</div>
         {% endif %}
     </div>
