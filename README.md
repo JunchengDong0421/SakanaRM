@@ -30,7 +30,7 @@ V. Final product (that fulfills the success metric)    &nbsp;&nbsp;&nbsp;&nbsp; 
 |                                 | Integration into views                                   | DONE        |       |
 | Flexible programming interfaces |                                                          |             |       |
 |                                 | Switch between LLMs                                      | DONE        |       |
-|                                 | Switch between storage services                    | DONE        |       |
+|                                 | Switch between storage services                          | DONE        |       |
 | Track progress                  |                                                          |             |       |
 |                                 | Track reference uploads                                  | DONE        |       |
 |                                 | Track LLM processing                                     | DONE        |       |
@@ -183,7 +183,7 @@ environment anymore, you can configure ***SakanaStorageClient*** to use "http://
 if you run SakanaStorage on the same machine. Still, you must **weigh the risks** because the development servers are 
 **not particularly secure, stable, or efficient** in their design.
 
-1. Remove all `gunicorn`, `mysqlclient`, `greenlet` and `gevent` dependencies from *SakanaRM/requirements.txt* and
+1. (Optional) Remove all `gunicorn` and `mysqlclient` dependencies from *SakanaRM/requirements.txt* and
 *SakanaStorage/requirements.txt*.
 2. Install dependencies:    
 ```
@@ -294,9 +294,9 @@ For detailed explanation, please visit
 
 #### Gunicorn:
 (in *SakanaRM/gunicorn.conf.py*)    
-***worker_class***: there are many [types of worker processes](https://docs.gunicorn.org/en/stable/design.html#design) to
-specify. Since the server makes many outgoing requests to external APIs, it is more beneficial to use a type of 
-asynchronous worker.    
+***worker_class***: there are many [types of worker processes](https://docs.gunicorn.org/en/stable/design.html#design) 
+to specify. Currently, there is a bug with asynchronous workers that might arise from the threading/thread pool 
+implementation of workflows. However, the default "sync" worker is already good enough for production.        
 ***loglevel***: set the level of error log, which contains events related to the application and internal processes. 
 Does not have anything to do with access log where all HTTP requests processed by the server are logged down.
 
@@ -381,7 +381,9 @@ all info-level events in app *core*; unhandled exceptions during handling of a r
 `sudo docker compose exec <service_name> <command>`: runs a command in a running service container.    
 `sudo docker volume ls`: lists all Docker volumes.    
 `sudo docker volume inspect <volume_name>`: display detailed information on a volume.    
-`sudo docker system df`: show Docker disk usage.    
+`sudo docker image prune`: remove all dangling images.    
+`sudo docker system df`: show Docker disk usage.     
+`sudo docker system prune`: remove all unused containers, networks, images.    
 
 ### Docker-related Files
 `docker-compose.prod.yaml`, `docker-compose.yaml`: files that describe the services    
@@ -421,6 +423,22 @@ To access LLM APIs, the project uses the [gpt4free](https://github.com/xtekky/gp
 should always use the latest version of the package in the development environment to test if it is still usable 
 anymore, and make sure all dependencies are noted down in *requirements.txt*. If you do not specify a provider in the 
 client, then it will automatically select available ones to use. 
+
+### On Server Start Hook
+Unfortunately, Django has no hook dedicated for server start event. You can directly do stuff in every app's *views.py*
+file, or put the code under the `ready()` method of the `AppConfig` class in every app's *apps.py* file. Neither way is
+elegant, and the latter is 
+[NOT recommended](https://docs.djangoproject.com/en/4.2/ref/applications/#django.apps.AppConfig.ready). Be cautious 
+when using them! A sample code may look like:
+```
+from django.contrib.sessions.models import Session  # 
+# Delete all session data which would log all users out
+Session.objects.all().delete()
+
+from .models import Paper, Workflow
+# Set status of all pending workflows to failed
+Workflow.objects.filter(status=Workflow.StatusChoices.PENDING).update(status=Workflow.StatusChoices.FAILED)
+```
 
 ### Windows Support
 Since Gunicorn does not support Windows, you should use another WSGI server to run the WSGI application 
