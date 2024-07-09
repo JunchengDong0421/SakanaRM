@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    404 - SakanaRM
+{% endblock %}
+
+{% block style %}
+    <style>
+        body {
+            background: floralwhite;
+        }
+
+        .main-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            margin-top: 200px;
+        }
+
+        #emoji {
+            height: 160px;
+            width: 160px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+        #info {
+            width: 300px;
+            margin-left: 20px;
+            font-size: xx-large;
+            font-weight: bold;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    {% load static %}
+    <div class="main-container">
+        <img id="emoji" src="{% static 'img/momo-404.png' %}" alt="404">
+        <div id="info">Resource does not exist ...</div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}

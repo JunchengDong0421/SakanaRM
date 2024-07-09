@@ -22,3 +22,7 @@ urlpatterns = [
     path("", include(("core.urls", "core"))),
     path("", include(("accounts.urls", "accounts")))
 ]
+
+# handlers for custom exception pages
+handler404 = "core.views.custom_404_view"
+handler500 = "core.views.custom_500_view"
