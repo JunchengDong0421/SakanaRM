@@ -47,7 +47,7 @@ V. Final product (that fulfills the success metric)    &nbsp;&nbsp;&nbsp;&nbsp; 
 |                                 | Preface (project structure, some basics)                 | DONE        |       |
 |                                 | Advanced deployment (settings, custom clients, database) | DONE        |       |
 |                                 | Miscellaneous                                            | DONE        |       |
-|                                 | Simple API reference                                     | BACKLOG     | 09/07 |
+|                                 | Simple API reference                                     | DONE        |       |
 | Usable UI                       |                                                          |             |       |
 |                                 | Basic layout                                             | DONE        |       |
 |                                 | Beautified page (apply quick solutions)                  | IN PROGRESS | 05/07 |
@@ -500,12 +500,42 @@ manipulation. Not very beautiful, not responsive at all.
 
 ## Simple API Reference
 ### Accounts:
-| Path   | Method | Parameters | Return Type  | View               | Name       | Description     |
-|--------|--------|------------|--------------|--------------------|------------|-----------------|
-| login/ | GET    |            | HttpResponse | display_login_page | login-page | User login page |
-
+| Path                          | Method | Parameters                                                     | Return Type  | View                           | Name                       | Description                       |
+|-------------------------------|--------|----------------------------------------------------------------|--------------|--------------------------------|----------------------------|-----------------------------------|
+| login-register/               | GET    |                                                                | HttpResponse | display_login_register_page    | login-page                 | User login page                   |
+| auth/login/                   | POST   | username, password                                             | JsonResponse | do_login                       | login-action               | Perform login                     |
+| auth/logout/                  | POST   |                                                                | HttpResponse | do_logout                      | logout-action              | Perform logout                    |
+| auth/register/                | POST   | username, password, display-name, email, first-name, last-name | JsonResponse | do_register                    | register-action            | Perform registration              |
 ### Core:
-
+| Path                          | Method | Parameters                                                     | Return Type  | View                           | Name                       | Description                       |
+|-------------------------------|--------|----------------------------------------------------------------|--------------|--------------------------------|----------------------------|-----------------------------------|
+| /                             | GET    |                                                                | HttpResponse | home_page                      | index                      | Home page                         |
+| paper/{pid}                   | GET    |                                                                | HttpResponse | PaperDetailView                | paper-detail               | Paper detail view                 |
+| user/{uid}/papers             | GET    |                                                                | HttpResponse | PaperUserListView              | my-papers                  | List of user's papers             |
+| paper/upload                  | GET    |                                                                | HttpResponse | upload_paper_page              | upload-paper-page          | Upload paper page                 |
+| paper/process                 | GET    |                                                                | HttpResponse | process_paper_page             | process-paper-page         | Process paper page                |
+| workflow/{wid}                | GET    |                                                                | HttpResponse | WorkflowDetailView             | workflow-detail            | Workflow detail view              |
+| api/workflow/create           | POST   | name, type, title, replace, pid, tag-names                     | JsonResponse | handle_create_workflow         | create-workflow            | Create a workflow                 |
+| user/{uid}/workflows          | GET    |                                                                | HttpResponse | WorkflowUserListView           | my-workflows               | List of user's workflows          |
+| user/{uid}/archived/workflows | GET    |                                                                | HttpResponse | WorkflowUserArchivedListView   | my-archived-workflows      | List of user's archived workflows |
+| tag/add                       | GET    |                                                                | HttpResponse | add_tag_and_definition_page    | add-tag-definition-page    | Add tag and definition page       |
+| tag/update                    | GET    | tagname                                                        | HttpResponse | update_tag_and_definition_page | update-tag-definition-page | Update tag and definition page    |
+| user/{uid}/tags               | GET    |                                                                | HttpResponse | TagUserListView                | my-tags                    | List of user's tags               |
+| api/paper/addtags             | POST   | pid, tag-ids                                                   | JsonResponse | paper_add_tags                 | paper-add-tags             | Add tags to paper                 |
+| api/paper/removetags          | POST   | pid, tag-ids                                                   | JsonResponse | paper_remove_tags              | paper-remove-tags          | Remove tags from paper            |
+| api/paper/delete              | POST   | pid                                                            | JsonResponse | delete_paper                   | delete-paper               | Delete paper                      |
+| api/workflow/status           | GET    | wid                                                            | JsonResponse | get_workflow_status            | workflow-status            | Get workflow status               |
+| api/workflow/abort            | POST   | wid                                                            | JsonResponse | abort_workflow                 | abort-workflow             | Abort workflow                    |
+| api/workflow/archive          | POST   | wid                                                            | JsonResponse | archive_workflow               | archive-workflow           | Archive workflow                  |
+| api/workflow/restore          | POST   | wid                                                            | JsonResponse | restore_workflow               | restore-workflow           | Restore workflow                  |
+| api/workflow/rename           | POST   | wid, name                                                      | JsonResponse | rename_workflow                | rename-workflow            | Rename workflow                   |
+| api/tag/add                   | POST   | name, definition                                               | JsonResponse | add_tag_and_definition         | add-tag-definition         | Add tag and definition            |
+| api/tag/update                | POST   | tid, definition                                                | JsonResponse | update_tag_and_definition      | update-tag-definition      | Update tag and definition         |
+| api/tag/delete                | POST   | tid                                                            | JsonResponse | delete_tag_and_definition      | delete-tag-definition      | Delete tag and definition         |
+| search                        | GET    |                                                                | HttpResponse | search_page                    | search-page                | Search page                       |
+| api/search                    | POST   | title, owner, match, tags                                      | JsonResponse | search_result                  | search-result              | Perform search and return result  |
+| about                         | GET    |                                                                | HttpResponse | about_page                     | about                      | About page                        |
+| tutorial                      | GET    |                                                                | HttpResponse | tutorial_page                  | tutorial                   | Tutorial page                     |
 ## Todo List
 
 - [ ] **As of 03/07:**
