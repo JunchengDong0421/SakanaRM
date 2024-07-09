@@ -25,13 +25,29 @@
         .hidden-tag {
             display: none;
         }
+
+        .page-title {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            font-size: x-large;
+            font-weight: bold;
+            border-bottom: 2px solid #333;
+            padding-bottom: 5px;
+        }
+
+        .details {
+            font-weight: normal;
+        }
     </style>
 {% endblock %}
 
 {% block content %}
-    <h2>Title: {{ paper.title }}</h2>
-    <h2>Owner: {{ paper.owner.display_name }}</h2>
-    <h2>Tags:
+    <div class="page-title">Paper Overview</div>
+    <h2>Title: &nbsp;<span class="details">{{ paper.title }}</span></h2>
+    <h2>Owner: &nbsp;<span class="details">{{ paper.owner.display_name }}</span></h2>
+    <h2>Tags: &nbsp;
         {% for tag in paper.tags.all %}
             <span style="color: grey"> #{{ tag.name }}; &nbsp;</span>
         {% endfor %}

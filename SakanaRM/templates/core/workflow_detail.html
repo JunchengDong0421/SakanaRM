@@ -4,19 +4,39 @@
     Workflow Detail - {{ workflow.name }}
 {% endblock %}
 
+{% block style %}
+    <style>
+        .page-title {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            font-size: x-large;
+            font-weight: bold;
+            border-bottom: 2px solid #333;
+            padding-bottom: 5px;
+        }
+
+        .details {
+            font-weight: normal;
+        }
+    </style>
+{% endblock %}
+
 {% block content %}
     {% load custom_filters %}
-    <h2>Name: {{ workflow.name }}</h2>
-    <h2>Paper:
+    <div class="page-title">Workflow Overview</div>
+    <h2>Name: &nbsp;<span class="details">{{ workflow.name }}</span></h2>
+    <h2>Paper: &nbsp;<span class="details">
         {% if workflow.paper %}
             <a href="{% url 'core:paper-detail' workflow.paper.id %}">{{ workflow.paper.title }}</a>
         {% else %}
             {{ workflow|get_title }}
-        {% endif %}
+        {% endif %}</span>
     </h2>
-    <h2>Type: {{ workflow.get_work_type_display }}</h2>
-    <h2>Stage: {{ workflow.get_stage_display }}</h2>
-    <h2>Status: {{ workflow.get_status_display }}</h2>
+    <h2>Type: &nbsp;<span class="details">{{ workflow.get_work_type_display }}</span></h2>
+    <h2>Stage: &nbsp;<span class="details">{{ workflow.get_stage_display }}</span></h2>
+    <h2>Status: &nbsp;<span class="details">{{ workflow.get_status_display }}</span></h2>
     <div class="wf-info">
         {% if workflow.work_type == upload %}
             {% if workflow.status == pending %}
