@@ -64,13 +64,3 @@ class GPTClient(AbstractLLMClient):
         except Exception as e:
             # raise error and catch in core/views.py
             raise LLMClientException(str(e))
-
-
-if __name__ == '__main__':
-    my_client = GPTClient()
-    paper_ = open("C:\\Users\\Administrator\\Desktop\\project\\fd_production_suite_ICPADS23.pdf", "rb")
-    tags_ = {"dt_on_fd": "Does the paper applies the metric detection time to benchmark failure detectors?",
-             "f1_on_fd": "Does the paper applies the metric F1 score to benchmark failure detectors?",
-             "AI": "Does the paper mainly talks about AI or not?"}
-    m_tags = my_client.match_paper_on_tags(paper_, tags_)
-    print("Matching tags:", m_tags)
