@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 
+from .models import SakanaUser
 from .utils import create_sakana_user, sakana_authenticate, sakana_login, sakana_logout
 
 logger = logging.getLogger(__name__)
@@ -42,9 +43,13 @@ def do_register(request):
     if not (username and password and display_name):
         err_msg = "Please provide a valid username, password or display name!"
         return JsonResponse({"status": 1, "err_msg": err_msg})
-    existing_user = User.objects.filter(username=username)
+    existing_user = User.objects.filter(username=username).first()
     if existing_user:
         err_msg = "User already exists!"
+        return JsonResponse({"status": 1, "err_msg": err_msg})
+    existing_skn_user = SakanaUser.objects.filter(display_name=display_name).first()
+    if existing_skn_user:
+        err_msg = "Display name already in use!"
         return JsonResponse({"status": 1, "err_msg": err_msg})
     try:
         # Create auth User entry
