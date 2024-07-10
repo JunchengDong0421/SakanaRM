@@ -2,6 +2,7 @@ from io import BytesIO
 
 import requests
 
+from core.config import SakanaStorageClientConfig
 from .abstract_storage_client import AbstractStorageClient
 from .storage_client_exception import StorageClientException
 from .utils import random_filename
@@ -9,7 +10,7 @@ from .utils import random_filename
 
 class SakanaStorageClient(AbstractStorageClient):
     __instance = None
-    BASE_URL = "http://192.168.196.130:5000/files/"
+    BASE_URL = SakanaStorageClientConfig.BASE_URL
 
     def __new__(cls):
         if cls.__instance is None:

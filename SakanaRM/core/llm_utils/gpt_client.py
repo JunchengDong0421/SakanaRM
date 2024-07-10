@@ -3,6 +3,7 @@ import time
 
 from g4f.client import Client
 
+from core.config import GPTClientConfig
 from .abstract_llm_client import AbstractLLMClient
 from .llm_client_exception import LLMClientException
 from .utils import read_pdf_texts
@@ -10,9 +11,9 @@ from .utils import read_pdf_texts
 
 class GPTClient(AbstractLLMClient):
 
-    PAPER_SLICE_LENGTH = 4000
-    MODEL = "gpt-3.5-turbo"
-    TEMPERATURE = 0.1
+    PAPER_SLICE_LENGTH = GPTClientConfig.PAPER_SLICE_LENGTH
+    MODEL = GPTClientConfig.MODEL
+    TEMPERATURE = GPTClientConfig.TEMPERATURE
 
     def match_paper_on_tags(self, paper, tags):
         if not tags:  # By default, return matching tags as an empty list if no tags to process

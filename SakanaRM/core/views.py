@@ -14,6 +14,7 @@ from django.shortcuts import render
 from django.views.generic import DetailView, ListView
 from zoneinfo import ZoneInfo  # Python 3.9 or later only
 
+from .config import PENDING_WORKFLOWS_LIMIT
 from .storage_utils import SakanaStorageClient
 from .llm_utils import GPTClient, SimpleKeywordClient
 from .models import Paper, Tag, SakanaUser, Workflow
@@ -26,8 +27,6 @@ END_POLLING_STATUS = (Workflow.StatusChoices.COMPLETED, Workflow.StatusChoices.F
 CAN_ABORT_STATUS = (Workflow.StatusChoices.PENDING,)
 # statuses - can archive
 CAN_ARCHIVE_STATUS = (Workflow.StatusChoices.COMPLETED, Workflow.StatusChoices.FAILED, Workflow.StatusChoices.ABORTED)
-# threshold of the number of pending workflows
-PENDING_WORKFLOWS_LIMIT = 5
 
 executor = ThreadPoolExecutor()
 
