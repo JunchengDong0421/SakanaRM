@@ -18,39 +18,39 @@ V. Final product (that fulfills the success metric)    &nbsp;&nbsp;&nbsp;&nbsp; 
 ## Features
 **Essential:**
 
-| Feature                         | Sub-Feature                                              | Status      | ETA   |
-|---------------------------------|----------------------------------------------------------|-------------|-------|
-| Store references                | PDF only                                                 | DONE        |       |
-| Manage references               | Add, replace, delete, download                           | DONE        |       |
-| Manage customizable tags        | Add, update, delete                                      | DONE        |       |
-| Match tags                      | On references                                            | DONE        |       |
-| Query for references            | Based on filters                                         | DONE        |       |
-| Integration with LLM            |                                                          |             |       |
-|                                 | Stand-alone client                                       | DONE        |       |
-|                                 | Integration into views                                   | DONE        |       |
-| Flexible programming interfaces |                                                          |             |       |
-|                                 | Switch between LLMs                                      | DONE        |       |
-|                                 | Switch between storage services                          | DONE        |       |
-| Track progress                  |                                                          |             |       |
-|                                 | Track reference uploads                                  | DONE        |       |
-|                                 | Track LLM processing                                     | DONE        |       |
-| Productionization               |                                                          |             |       |
-|                                 | Docker-related files                                     | DONE        |       |
-|                                 | Deployment with Gunicorn, MariaDB, Nginx                 | DONE        |       |
-| User documentation              |                                                          |             |       |
-|                                 | Installation                                             | DONE        |       |
-|                                 | Configuration                                            | DONE        |       |
-|                                 | Usage                                                    | DONE        |       |
-|                                 | Important notices                                        | DONE        |       |
-|                                 | Tutorial video                                           | BACKLOG     | 09/07 |
-| Developer documentation         |                                                          |             |       |
-|                                 | Preface (project structure, some basics)                 | DONE        |       |
-|                                 | Advanced deployment (settings, custom clients, database) | DONE        |       |
-|                                 | Miscellaneous                                            | DONE        |       |
-|                                 | Simple API reference                                     | DONE        |       |
-| Usable UI                       |                                                          |             |       |
-|                                 | Basic layout                                             | DONE        |       |
-|                                 | Beautified page (apply quick solutions)                  | IN PROGRESS | 05/07 |
+| Feature                         | Sub-Feature                                              | Status  | ETA   |
+|---------------------------------|----------------------------------------------------------|---------|-------|
+| Store references                | PDF only                                                 | DONE    |       |
+| Manage references               | Add, replace, delete, download                           | DONE    |       |
+| Manage customizable tags        | Add, update, delete                                      | DONE    |       |
+| Match tags                      | On references                                            | DONE    |       |
+| Query for references            | Based on filters                                         | DONE    |       |
+| Integration with LLM            |                                                          |         |       |
+|                                 | Stand-alone client                                       | DONE    |       |
+|                                 | Integration into views                                   | DONE    |       |
+| Flexible programming interfaces |                                                          |         |       |
+|                                 | Switch between LLMs                                      | DONE    |       |
+|                                 | Switch between storage services                          | DONE    |       |
+| Track progress                  |                                                          |         |       |
+|                                 | Track reference uploads                                  | DONE    |       |
+|                                 | Track LLM processing                                     | DONE    |       |
+| Productionization               |                                                          |         |       |
+|                                 | Docker-related files                                     | DONE    |       |
+|                                 | Deployment with Gunicorn, MariaDB, Nginx                 | DONE    |       |
+| User documentation              |                                                          |         |       |
+|                                 | Installation                                             | DONE    |       |
+|                                 | Configuration                                            | DONE    |       |
+|                                 | Usage                                                    | DONE    |       |
+|                                 | Important notices                                        | DONE    |       |
+|                                 | Tutorial video                                           | BACKLOG | 09/07 |
+| Developer documentation         |                                                          |         |       |
+|                                 | Preface (project structure, some basics)                 | DONE    |       |
+|                                 | Advanced deployment (settings, custom clients, database) | DONE    |       |
+|                                 | Miscellaneous                                            | DONE    |       |
+|                                 | Simple API reference                                     | DONE    |       |
+| Usable UI                       |                                                          |         |       |
+|                                 | Basic layout                                             | DONE    |       |
+|                                 | Beautified page (apply quick solutions)                  | DONE    |       |
 
 **Optional:**                 
 
@@ -93,7 +93,7 @@ Added in Python 3.8:
 `cd SakanaRM/`    
 
 If used with [SakanaStorage](https://github.com/JunchengDong0421/SakanaStorage) (recommended), go to another machine 
-where you want uploaded papers to be stored or open another terminal tab (store on same machine) and:
+where you want uploaded papers to be stored, or open another terminal tab (store on same machine), and:
 3. Clone SakanaStorage repository:    
 `git clone git@github.com:JunchengDong0421/SakanaStorage.git`
 4. Set working directory to project root (where *README.md* is located):    
@@ -111,10 +111,10 @@ Within the scope of the project, for the paper storage service, you only need a 
 store, replace, get, delete papers. The bundled ***SakanaStorageClient*** is used to communicate with the recommended 
 service offered by [SakanaStorage](https://github.com/JunchengDong0421/SakanaStorage).
 
-**The default Storage client** is *****SakanaStorageClient*****. Go to *SakanaRM/core/storage_utils/sakana_storage_client.py*, 
-and look for the class attribute ***"BASE_URL"***. Change the host IP and port to the actual IP and port which your 
-SakanaStorage service binds to, for example, if you are running SakanaStorage on a machine with IP 201.153.35.66 and 
-port 5001, change the value to "http://201.153.35.66:5001/files".    
+**The default Storage client** is *****SakanaStorageClient*****. Go to *SakanaRM/core/config.py*, and look for the class 
+attribute ***"BASE_URL"***. Change the host IP and port to the actual IP and port which your SakanaStorage service binds 
+to, for example, if you are running SakanaStorage on a machine with IP 201.153.35.66 and port 5001, change the value to 
+"http://201.153.35.66:5001/files".    
 **IMPORTANT**: DO NOT use a loopback address (`localhost`, `127.0.0.1`) if SakanaRM runs in container because routing 
 is managed by Docker network. See [Networking in Compose](https://docs.docker.com/compose/networking/) for details.
 
@@ -123,12 +123,12 @@ The project bundles two classes of client to use for paper processing: ***GPTCli
 The former integrates with GPT client by [gpt4free](https://github.com/xtekky/gpt4free), while the latter simply 
 matches tag names with words in the paper and makes no external calls.    
 
-**The default LLM client** is *****GPTClient*****. Go to *SakanaRM/core/llm_utils/gpt_client.py*, and look for the 
-class attribute ***"PAPER_SLICE_LENGTH"***, ***"MODEL"*** and ***"TEMPERATURE"***. Modify how long paper is sliced into 
-parts for transmission, the model used and the temperature of the model by setting corresponding values, or just accept 
-the default value and skip this step. To use the alternative ***SimpleKeywordClient***, go to *SakanaRM/core/views.py*, 
-add a line of import if non-existent: `from .llm_utils import SimpleKeywordClient`, then find and replace all 
-`GPTClient()` to `SimpleKeywordClient()` in code.
+**The default LLM client** is *****GPTClient*****. Go to *SakanaRM/core/config.py*, and look for the class attribute 
+***"PAPER_SLICE_LENGTH"***, ***"MODEL"*** and ***"TEMPERATURE"***. Modify how long paper is sliced into parts for 
+transmission, the model used and the temperature of the model by setting corresponding values, or just accept the 
+default value and skip this step. To use the alternative ***SimpleKeywordClient***, go to *SakanaRM/core/views.py*, add 
+a line of import if non-existent: `from .llm_utils import SimpleKeywordClient`, then find and replace all `GPTClient()` 
+to `SimpleKeywordClient()` in code.
 
 ### Database
 By default, the production server uses MariaDB that runs as a separate service, the development server creates and runs
@@ -142,7 +142,8 @@ a SQLite3 instance in one service. If you want to use other databases, see
 `sudo dockerd`
 2. Check that port `80` and `5000` on target machine are not occupied: please Google for solutions.
 3. Go to *SakanaRM/SakanaRM/settings.py*, change the ***SECRET_KEY*** variable to a different random string.
-4. Start your Storage services first, if SakanaStorage (current directory is *SakanaStorage/*):    
+4. Start your Storage services first, make sure you are in the correct terminal, if SakanaStorage (current directory is 
+*SakanaStorage/*):    
 `sudo docker compose up --build`
 5. Start SakanaRM services (current directory is *SakanaRM/*):    
 `sudo docker compose -f docker-compose.prod.yaml up --build`
@@ -164,7 +165,8 @@ feel free to add it and change the settings of the Django application.
 1. Make sure docker daemon process is running:    
 `sudo dockerd`
 2. Check that port `8000` and `5000` on target machine are not occupied: please Google for solutions.
-3. Start your Storage services first, if SakanaStorage (current directory is *SakanaStorage/*):    
+3. Start your Storage services first, make sure you are in the correct terminal, if SakanaStorage (current directory is 
+*SakanaStorage/*):    
 `sudo docker compose up --build`
 4. Start SakanaRM services (current directory is *SakanaRM/*):    
 `sudo docker compose up --build`
@@ -208,17 +210,24 @@ python manage.py runserver 0.0.0.0:80 --settings=SakanaRM.settings_dev
 ## User Guide
 To learn about how to use the website, please watch the [tutorial video]() made by the author.
 
-### Admin Sites and Superuser
-Django offers a powerful admin interface for superusers/staffs to easily manage the models in the system. Always append
-`--settings=SakanaRM.settings_dev` to each command if you are using the development settings.
-- To create a superuser, add the environment variables `DJANGO_SUPERUSER_PASSWORD`, `DJANGO_SUPERUSER_USERNAME`, 
-`DJANGO_SUPERUSER_EMAIL` to the *"web"* service in *docker-compose.prod.yaml* and *docker-compose.yaml*. Then, run 
-`sudo docker compose exec web python manage.py createsuperuser --noinput ` when services are up. For [Pure Personal 
-Use](#pure-personal-use-not-recommended), simply run `python manage.py createsuperuser --settings=SakanaRM.settings_dev` 
-after database is set up and follow the prompts. 
-- To visit the admin sites, go to *http://<your_server_ip>/admin* and log in as a superuser. 
-- To [customize admin sites](https://docs.djangoproject.com/en/4.2/ref/contrib/admin/), add your code to *"admin.py"* 
-inside every app's directory (*SakanaRM/accounts/*, *SakanaRM/core/*).
+### How to write tag definitions
+A definition of a tag is a question that would be prompted to the LLM. Technically, it should be a yes-no question but 
+not a wh- question. The subject usually is the paper or the author(s) of the paper. If you really don't want to ask a 
+question, then you would have to rely on LLM being powerful enough to understand your intentions. Some good examples of 
+tag definitions look like:
+```
+# Example 1
+Tag name: dt_on_fd
+Definition: Does the paper apply the metric detection time on benchmarking failure detectors?
+
+# Example 2
+Tag name: acc_on_pacs
+Definition: Do the authors test their model on the PACS dataset using accuracy as a metric?
+
+# Example 3:
+Tag name: ssl_mitm
+Definition: Does the paper put emphasize on protecting communications with SSL to mitigate MITM attacks?
+```
 
 ### Some Important Notices
 - Paper titles are NOT unique if uploader is different, but for the same uploader, papers should have unique, non-empty 
@@ -312,13 +321,25 @@ part of the client's request.
 to restrict access across the site, or only apply restrictions on certain locations under the "location" blocks. 
 Wildcard matching not supported by you can use CIDR donation to allow or deny a range of IP addresses.
 
+### Admin Sites and Superuser
+Django offers a powerful admin interface for superusers/staffs to easily manage the models in the system. Always append
+`--settings=SakanaRM.settings_dev` to each command if you are using the development settings.
+- To create a superuser, add the environment variables `DJANGO_SUPERUSER_PASSWORD`, `DJANGO_SUPERUSER_USERNAME`, 
+`DJANGO_SUPERUSER_EMAIL` to the *"web"* service in *docker-compose.prod.yaml* and *docker-compose.yaml*. Then, run 
+`sudo docker compose exec web python manage.py createsuperuser --noinput` when services are up. For [Pure Personal 
+Use](#pure-personal-use-not-recommended), simply run `python manage.py createsuperuser --settings=SakanaRM.settings_dev` 
+after database is set up and follow the prompts. 
+- To visit the admin sites, go to *http://<your_server_ip>/admin* and log in as a superuser. 
+- To [customize admin sites](https://docs.djangoproject.com/en/4.2/ref/contrib/admin/), add your code to *"admin.py"* 
+inside every app's directory (*SakanaRM/accounts/*, *SakanaRM/core/*).
+
 ### Testing
 With Django's testing framework, it is relatively straightforward to write unit tests and integration tests 
 (interactions between modules). Always append `--settings=SakanaRM.settings_dev` to each command if you are using the 
 development settings.
 - To [write tests](https://docs.djangoproject.com/en/4.2/topics/testing/), add test cases to *"tests.py"* inside every 
 app's directory (*SakanaRM/accounts/*, *SakanaRM/core/*).
-- To run tests, run `sudo docker compose exec web python manage.py test --noinput ` when services are up. For [Pure 
+- To run tests, run `sudo docker compose exec web python manage.py test --noinput` when services are up. For [Pure 
 Personal Use](#pure-personal-use-not-recommended), simply run `python manage.py test --settings=SakanaRM.settings_dev` 
 after database is set up and follow the prompts. 
 - It is recommended to configure a new environment for testing, which is something the project can improve on. See 
