@@ -226,7 +226,7 @@ Definition: Do the authors test their model on the PACS dataset using accuracy a
 
 # Example 3:
 Tag name: ssl_mitm
-Definition: Does the paper put emphasize on protecting communications with SSL to mitigate MITM attacks?
+Definition: Does the paper put emphasis on protecting communications with SSL to mitigate MITM attacks?
 ```
 
 ### Some Important Notices
@@ -281,7 +281,7 @@ The project package `SakanaRM` contains setting files (*"settings.py"*, *"settin
 for [deployment](https://docs.djangoproject.com/en/4.2/howto/deployment/wsgi/) (*"wsgi.py"*)
 
 ### System Design
-![system design](https://drive.google.com/uc?id=1VWT8YWdz5fvwbkFM_9EtmjhECFfCOhLu)
+![system design](https://drive.google.com/uc?id=1oDa0ILDPWTZEcJXQDU_gqW4FH2urGxEb)
 
 ### MVT Pattern, WSGI Explained
 MVT pattern explained: [link](https://medium.com/@codewithbushra/understanding-the-mvt-design-pattern-in-django-code-with-bushra-e4adc3f7d7d3)    
