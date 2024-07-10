@@ -20,6 +20,10 @@
             width: 33.33%;
             box-sizing: border-box;
         }
+
+        .selectable:hover, button {
+            cursor: pointer;
+        }
     </style>
 {% endblock %}
 
@@ -37,7 +41,7 @@
         Select Tags: <br><br>
         <div class="scrollable-checkboxes">
             {% for t in tags %}
-                <label><input type="checkbox" name="tag-names" value="{{ t.name }}">{{ t.name }}</label>
+                <label><input class="selectable" type="checkbox" name="tag-names" value="{{ t.name }}">{{ t.name }}</label>
             {% endfor %}
         </div>
         <br><br>

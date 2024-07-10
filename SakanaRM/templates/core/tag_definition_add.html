@@ -4,6 +4,14 @@
     Add Tag and Definition
 {% endblock %}
 
+{% block style %}
+    <style>
+        button {
+            cursor: pointer;
+        }
+    </style>
+{% endblock %}
+
 {% block content %}
     <form method="post" action="{% url 'core:add-tag-definition' %}" enctype="multipart/form-data" id="tag-form">
         {% csrf_token %}

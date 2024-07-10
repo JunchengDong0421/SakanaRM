@@ -21,6 +21,10 @@
             box-sizing: border-box;
         }
 
+        .selectable:hover, button {
+            cursor: pointer;
+        }
+
         table, th, td {
             border: 1px solid black;
         }
@@ -63,16 +67,16 @@
 
         <label>
             <b>Owner: </b>
-            <input type="radio" name="owner-filter" value="anyone" checked>
+            <input class="selectable" type="radio" name="owner-filter" value="anyone" checked>
             Anyone
         </label>
         {% if request.user.is_authenticated and not request.user.is_superuser %}
             <label>
-                <input type="radio" name="owner-filter" value="me">
+                <input class="selectable" type="radio" name="owner-filter" value="me">
                 Me
             </label>
             <label>
-                <input type="radio" name="owner-filter" value="others">
+                <input class="selectable" type="radio" name="owner-filter" value="others">
                 Others
             </label>
         {% endif %}
@@ -81,10 +85,10 @@
         <b>Select tags:</b> <label>&#x1F50E;&#xFE0F;<input id="search-bar" type="search"></label>
         <br><br>
         <div class="scrollable-checkboxes" id="t-filter">
-            <label><input type="checkbox" id="untagged-checkbox" name="tags-filter"
+            <label><input class="selectable" type="checkbox" id="untagged-checkbox" name="tags-filter"
                           value="-1" data-name="untagged"><i>untagged</i></label>
             {% for t in tags %}
-                <label><input type="checkbox" class="tag-checkbox" name="tags-filter"
+                <label><input type="checkbox" class="tag-checkbox selectable" name="tags-filter"
                               value="{{ t.id }}" data-name="{{ t.name }}">{{ t.name }}</label>
             {% endfor %}
         </div>
@@ -92,11 +96,11 @@
 
         <b>Match type: </b>
         <label>
-            <input type="radio" class="match-filter" name="match-filter" value="inclusive">
+            <input type="radio" class="match-filter selectable" name="match-filter" value="inclusive">
             Contains at least all selected tags
         </label>
         <label>
-            <input type="radio" class="match-filter" name="match-filter" value="union">
+            <input type="radio" class="match-filter selectable" name="match-filter" value="union">
             Contains one of the selected tags
         </label>
         <br><br>

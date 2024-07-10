@@ -4,6 +4,14 @@
     Update Tag and Definition
 {% endblock %}
 
+{% block style %}
+    <style>
+        button {
+            cursor: pointer;
+        }
+    </style>
+{% endblock %}
+
 {% block content %}
     <form method="post" action="{% url 'core:update-tag-definition' %}" enctype="multipart/form-data" id="update-form">
         {% csrf_token %}
