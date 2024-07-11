@@ -18,39 +18,39 @@ V. Final product (that fulfills the success metric)    &nbsp;&nbsp;&nbsp;&nbsp; 
 ## Features
 **Essential:**
 
-| Feature                         | Sub-Feature                                              | Status  | ETA   |
-|---------------------------------|----------------------------------------------------------|---------|-------|
-| Store references                | PDF only                                                 | DONE    |       |
-| Manage references               | Add, replace, delete, download                           | DONE    |       |
-| Manage customizable tags        | Add, update, delete                                      | DONE    |       |
-| Match tags                      | On references                                            | DONE    |       |
-| Query for references            | Based on filters                                         | DONE    |       |
-| Integration with LLM            |                                                          |         |       |
-|                                 | Stand-alone client                                       | DONE    |       |
-|                                 | Integration into views                                   | DONE    |       |
-| Flexible programming interfaces |                                                          |         |       |
-|                                 | Switch between LLMs                                      | DONE    |       |
-|                                 | Switch between storage services                          | DONE    |       |
-| Track progress                  |                                                          |         |       |
-|                                 | Track reference uploads                                  | DONE    |       |
-|                                 | Track LLM processing                                     | DONE    |       |
-| Productionization               |                                                          |         |       |
-|                                 | Docker-related files                                     | DONE    |       |
-|                                 | Deployment with Gunicorn, MariaDB, Nginx                 | DONE    |       |
-| User documentation              |                                                          |         |       |
-|                                 | Installation                                             | DONE    |       |
-|                                 | Configuration                                            | DONE    |       |
-|                                 | Usage                                                    | DONE    |       |
-|                                 | Important notices                                        | DONE    |       |
-|                                 | Tutorial video                                           | BACKLOG | 09/07 |
-| Developer documentation         |                                                          |         |       |
-|                                 | Preface (project structure, some basics)                 | DONE    |       |
-|                                 | Advanced deployment (settings, custom clients, database) | DONE    |       |
-|                                 | Miscellaneous                                            | DONE    |       |
-|                                 | Simple API reference                                     | DONE    |       |
-| Usable UI                       |                                                          |         |       |
-|                                 | Basic layout                                             | DONE    |       |
-|                                 | Beautified page (apply quick solutions)                  | DONE    |       |
+| Feature                         | Sub-Feature                                              | Status | ETA |
+|---------------------------------|----------------------------------------------------------|--------|-----|
+| Store references                | PDF only                                                 | DONE   |     |
+| Manage references               | Add, replace, delete, download                           | DONE   |     |
+| Manage customizable tags        | Add, update, delete                                      | DONE   |     |
+| Match tags                      | On references                                            | DONE   |     |
+| Query for references            | Based on filters                                         | DONE   |     |
+| Integration with LLM            |                                                          |        |     |
+|                                 | Stand-alone client                                       | DONE   |     |
+|                                 | Integration into views                                   | DONE   |     |
+| Flexible programming interfaces |                                                          |        |     |
+|                                 | Switch between LLMs                                      | DONE   |     |
+|                                 | Switch between storage services                          | DONE   |     |
+| Track progress                  |                                                          |        |     |
+|                                 | Track reference uploads                                  | DONE   |     |
+|                                 | Track LLM processing                                     | DONE   |     |
+| Productionization               |                                                          |        |     |
+|                                 | Docker-related files                                     | DONE   |     |
+|                                 | Deployment with Gunicorn, MariaDB, Nginx                 | DONE   |     |
+| User documentation              |                                                          |        |     |
+|                                 | Installation                                             | DONE   |     |
+|                                 | Configuration                                            | DONE   |     |
+|                                 | Usage                                                    | DONE   |     |
+|                                 | Important notices                                        | DONE   |     |
+|                                 | Tutorial video                                           | DONE   |     |
+| Developer documentation         |                                                          |        |     |
+|                                 | Preface (project structure, some basics)                 | DONE   |     |
+|                                 | Advanced deployment (settings, custom clients, database) | DONE   |     |
+|                                 | Miscellaneous                                            | DONE   |     |
+|                                 | Simple API reference                                     | DONE   |     |
+| Usable UI                       |                                                          |        |     |
+|                                 | Basic layout                                             | DONE   |     |
+|                                 | Beautified page (apply quick solutions)                  | DONE   |     |
 
 **Optional:**                 
 
