@@ -237,7 +237,8 @@ the system;
 - You can only abort a workflow when it is pending, whereas the condition for archiving it is the total opposite;
 - You cannot delete a workflow. If you don't want the workflow to appear on your home page, archive it;
 - Deleting paper will also result in deletion of all corresponding workflows;
-- Manual tagging is available on a paper's detail page;
+- When you delete a tag, the deleted tag will also be removed from all papers that have the tag;
+- Manual tagging/untagging is available on a paper's detail page;
 - A new paper that is being uploaded does not appear in "My Papers" nor has a detail page until the upload workflow 
 successfully completes;
 - Among match types, "exact" means tags selected match exactly those of a paper, "inclusion" means tags selected match 
@@ -322,7 +323,8 @@ to restrict access across the site, or only apply restrictions on certain locati
 Wildcard matching not supported by you can use CIDR donation to allow or deny a range of IP addresses.
 
 ### Admin Sites and Superuser
-Django offers a powerful admin interface for superusers/staffs to easily manage the models in the system. Always append
+Django offers a powerful admin interface for superusers/staffs to easily manage the models (including users) in the 
+system. In fact, it is the only way to modify or delete a user in this project. Always append
 `--settings=SakanaRM.settings_dev` to each command if you are using the development settings.
 - To create a superuser, add the environment variables `DJANGO_SUPERUSER_PASSWORD`, `DJANGO_SUPERUSER_USERNAME`, 
 `DJANGO_SUPERUSER_EMAIL` to the *"web"* service in *docker-compose.prod.yaml* and *docker-compose.yaml*. Then, run 
@@ -518,6 +520,12 @@ in project templates.
 manipulation. Not very beautiful, not responsive at all.    
 *To improve*: use a frontend framework like [React](https://react.dev/) or a CSS framework like 
 [Tailwind CSS](https://tailwindcss.com/).
+
+**Part VIII**: No time for user space and account management (e.g., change password, close account etc.). Also,
+social media login not integrated.    
+*To improve*: implement them in the future. Check 
+[this article](https://anmol-garg.medium.com/adding-google-oauth-2-0-to-your-django-project-the-easy-way-9df3d87d16fd) 
+to add Google OAuth 2.0 to project.
 
 ## Simple API Reference
 ### Accounts:
