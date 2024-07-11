@@ -6,6 +6,29 @@
 
 {% block style %}
     <style>
+        label {
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        textarea {
+            resize: none;
+            height: 100px;
+            width: 500px;
+            font-size: larger;
+        }
+
+        .form-group {
+            display: flex;
+            width: 500px;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .form-group textarea {
+            align-self: stretch;
+        }
+
         button {
             cursor: pointer;
         }
@@ -15,15 +38,16 @@
 {% block content %}
     <form method="post" action="{% url 'core:add-tag-definition' %}" enctype="multipart/form-data" id="tag-form">
         {% csrf_token %}
-        <label>Tag name:
-            <input type="text" name="name" id="name"/> (one at a time;
+        <label>Tag name:&nbsp;
+            <input type="text" name="name" id="name" required/> (one at a time;
             semicolons, leading and trailing spaces will be removed)
         </label>
-        <br><br>
-        <label>Definition:
-            <input type="text" name="definition" id="definition"/>
-        </label>
-        <br><br>
+        <br>
+        <div class="form-group">
+            <label for="definition">Definition: </label>
+            <textarea name="definition" id="definition"></textarea>
+        </div>
+        <br>
         <button type="submit">Add Tag</button>
     </form>
     <p id="suc-msg" style="color: green"></p>
@@ -36,7 +60,8 @@
             // Add tag
             $('#tag-form').submit(e => {
                 e.preventDefault();
-                if (!confirm("Are you sure to create this new tag?")) {
+                if (!confirm("Are you sure to create this new tag" +
+                    ($("#definition").val().trim() === ""?" without definition":"")  + "?")) {
                     return
                 }
                 const form = $('#tag-form');

@@ -6,6 +6,28 @@
 
 {% block style %}
     <style>
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        textarea {
+            resize: none;
+            height: 100px;
+            width: 500px;
+            font-size: larger;
+        }
+
+        .form-group {
+            display: flex;
+            width: 500px;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .form-group textarea {
+            align-self: stretch;
+        }
         button {
             cursor: pointer;
         }
@@ -30,10 +52,11 @@
         </label>
         <br>
         <p id="cur-def">Current definition: </p>
-        <label>New definition:
-            <input type="text" name="definition" id="new-def"/>
-        </label>
-        <br><br>
+        <div class="form-group">
+            <label for="new-def">New definition: </label>
+            <textarea name="definition" id="new-def"></textarea>
+        </div>
+        <br>
         <button type="submit">Update Tag</button>
     </form>
     <p id="suc-msg" style="color: green"></p>
